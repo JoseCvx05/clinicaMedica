@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="es"
+      xmlns:th="http://www.thymeleaf.org">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>Portal del Paciente | Clínica Médica</title>
+
+    <link rel="stylesheet"
+          th:href="@{/css/paciente-dashboard.css}"
+          href="/css/paciente-dashboard.css">
+
+</head>
+
+<body>
+
+<!-- ======================================================
+     ENCABEZADO
+     ====================================================== -->
+<header class="main-header">
+
+    <div class="header-container">
+
+        <a th:href="@{/paciente/dashboard}"
+           href="/paciente/dashboard"
+           class="brand">
+
+            Clínica Médica
+
+        </a>
+
+
+        <div class="header-user">
+
+            <div class="user-info">
+
+                <span class="user-label">
+                    Sesión iniciada como
+                </span>
+
+                <strong th:text="${nombreUsuario}">
+                    paciente
+                </strong>
+
+            </div>
+
+
+            <!--
+                El cierre de sesión será conectado
+                en el siguiente bloque de seguridad.
+            -->
+            <form th:action="@{/logout}"
+                  action="/logout"
+                  method="post"
+                  class="logout-form">
+
+                <button type="submit"
+                        class="btn-logout">
+
+                    Cerrar sesión
+
+                </button>
+
+            </form>
+
+        </div>
+
+    </div>
+
+</header>
+
+
+<!-- ======================================================
+     CONTENIDO PRINCIPAL
+     ====================================================== -->
+<main>
+
+    <!-- ==================================================
+         BIENVENIDA
+         ================================================== -->
+    <section class="welcome-section">
+
+        <div class="container">
+
+            <div class="welcome-card">
+
+                <div>
+
+                    <span class="welcome-small">
+                        Portal del Paciente
+                    </span>
+
+                    <h1>
+                        Bienvenido,
+                        <span th:text="${nombreUsuario}">
+                            paciente
+                        </span>
+                    </h1>
+
+                    <p>
+                        Desde este portal podrá acceder a
+                        los servicios disponibles para
+                        pacientes de la clínica.
+                    </p>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <!-- ==================================================
+         SERVICIOS DEL PACIENTE
+         ================================================== -->
+    <section class="services-section">
+
+        <div class="container">
+
+            <div class="section-header">
+
+                <h2>
+                    ¿Qué desea realizar?
+                </h2>
+
+                <p>
+                    Seleccione una de las opciones
+                    disponibles.
+                </p>
+
+            </div>
+
+
+            <div class="services-grid">
+
+
+                <!-- ======================================
+                     AGENDAR CITA
+                     ====================================== -->
+                <article class="service-card">
+
+                    <div class="service-icon">
+                        +
+                    </div>
+
+                    <h3>
+                        Agendar cita
+                    </h3>
+
+                    <p>
+                        Seleccione sucursal, especialidad,
+                        médico, fecha y horario para
+                        solicitar una cita médica.
+                    </p>
+
+                    <!--
+                        La ruta se conectará cuando
+                        implementemos el caso de uso
+                        correspondiente.
+                    -->
+                    <button type="button"
+                            class="btn-primary"
+                            disabled>
+
+                        Próximamente
+
+                    </button>
+
+                </article>
+
+
+                <!-- ======================================
+                     MIS CITAS
+                     ====================================== -->
+                <article class="service-card">
+
+                    <div class="service-icon">
+                        C
+                    </div>
+
+                    <h3>
+                        Mis citas
+                    </h3>
+
+                    <p>
+                        Consulte posteriormente sus citas
+                        médicas y el estado correspondiente
+                        de cada una.
+                    </p>
+
+                    <button type="button"
+                            class="btn-secondary"
+                            disabled>
+
+                        Próximamente
+
+                    </button>
+
+                </article>
+
+
+                <!-- ======================================
+                     PERFIL
+                     ====================================== -->
+                <article class="service-card">
+
+                    <div class="service-icon">
+                        P
+                    </div>
+
+                    <h3>
+                        Mi perfil
+                    </h3>
+
+                    <p>
+                        Consulte posteriormente la
+                        información asociada a su cuenta
+                        de paciente.
+                    </p>
+
+                    <button type="button"
+                            class="btn-secondary"
+                            disabled>
+
+                        Próximamente
+
+                    </button>
+
+                </article>
+
+            </div>
+
+        </div>
+
+    </section>
+
+</main>
+
+
+<!-- ======================================================
+     PIE DE PÁGINA
+     ====================================================== -->
+<footer class="main-footer">
+
+    <div class="container">
+
+        <p>
+            Clínica Médica
+        </p>
+
+    </div>
+
+</footer>
+
+
+<!-- ======================================================
+     JAVASCRIPT
+     ====================================================== -->
+<script th:src="@{/js/paciente-dashboard.js}"
+        src="/js/paciente-dashboard.js">
+</script>
+
+</body>
+</html>

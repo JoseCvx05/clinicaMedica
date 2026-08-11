@@ -1,0 +1,524 @@
+/* =========================================================
+   LOGIN - CLÍNICA MÉDICA
+   ========================================================= */
+
+/* =========================================================
+   VARIABLES
+   ========================================================= */
+
+:root {
+    --primary: #1d4ed8;
+    --primary-dark: #1e40af;
+    --primary-light: #dbeafe;
+
+    --background: #f8fafc;
+    --surface: #ffffff;
+
+    --text: #0f172a;
+    --text-secondary: #64748b;
+
+    --border: #dbe3ee;
+
+    --danger: #dc2626;
+    --danger-light: #fee2e2;
+
+    --success: #15803d;
+    --success-light: #dcfce7;
+
+    --warning: #a16207;
+    --warning-light: #fef3c7;
+
+    --shadow:
+            0 20px 50px rgba(15, 23, 42, 0.10);
+}
+
+
+/* =========================================================
+   RESET BÁSICO
+   ========================================================= */
+
+* {
+    box-sizing: border-box;
+}
+
+html,
+body {
+    margin: 0;
+    padding: 0;
+    min-height: 100%;
+}
+
+body {
+    font-family:
+            Arial,
+            Helvetica,
+            sans-serif;
+
+    background:
+            linear-gradient(
+                    135deg,
+                    #eff6ff 0%,
+                    #f8fafc 50%,
+                    #eef2ff 100%
+            );
+
+    color: var(--text);
+}
+
+
+/* =========================================================
+   PÁGINA
+   ========================================================= */
+
+.login-page {
+    min-height: 100vh;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    padding: 32px 20px;
+}
+
+
+/* =========================================================
+   TARJETA
+   ========================================================= */
+
+.login-card {
+    width: 100%;
+    max-width: 460px;
+
+    background: var(--surface);
+
+    border: 1px solid var(--border);
+
+    border-radius: 20px;
+
+    padding: 36px;
+
+    box-shadow: var(--shadow);
+}
+
+
+/* =========================================================
+   ENCABEZADO
+   ========================================================= */
+
+.login-header {
+    text-align: center;
+
+    margin-bottom: 30px;
+}
+
+
+.brand {
+    display: inline-block;
+
+    margin-bottom: 22px;
+
+    text-decoration: none;
+
+    color: var(--primary);
+
+    font-size: 1.1rem;
+    font-weight: 700;
+}
+
+
+.brand:hover {
+    color: var(--primary-dark);
+}
+
+
+.login-header h1 {
+    margin: 0 0 12px 0;
+
+    font-size: 2rem;
+
+    color: var(--text);
+}
+
+
+.login-header p {
+    margin: 0;
+
+    line-height: 1.6;
+
+    color: var(--text-secondary);
+}
+
+
+/* =========================================================
+   FORMULARIO
+   ========================================================= */
+
+.login-form {
+    display: flex;
+    flex-direction: column;
+
+    gap: 20px;
+}
+
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+
+    gap: 8px;
+}
+
+
+.form-group label {
+    font-weight: 600;
+
+    color: var(--text);
+}
+
+
+.form-group input {
+    width: 100%;
+
+    padding: 13px 14px;
+
+    border: 1px solid var(--border);
+
+    border-radius: 10px;
+
+    background: #ffffff;
+
+    font-size: 1rem;
+
+    color: var(--text);
+
+    outline: none;
+
+    transition:
+            border-color 0.2s ease,
+            box-shadow 0.2s ease;
+}
+
+
+.form-group input:focus {
+    border-color: var(--primary);
+
+    box-shadow:
+            0 0 0 3px
+            rgba(29, 78, 216, 0.12);
+}
+
+
+.form-group input:disabled {
+    background: #f1f5f9;
+
+    cursor: not-allowed;
+
+    color: var(--text-secondary);
+}
+
+
+/* =========================================================
+   CONTRASEÑA
+   ========================================================= */
+
+.password-container {
+    display: flex;
+
+    align-items: stretch;
+
+    gap: 8px;
+}
+
+
+.password-container input {
+    flex: 1;
+
+    min-width: 0;
+}
+
+
+.btn-password {
+    border: 1px solid var(--border);
+
+    border-radius: 10px;
+
+    padding: 0 14px;
+
+    background: #f8fafc;
+
+    color: var(--primary);
+
+    font-weight: 600;
+
+    cursor: pointer;
+
+    transition:
+            background-color 0.2s ease,
+            border-color 0.2s ease;
+}
+
+
+.btn-password:hover {
+    background: var(--primary-light);
+
+    border-color: #bfdbfe;
+}
+
+
+.btn-password:disabled {
+    opacity: 0.6;
+
+    cursor: not-allowed;
+}
+
+
+/* =========================================================
+   ERRORES DE CAMPOS
+   ========================================================= */
+
+.field-error {
+    min-height: 18px;
+
+    font-size: 0.85rem;
+
+    color: var(--danger);
+}
+
+
+.input-error {
+    border-color: var(--danger) !important;
+
+    box-shadow:
+            0 0 0 3px
+            rgba(220, 38, 38, 0.10) !important;
+}
+
+
+/* =========================================================
+   MENSAJES GENERALES
+   ========================================================= */
+
+.login-message {
+    padding: 13px 14px;
+
+    border-radius: 10px;
+
+    font-size: 0.93rem;
+
+    line-height: 1.5;
+}
+
+
+.login-message.error {
+    background: var(--danger-light);
+
+    border: 1px solid #fecaca;
+
+    color: #991b1b;
+}
+
+
+.login-message.success {
+    background: var(--success-light);
+
+    border: 1px solid #bbf7d0;
+
+    color: #166534;
+}
+
+
+.login-message.warning {
+    background: var(--warning-light);
+
+    border: 1px solid #fde68a;
+
+    color: #854d0e;
+}
+
+
+/* =========================================================
+   BLOQUEO TEMPORAL
+   ========================================================= */
+
+.bloqueo-container {
+    padding: 16px;
+
+    border-radius: 12px;
+
+    background: var(--warning-light);
+
+    border: 1px solid #fde68a;
+
+    color: #713f12;
+}
+
+
+.bloqueo-container strong {
+    display: block;
+
+    margin-bottom: 8px;
+}
+
+
+.bloqueo-container p {
+    margin: 6px 0;
+
+    line-height: 1.5;
+}
+
+
+#contadorBloqueo {
+    font-weight: 700;
+}
+
+
+/* =========================================================
+   BOTÓN PRINCIPAL
+   ========================================================= */
+
+.btn-primary {
+    width: 100%;
+
+    min-height: 48px;
+
+    border: none;
+
+    border-radius: 10px;
+
+    padding: 13px 18px;
+
+    background: var(--primary);
+
+    color: white;
+
+    font-size: 1rem;
+
+    font-weight: 700;
+
+    cursor: pointer;
+
+    transition:
+            background-color 0.2s ease,
+            transform 0.1s ease,
+            opacity 0.2s ease;
+}
+
+
+.btn-primary:hover:not(:disabled) {
+    background: var(--primary-dark);
+}
+
+
+.btn-primary:active:not(:disabled) {
+    transform: translateY(1px);
+}
+
+
+.btn-primary:disabled {
+    opacity: 0.65;
+
+    cursor: not-allowed;
+}
+
+
+/* =========================================================
+   ESTADO CARGANDO
+   ========================================================= */
+
+.login-loading {
+    display: inline-block;
+}
+
+
+/* =========================================================
+   ENLACES INFERIORES
+   ========================================================= */
+
+.login-actions {
+    display: flex;
+    flex-direction: column;
+
+    align-items: center;
+
+    gap: 12px;
+
+    margin-top: 26px;
+
+    padding-top: 22px;
+
+    border-top: 1px solid var(--border);
+}
+
+
+.login-actions a {
+    text-decoration: none;
+
+    font-weight: 600;
+}
+
+
+.admin-link {
+    color: var(--primary);
+}
+
+
+.admin-link:hover {
+    color: var(--primary-dark);
+
+    text-decoration: underline;
+}
+
+
+.back-link {
+    color: var(--text-secondary);
+}
+
+
+.back-link:hover {
+    color: var(--text);
+
+    text-decoration: underline;
+}
+
+
+/* =========================================================
+   UTILIDADES
+   ========================================================= */
+
+[hidden] {
+    display: none !important;
+}
+
+
+/* =========================================================
+   RESPONSIVE
+   ========================================================= */
+
+@media (max-width: 600px) {
+
+    .login-page {
+        padding: 20px 14px;
+    }
+
+
+    .login-card {
+        padding: 26px 20px;
+
+        border-radius: 16px;
+    }
+
+
+    .login-header h1 {
+        font-size: 1.7rem;
+    }
+
+
+    .password-container {
+        flex-direction: column;
+    }
+
+
+    .btn-password {
+        min-height: 42px;
+    }
+}

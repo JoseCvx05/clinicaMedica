@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="es"
+      xmlns:th="http://www.thymeleaf.org">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>Iniciar sesión | Clínica Médica</title>
+
+    <link rel="stylesheet"
+          th:href="@{/css/login.css}"
+          href="/css/login.css">
+
+</head>
+
+<body>
+
+<!-- ======================================================
+     CONTENEDOR PRINCIPAL
+     ====================================================== -->
+<main class="login-page">
+
+    <section class="login-card">
+
+        <!-- ==============================================
+             ENCABEZADO
+             ============================================== -->
+        <div class="login-header">
+
+            <a th:href="@{/}"
+               href="/"
+               class="brand">
+
+                Clínica Médica
+
+            </a>
+
+            <h1>
+                Iniciar sesión
+            </h1>
+
+            <p>
+                Ingrese sus credenciales para continuar
+                con el agendamiento de su cita.
+            </p>
+
+        </div>
+
+
+        <!-- ==============================================
+             FORMULARIO
+             ============================================== -->
+        <form id="formLogin"
+              class="login-form"
+              novalidate>
+
+            <!-- ==========================================
+                 NOMBRE DE USUARIO
+                 ========================================== -->
+            <div class="form-group">
+
+                <label for="nombreUsuario">
+                    Nombre de usuario
+                </label>
+
+                <input type="text"
+                       id="nombreUsuario"
+                       name="nombreUsuario"
+                       autocomplete="username"
+                       maxlength="9"
+                       required>
+
+                <small id="errorNombreUsuario"
+                       class="field-error"
+                       aria-live="polite">
+                </small>
+
+            </div>
+
+
+            <!-- ==========================================
+                 CONTRASEÑA
+                 ========================================== -->
+            <div class="form-group">
+
+                <label for="contrasena">
+                    Contraseña
+                </label>
+
+                <div class="password-container">
+
+                    <input type="password"
+                           id="contrasena"
+                           name="contrasena"
+                           autocomplete="current-password"
+                           required>
+
+                    <button type="button"
+                            id="btnMostrarContrasena"
+                            class="btn-password"
+                            aria-label="Mostrar contraseña">
+
+                        Mostrar
+
+                    </button>
+
+                </div>
+
+                <small id="errorContrasena"
+                       class="field-error"
+                       aria-live="polite">
+                </small>
+
+            </div>
+
+
+            <!-- ==========================================
+                 MENSAJE GENERAL
+                 ========================================== -->
+            <div id="mensajeLogin"
+                 class="login-message"
+                 role="alert"
+                 aria-live="polite"
+                 hidden>
+            </div>
+
+
+            <!-- ==========================================
+                 INFORMACIÓN DEL BLOQUEO
+                 ========================================== -->
+            <div id="contenedorBloqueo"
+                 class="bloqueo-container"
+                 hidden>
+
+                <strong>
+                    Cuenta bloqueada temporalmente
+                </strong>
+
+                <p id="mensajeBloqueo">
+                </p>
+
+                <p>
+                    Tiempo restante:
+                    <span id="contadorBloqueo">
+                        15:00
+                    </span>
+                </p>
+
+            </div>
+
+
+            <!-- ==========================================
+                 BOTÓN LOGIN
+                 ========================================== -->
+            <button type="submit"
+                    id="btnLogin"
+                    class="btn-primary">
+
+                <span id="textoBtnLogin">
+                    Iniciar sesión
+                </span>
+
+                <span id="cargandoLogin"
+                      class="login-loading"
+                      hidden>
+
+                    Iniciando sesión...
+
+                </span>
+
+            </button>
+
+        </form>
+
+
+        <!-- ==============================================
+             ACCIONES ADICIONALES
+             ============================================== -->
+        <div class="login-actions">
+
+            <a th:href="@{/panel-administrativo}"
+               href="/panel-administrativo"
+               class="admin-link">
+
+                Acceso Panel Administrativo
+
+            </a>
+
+            <a th:href="@{/}"
+               href="/"
+               class="back-link">
+
+                Volver al portal
+
+            </a>
+
+        </div>
+
+    </section>
+
+</main>
+
+
+<!-- ======================================================
+     JAVASCRIPT
+     ====================================================== -->
+<script th:src="@{/js/login.js}"
+        src="/js/login.js">
+</script>
+
+</body>
+</html>

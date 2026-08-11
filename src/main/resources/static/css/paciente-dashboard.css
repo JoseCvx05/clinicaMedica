@@ -1,0 +1,477 @@
+/* =========================================================
+   DASHBOARD DEL PACIENTE
+   ========================================================= */
+
+:root {
+    --primary: #1d4ed8;
+    --primary-dark: #1e40af;
+    --primary-light: #dbeafe;
+
+    --background: #f8fafc;
+    --surface: #ffffff;
+
+    --text: #0f172a;
+    --text-secondary: #64748b;
+
+    --border: #e2e8f0;
+
+    --danger: #dc2626;
+    --danger-dark: #b91c1c;
+
+    --shadow:
+            0 10px 30px rgba(15, 23, 42, 0.08);
+}
+
+
+/* =========================================================
+   RESET
+   ========================================================= */
+
+* {
+    box-sizing: border-box;
+}
+
+
+html,
+body {
+    margin: 0;
+    padding: 0;
+    min-height: 100%;
+}
+
+
+body {
+    font-family:
+            Arial,
+            Helvetica,
+            sans-serif;
+
+    background: var(--background);
+
+    color: var(--text);
+}
+
+
+/* =========================================================
+   CONTENEDOR GENERAL
+   ========================================================= */
+
+.container {
+    width: min(1120px, calc(100% - 40px));
+
+    margin: 0 auto;
+}
+
+
+/* =========================================================
+   HEADER
+   ========================================================= */
+
+.main-header {
+    background: var(--surface);
+
+    border-bottom: 1px solid var(--border);
+
+    position: sticky;
+    top: 0;
+
+    z-index: 100;
+}
+
+
+.header-container {
+    width: min(1120px, calc(100% - 40px));
+
+    min-height: 72px;
+
+    margin: 0 auto;
+
+    display: flex;
+
+    align-items: center;
+    justify-content: space-between;
+
+    gap: 24px;
+}
+
+
+.brand {
+    text-decoration: none;
+
+    color: var(--primary);
+
+    font-size: 1.25rem;
+    font-weight: 700;
+}
+
+
+.brand:hover {
+    color: var(--primary-dark);
+}
+
+
+/* =========================================================
+   INFORMACIÓN DEL USUARIO
+   ========================================================= */
+
+.header-user {
+    display: flex;
+
+    align-items: center;
+
+    gap: 18px;
+}
+
+
+.user-info {
+    display: flex;
+    flex-direction: column;
+
+    text-align: right;
+
+    gap: 2px;
+}
+
+
+.user-label {
+    font-size: 0.78rem;
+
+    color: var(--text-secondary);
+}
+
+
+.user-info strong {
+    font-size: 0.95rem;
+
+    color: var(--text);
+}
+
+
+/* =========================================================
+   CERRAR SESIÓN
+   ========================================================= */
+
+.btn-logout {
+    border: 1px solid #fecaca;
+
+    background: #fff1f2;
+
+    color: var(--danger);
+
+    padding: 10px 14px;
+
+    border-radius: 9px;
+
+    font-weight: 600;
+
+    cursor: pointer;
+
+    transition:
+            background-color 0.2s ease,
+            color 0.2s ease,
+            border-color 0.2s ease;
+}
+
+
+.btn-logout:hover {
+    background: var(--danger);
+
+    border-color: var(--danger);
+
+    color: white;
+}
+
+
+/* =========================================================
+   BIENVENIDA
+   ========================================================= */
+
+.welcome-section {
+    padding: 48px 0 24px;
+}
+
+
+.welcome-card {
+    padding: 36px;
+
+    border-radius: 20px;
+
+    background:
+            linear-gradient(
+                    135deg,
+                    #1d4ed8,
+                    #2563eb
+            );
+
+    color: white;
+
+    box-shadow: var(--shadow);
+}
+
+
+.welcome-small {
+    display: inline-block;
+
+    margin-bottom: 10px;
+
+    font-size: 0.9rem;
+    font-weight: 600;
+
+    opacity: 0.85;
+}
+
+
+.welcome-card h1 {
+    margin: 0 0 12px;
+
+    font-size: 2.2rem;
+}
+
+
+.welcome-card p {
+    max-width: 680px;
+
+    margin: 0;
+
+    line-height: 1.6;
+
+    opacity: 0.9;
+}
+
+
+/* =========================================================
+   SERVICIOS
+   ========================================================= */
+
+.services-section {
+    padding: 28px 0 64px;
+}
+
+
+.section-header {
+    margin-bottom: 26px;
+}
+
+
+.section-header h2 {
+    margin: 0 0 8px;
+
+    font-size: 1.7rem;
+}
+
+
+.section-header p {
+    margin: 0;
+
+    color: var(--text-secondary);
+}
+
+
+/* =========================================================
+   GRID
+   ========================================================= */
+
+.services-grid {
+    display: grid;
+
+    grid-template-columns:
+            repeat(3, minmax(0, 1fr));
+
+    gap: 22px;
+}
+
+
+/* =========================================================
+   TARJETAS
+   ========================================================= */
+
+.service-card {
+    display: flex;
+    flex-direction: column;
+
+    min-height: 290px;
+
+    padding: 26px;
+
+    background: var(--surface);
+
+    border: 1px solid var(--border);
+
+    border-radius: 16px;
+
+    box-shadow: var(--shadow);
+}
+
+
+.service-icon {
+    width: 52px;
+    height: 52px;
+
+    margin-bottom: 20px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    border-radius: 12px;
+
+    background: var(--primary-light);
+
+    color: var(--primary);
+
+    font-size: 1.35rem;
+    font-weight: 700;
+}
+
+
+.service-card h3 {
+    margin: 0 0 12px;
+
+    font-size: 1.2rem;
+}
+
+
+.service-card p {
+    flex: 1;
+
+    margin: 0 0 24px;
+
+    color: var(--text-secondary);
+
+    line-height: 1.6;
+}
+
+
+/* =========================================================
+   BOTONES DE SERVICIOS
+   ========================================================= */
+
+.btn-primary,
+.btn-secondary {
+    width: 100%;
+
+    min-height: 44px;
+
+    padding: 11px 16px;
+
+    border-radius: 9px;
+
+    font-size: 0.95rem;
+    font-weight: 700;
+}
+
+
+.btn-primary {
+    border: none;
+
+    background: var(--primary);
+
+    color: white;
+}
+
+
+.btn-secondary {
+    border: 1px solid var(--border);
+
+    background: #f8fafc;
+
+    color: var(--text);
+}
+
+
+.btn-primary:disabled,
+.btn-secondary:disabled {
+    opacity: 0.55;
+
+    cursor: not-allowed;
+}
+
+
+/* =========================================================
+   FOOTER
+   ========================================================= */
+
+.main-footer {
+    padding: 24px 0;
+
+    background: var(--surface);
+
+    border-top: 1px solid var(--border);
+
+    color: var(--text-secondary);
+
+    text-align: center;
+}
+
+
+.main-footer p {
+    margin: 0;
+}
+
+
+/* =========================================================
+   RESPONSIVE
+   ========================================================= */
+
+@media (max-width: 900px) {
+
+    .services-grid {
+        grid-template-columns:
+                repeat(2, minmax(0, 1fr));
+    }
+}
+
+
+@media (max-width: 650px) {
+
+    .container,
+    .header-container {
+        width: min(100% - 28px, 1120px);
+    }
+
+
+    .header-container {
+        min-height: auto;
+
+        padding: 14px 0;
+
+        align-items: flex-start;
+    }
+
+
+    .header-user {
+        flex-direction: column;
+
+        align-items: flex-end;
+
+        gap: 8px;
+    }
+
+
+    .user-info {
+        display: none;
+    }
+
+
+    .welcome-section {
+        padding-top: 28px;
+    }
+
+
+    .welcome-card {
+        padding: 26px 22px;
+    }
+
+
+    .welcome-card h1 {
+        font-size: 1.7rem;
+    }
+
+
+    .services-grid {
+        grid-template-columns: 1fr;
+    }
+    .logout-form {
+        margin: 0;
+    }
+}
