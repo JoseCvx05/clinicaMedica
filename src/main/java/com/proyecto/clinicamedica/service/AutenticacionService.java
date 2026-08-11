@@ -1,71 +1,53 @@
 package com.proyecto.clinicamedica.service;
 
 import com.proyecto.clinicamedica.security.ResultadoAutenticacion;
+import com.proyecto.clinicamedica.security.TipoAcceso;
 
 /**
  * =========================================================
  * SERVICIO: AUTENTICACIÓN
  * =========================================================
  *
- * Define el contrato del proceso de autenticación
- * utilizado por el portal de pacientes.
+ * Define el contrato común para autenticar usuarios
+ * del sistema.
  *
- * CU-00:
+ * La misma lógica servirá para:
  *
- * - Flujo normal:
- *      credenciales correctas + rol Paciente.
+ * - Portal de pacientes.
+ * - Portal del personal interno.
  *
- * - FA06:
- *      credenciales incorrectas.
- *
- * - FA07:
- *      cuenta bloqueada temporalmente.
- *
- * - FA09:
- *      usuario autenticado con rol no autorizado.
- *
- * Este servicio NO se encarga de:
- *
- * - Renderizar vistas.
- * - Manejar HTTP.
- * - Crear cookies.
- * - Generar directamente respuestas REST.
- *
- * La generación del JWT será delegada posteriormente
- * a JwtService.
- *
- * Permite aplicar:
- *
- * - SRP.
- * - DIP.
- * - Abstracción.
- * - Polimorfismo.
+ * Las diferencias entre ambos accesos serán resueltas
+ * mediante PoliticaAutenticacion.
  * =========================================================
  */
 public interface AutenticacionService {
 
     /**
-     * Autentica a un usuario utilizando nombre de usuario
-     * y contraseña.
+     * Autentica a un usuario según el tipo de portal
+     * desde el cual intenta ingresar.
      *
-     * El método deberá:
+     * La implementación deberá:
      *
-     * 1. Buscar el usuario.
-     * 2. Revisar si existe un bloqueo vigente.
-     * 3. Validar la contraseña mediante PasswordEncoder.
-     * 4. Incrementar intentos si falla.
-     * 5. Bloquear después del quinto intento fallido.
-     * 6. Restablecer intentos si las credenciales son válidas.
-     * 7. Verificar que el rol sea Paciente.
-     * 8. Retornar el resultado correspondiente.
+     * 1. Resolver la política correspondiente.
+     * 2. Buscar el usuario.
+     * 3. Validar estado activo.
+     * 4. Revisar bloqueo vigente.
+     * 5. Validar contraseña.
+     * 6. Incrementar intentos si falla.
+     * 7. Aplicar bloqueo si corresponde.
+     * 8. Restablecer intentos si acierta.
+     * 9. Validar si el usuario puede usar ese portal.
+     * 10. Retornar el resultado.
      *
      * @param nombreUsuario nombre de usuario ingresado
      * @param contrasena contraseña ingresada
+     * @param tipoAcceso portal desde el que inicia sesión
      *
-     * @return resultado interno de autenticación
+     * @return resultado de autenticación
      */
     ResultadoAutenticacion autenticar(
             String nombreUsuario,
-            String contrasena
+            String contrasena,
+            TipoAcceso tipoAcceso
     );
 }

@@ -13,17 +13,19 @@ import org.springframework.security.web.SecurityFilterChain;
 
 /**
  * =========================================================
- * CONFIGURACIÓN DE SEGURIDAD
+ * CONFIGURACIÓN GENERAL DE SEGURIDAD
  * =========================================================
  *
- * Configura:
+ * Define:
  *
  * - Rutas públicas.
- * - Rutas protegidas.
+ * - Portal del paciente.
+ * - Portal interno.
+ * - Módulos administrativos.
  * - JWT desde cookie HttpOnly.
  * - Autorización mediante roles.
- * - Cierre de sesión.
- * - Protección CSRF.
+ * - CSRF.
+ * - Logout.
  * =========================================================
  */
 @Configuration
@@ -64,7 +66,7 @@ public class SecurityConfig {
 
 
     // =====================================================
-    // JWT AUTHENTICATION CONVERTER
+    // CONVERSIÓN DE ROLES DEL JWT
     // =====================================================
 
     @Bean
@@ -101,20 +103,35 @@ public class SecurityConfig {
         http
 
                 // =========================================
-                // AUTORIZACIÓN
+                // AUTORIZACIÓN DE RUTAS
                 // =========================================
 
                 .authorizeHttpRequests(
                         auth -> auth
 
+                                // =========================
+                                // RUTAS PÚBLICAS
+                                // =========================
+
                                 .requestMatchers(
                                         "/",
                                         "/portal",
                                         "/login",
+                                        "/login-interno",
                                         "/registro",
                                         "/error",
 
                                         "/api/public/**",
+
+                                        /*
+                                         * Solamente el endpoint
+                                         * de LOGIN interno es público.
+                                         *
+                                         * No hacemos público todo:
+                                         *
+                                         * /api/interno/**
+                                         */
+                                        "/api/interno/login",
 
                                         "/css/**",
                                         "/js/**",
@@ -124,9 +141,25 @@ public class SecurityConfig {
                                 .permitAll()
 
 
-                                // -------------------------
-                                // PORTAL PACIENTE
-                                // -------------------------
+                                // =========================
+                                // CU-01
+                                // ADMINISTRACIÓN
+                                // =========================
+                                //
+                                // Solamente Administrador.
+                                // =========================
+
+                                .requestMatchers(
+                                        "/admin/**"
+                                )
+                                .hasRole(
+                                        "ADMINISTRADOR"
+                                )
+
+
+                                // =========================
+                                // PORTAL DEL PACIENTE
+                                // =========================
 
                                 .requestMatchers(
                                         "/paciente/**"
@@ -136,9 +169,27 @@ public class SecurityConfig {
                                 )
 
 
-                                // -------------------------
-                                // RESTO
-                                // -------------------------
+                                // =========================
+                                // PORTAL INTERNO GENERAL
+                                // =========================
+
+                                .requestMatchers(
+                                        "/interno/**"
+                                )
+                                .hasAnyRole(
+                                        "MEDICO",
+                                        "ENFERMERO",
+                                        "RECEPCIONISTA",
+                                        "CAJERO",
+                                        "LABORATORISTA",
+                                        "FARMACEUTICO",
+                                        "ADMINISTRADOR"
+                                )
+
+
+                                // =========================
+                                // RESTO DEL SISTEMA
+                                // =========================
 
                                 .anyRequest()
                                 .authenticated()
@@ -152,13 +203,28 @@ public class SecurityConfig {
                 .csrf(
                         csrf -> csrf
                                 .ignoringRequestMatchers(
-                                        "/api/public/**"
+
+                                        /*
+                                         * Endpoint REST público
+                                         * utilizado por CU-00.
+                                         */
+                                        "/api/public/**",
+
+                                        /*
+                                         * Excluimos únicamente
+                                         * el POST de autenticación
+                                         * interna.
+                                         *
+                                         * NO excluimos todo
+                                         * /api/interno/**.
+                                         */
+                                        "/api/interno/login"
                                 )
                 )
 
 
                 // =========================================
-                // JWT
+                // JWT / RESOURCE SERVER
                 // =========================================
 
                 .oauth2ResourceServer(
@@ -178,16 +244,19 @@ public class SecurityConfig {
 
 
                 // =========================================
-                // CERRAR SESIÓN
+                // STATELESS
                 // =========================================
-                //
-                // Spring Security procesa:
-                //
-                // POST /logout
-                //
-                // Nuestro LogoutHandler adicional
-                // elimina CLINICA_AUTH mediante
-                // JwtCookieService.
+
+                .sessionManagement(
+                        session -> session
+                                .sessionCreationPolicy(
+                                        SessionCreationPolicy.STATELESS
+                                )
+                )
+
+
+                // =========================================
+                // LOGOUT
                 // =========================================
 
                 .logout(
@@ -223,19 +292,7 @@ public class SecurityConfig {
 
 
                 // =========================================
-                // SIN SESIÓN DE AUTENTICACIÓN TRADICIONAL
-                // =========================================
-
-                .sessionManagement(
-                        session -> session
-                                .sessionCreationPolicy(
-                                        SessionCreationPolicy.STATELESS
-                                )
-                )
-
-
-                // =========================================
-                // FORM LOGIN DESACTIVADO
+                // LOGIN TRADICIONAL DESACTIVADO
                 // =========================================
 
                 .formLogin(

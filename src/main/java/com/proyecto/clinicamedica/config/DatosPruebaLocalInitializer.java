@@ -73,6 +73,7 @@ public class DatosPruebaLocalInitializer
 
     private final String passwordPaciente;
     private final String passwordMedico;
+    private final String passwordAdministrador;
 
 
     public DatosPruebaLocalInitializer(
@@ -88,7 +89,10 @@ public class DatosPruebaLocalInitializer
             String passwordPaciente,
 
             @Value("${app.test.medico-password}")
-            String passwordMedico
+            String passwordMedico,
+
+            @Value("${app.test.admin-password}")
+            String passwordAdministrador
     ) {
         this.usuarioService = usuarioService;
         this.rolService = rolService;
@@ -102,6 +106,7 @@ public class DatosPruebaLocalInitializer
 
         this.passwordPaciente = passwordPaciente;
         this.passwordMedico = passwordMedico;
+        this.passwordAdministrador = passwordAdministrador;
     }
 
 
@@ -115,6 +120,8 @@ public class DatosPruebaLocalInitializer
         crearPacientePrueba();
 
         crearMedicoPrueba();
+
+        crearAdministradorPrueba();
 
         LOGGER.info(
                 "Datos de prueba locales preparados correctamente."
@@ -350,6 +357,189 @@ public class DatosPruebaLocalInitializer
 
         LOGGER.info(
                 "Médico de prueba creado."
+        );
+    }
+    // =========================================================
+// ADMINISTRADOR
+// =========================================================
+
+    private void crearAdministradorPrueba() {
+
+        // =====================================================
+        // EVITAR DUPLICADOS
+        // =====================================================
+
+        if (usuarioService.existeNombreUsuario(
+                "admin001"
+        )) {
+
+            LOGGER.info(
+                    "Administrador de prueba ya existente."
+            );
+
+            return;
+        }
+
+
+        // =====================================================
+        // ROL ADMINISTRADOR
+        // =====================================================
+
+        Rol rolAdministrador =
+                rolService
+                        .buscarActivoPorNombre(
+                                "Administrador"
+                        )
+                        .orElseThrow(
+                                () -> new IllegalStateException(
+                                        "No existe el rol Administrador."
+                                )
+                        );
+
+
+        // =====================================================
+        // SUCURSAL
+        // =====================================================
+        //
+        // CU-01 establece sucursal obligatoria durante
+        // la creación de usuarios internos.
+        // =====================================================
+
+        Sucursal sucursal =
+                sucursalService
+                        .buscarActivaPorNombre(
+                                "Sucursal Central"
+                        )
+                        .orElseThrow(
+                                () -> new IllegalStateException(
+                                        "No existe Sucursal Central."
+                                )
+                        );
+
+
+        // =====================================================
+        // CONSTRUIR USUARIO
+        // =====================================================
+
+        Usuario administrador =
+                new Usuario();
+
+
+        administrador.setNombreCompleto(
+                "Administrador de Prueba"
+        );
+
+
+        administrador.setCorreoElectronico(
+                "administrador.prueba@local.test"
+        );
+
+
+        /*
+         * 8 caracteres.
+         *
+         * Cumple RN-CU01-05.
+         */
+        administrador.setNombreUsuario(
+                "admin001"
+        );
+
+
+        // =====================================================
+        // CONTRASEÑA
+        // =====================================================
+
+        administrador.setContrasenaHash(
+                passwordEncoder.encode(
+                        passwordAdministrador
+                )
+        );
+
+
+        // =====================================================
+        // CAMPOS OPCIONALES
+        // =====================================================
+        //
+        // DPI, NIT, Seguro y Especialidad no son necesarios
+        // para este administrador de pruebas.
+        //
+        // Especialidad solamente aplica al rol Médico.
+        // =====================================================
+
+        administrador.setDpiCifrado(
+                null
+        );
+
+        administrador.setDpiHash(
+                null
+        );
+
+        administrador.setNitCifrado(
+                null
+        );
+
+        administrador.setNitHash(
+                null
+        );
+
+        administrador.setNumeroSeguro(
+                null
+        );
+
+        administrador.setEspecialidad(
+                null
+        );
+
+
+        administrador.setTelefono(
+                "55550003"
+        );
+
+
+        // =====================================================
+        // RELACIONES
+        // =====================================================
+
+        administrador.setRol(
+                rolAdministrador
+        );
+
+
+        administrador.setSucursal(
+                sucursal
+        );
+
+
+        // =====================================================
+        // ESTADO / SEGURIDAD
+        // =====================================================
+
+        administrador.setActivo(
+                true
+        );
+
+
+        administrador.setIntentosFallidosLogin(
+                (short) 0
+        );
+
+
+        administrador.setFechaBloqueoHasta(
+                null
+        );
+
+
+        // =====================================================
+        // GUARDAR
+        // =====================================================
+
+        usuarioService.guardar(
+                administrador
+        );
+
+
+        LOGGER.info(
+                "Administrador de prueba creado."
         );
     }
 }

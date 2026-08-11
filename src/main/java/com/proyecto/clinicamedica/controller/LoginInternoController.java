@@ -21,28 +21,32 @@ import org.springframework.web.bind.annotation.RestController;
 
 /**
  * =========================================================
- * CONTROLADOR REST: LOGIN DE PACIENTES
+ * CONTROLADOR REST: LOGIN DEL PERSONAL INTERNO
  * =========================================================
  *
- * Atiende exclusivamente el inicio de sesión desde
- * el portal de pacientes.
+ * Atiende exclusivamente el inicio de sesión del
+ * personal interno del hospital.
  *
- * La lógica común de autenticación se encuentra en
- * AutenticacionService.
+ * Reutiliza:
  *
- * Este controlador únicamente especifica:
+ * - AutenticacionService
+ * - PasswordEncoder
+ * - control de intentos
+ * - bloqueo temporal
+ * - JwtService
+ * - JwtCookieService
  *
- * TipoAcceso.PACIENTE
- *
- * De esta forma posteriormente podremos tener otro
- * controlador para personal interno utilizando:
+ * La diferencia respecto al login de pacientes es:
  *
  * TipoAcceso.INTERNO
+ *
+ * La autorización posterior de cada módulo se realiza
+ * mediante los roles almacenados en el JWT.
  * =========================================================
  */
 @RestController
-@RequestMapping("/api/public")
-public class LoginController {
+@RequestMapping("/api/interno")
+public class LoginInternoController {
 
     private final AutenticacionService
             autenticacionService;
@@ -54,7 +58,7 @@ public class LoginController {
             jwtCookieService;
 
 
-    public LoginController(
+    public LoginInternoController(
             AutenticacionService autenticacionService,
             JwtService jwtService,
             JwtCookieService jwtCookieService
@@ -72,7 +76,7 @@ public class LoginController {
 
 
     // =====================================================
-    // LOGIN DE PACIENTE
+    // LOGIN INTERNO
     // =====================================================
 
     @PostMapping("/login")
@@ -83,14 +87,14 @@ public class LoginController {
     ) {
 
         // =================================================
-        // 1. AUTENTICAR COMO PACIENTE
+        // 1. AUTENTICAR COMO USUARIO INTERNO
         // =================================================
 
         ResultadoAutenticacion resultado =
                 autenticacionService.autenticar(
                         request.getNombreUsuario(),
                         request.getContrasena(),
-                        TipoAcceso.PACIENTE
+                        TipoAcceso.INTERNO
                 );
 
 
@@ -99,65 +103,55 @@ public class LoginController {
 
 
         // =================================================
-        // 2. FA06 - CREDENCIALES INCORRECTAS
+        // 2. CREDENCIALES INCORRECTAS
+        // RN-GLOBAL-007
         // =================================================
 
         if (respuesta.getEstado()
                 == EstadoLogin.CREDENCIALES_INCORRECTAS) {
 
             return ResponseEntity
-                    .status(
-                            HttpStatus.UNAUTHORIZED
-                    )
-                    .body(
-                            respuesta
-                    );
+                    .status(HttpStatus.UNAUTHORIZED)
+                    .body(respuesta);
         }
 
 
         // =================================================
-        // 3. FA07 - CUENTA BLOQUEADA
+        // 3. CUENTA BLOQUEADA
+        // RN-GLOBAL-007
         // =================================================
 
         if (respuesta.getEstado()
                 == EstadoLogin.CUENTA_BLOQUEADA) {
 
             return ResponseEntity
-                    .status(
-                            HttpStatus.UNAUTHORIZED
-                    )
-                    .body(
-                            respuesta
-                    );
+                    .status(HttpStatus.UNAUTHORIZED)
+                    .body(respuesta);
         }
 
 
         // =================================================
-        // 4. FA09 - PORTAL INCORRECTO
+        // 4. USUARIO NO PERTENECE AL PERSONAL INTERNO
         // =================================================
 
         if (respuesta.getEstado()
                 == EstadoLogin.ROL_NO_AUTORIZADO) {
 
             return ResponseEntity
-                    .status(
-                            HttpStatus.FORBIDDEN
-                    )
-                    .body(
-                            respuesta
-                    );
+                    .status(HttpStatus.FORBIDDEN)
+                    .body(respuesta);
         }
 
 
         // =================================================
-        // 5. AUTENTICACIÓN EXITOSA
+        // 5. RESULTADO INESPERADO
         // =================================================
 
         if (respuesta.getEstado()
                 != EstadoLogin.AUTENTICADO) {
 
             throw new IllegalStateException(
-                    "El resultado de autenticación no es válido."
+                    "El resultado de autenticación interna no es válido."
             );
         }
 
@@ -169,7 +163,7 @@ public class LoginController {
         if (usuario == null) {
 
             throw new IllegalStateException(
-                    "No se encontró el usuario autenticado."
+                    "No se encontró el usuario interno autenticado."
             );
         }
 
@@ -196,7 +190,7 @@ public class LoginController {
 
 
         // =================================================
-        // 8. DEVOLVER COOKIE + RESPUESTA
+        // 8. RESPUESTA
         // =================================================
 
         return ResponseEntity

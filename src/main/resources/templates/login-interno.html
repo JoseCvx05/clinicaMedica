@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="es"
+      xmlns:th="http://www.thymeleaf.org">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>Acceso Interno | Clínica Médica</title>
+
+    <link rel="stylesheet"
+          th:href="@{/css/login-interno.css}"
+          href="/css/login-interno.css">
+
+</head>
+
+<body>
+
+<!-- ======================================================
+     CONTENEDOR PRINCIPAL
+     ====================================================== -->
+<main class="login-page">
+
+    <section class="login-card">
+
+        <!-- ==============================================
+             ENCABEZADO
+             ============================================== -->
+        <div class="login-header">
+
+            <a th:href="@{/}"
+               href="/"
+               class="brand">
+
+                Clínica Médica
+
+            </a>
+
+            <span class="access-badge">
+                Personal interno
+            </span>
+
+            <h1>
+                Acceso al sistema
+            </h1>
+
+            <p>
+                Ingrese sus credenciales institucionales
+                para continuar.
+            </p>
+
+        </div>
+
+
+        <!-- ==============================================
+             MENSAJE DE SESIÓN EXPIRADA
+             RN-GLOBAL-007
+             ============================================== -->
+        <div id="mensajeSesionExpirada"
+             class="login-message warning"
+             role="alert"
+             aria-live="polite"
+             hidden>
+
+            Su sesión ha expirado por inactividad.
+            Por favor, inicie sesión nuevamente.
+
+        </div>
+
+
+        <!-- ==============================================
+             FORMULARIO
+             ============================================== -->
+        <form id="formLoginInterno"
+              class="login-form"
+              novalidate>
+
+            <!-- ==========================================
+                 USUARIO
+                 ========================================== -->
+            <div class="form-group">
+
+                <label for="nombreUsuario">
+                    Nombre de usuario
+                </label>
+
+                <input type="text"
+                       id="nombreUsuario"
+                       name="nombreUsuario"
+                       autocomplete="username"
+                       minlength="8"
+                       maxlength="9"
+                       required>
+
+                <small id="errorNombreUsuario"
+                       class="field-error"
+                       aria-live="polite">
+                </small>
+
+            </div>
+
+
+            <!-- ==========================================
+                 CONTRASEÑA
+                 ========================================== -->
+            <div class="form-group">
+
+                <label for="contrasena">
+                    Contraseña
+                </label>
+
+                <div class="password-container">
+
+                    <input type="password"
+                           id="contrasena"
+                           name="contrasena"
+                           autocomplete="current-password"
+                           required>
+
+                    <button type="button"
+                            id="btnMostrarContrasena"
+                            class="btn-password"
+                            aria-label="Mostrar contraseña">
+
+                        Mostrar
+
+                    </button>
+
+                </div>
+
+                <small id="errorContrasena"
+                       class="field-error"
+                       aria-live="polite">
+                </small>
+
+            </div>
+
+
+            <!-- ==========================================
+                 MENSAJE GENERAL
+                 ========================================== -->
+            <div id="mensajeLogin"
+                 class="login-message"
+                 role="alert"
+                 aria-live="polite"
+                 hidden>
+            </div>
+
+
+            <!-- ==========================================
+                 BLOQUEO TEMPORAL
+                 RN-GLOBAL-007
+                 ========================================== -->
+            <div id="contenedorBloqueo"
+                 class="bloqueo-container"
+                 hidden>
+
+                <strong>
+                    Cuenta bloqueada
+                </strong>
+
+                <p id="mensajeBloqueo">
+                    Su cuenta ha sido bloqueada temporalmente
+                    por múltiples intentos fallidos.
+                    Contacte al administrador del sistema.
+                </p>
+
+                <p>
+                    Tiempo restante:
+                    <span id="contadorBloqueo">
+                        15:00
+                    </span>
+                </p>
+
+            </div>
+
+
+            <!-- ==========================================
+                 BOTÓN LOGIN
+                 ========================================== -->
+            <button type="submit"
+                    id="btnLogin"
+                    class="btn-primary">
+
+                <span id="textoBtnLogin">
+                    Iniciar sesión
+                </span>
+
+                <span id="cargandoLogin"
+                      hidden>
+
+                    Iniciando sesión...
+
+                </span>
+
+            </button>
+
+        </form>
+
+
+        <!-- ==============================================
+             INFORMACIÓN DE SEGURIDAD
+             ============================================== -->
+        <div class="security-info">
+
+            <p>
+                Este acceso es exclusivo para personal
+                autorizado del hospital.
+            </p>
+
+        </div>
+
+
+        <!-- ==============================================
+             ACCIONES
+             ============================================== -->
+        <div class="login-actions">
+
+            <a th:href="@{/login}"
+               href="/login"
+               class="patient-link">
+
+                Acceso para pacientes
+
+            </a>
+
+            <a th:href="@{/}"
+               href="/"
+               class="back-link">
+
+                Volver al portal
+
+            </a>
+
+        </div>
+
+    </section>
+
+</main>
+
+
+<!-- ======================================================
+     JAVASCRIPT
+     ====================================================== -->
+<script th:src="@{/js/login-interno.js}"
+        src="/js/login-interno.js">
+</script>
+
+</body>
+</html>

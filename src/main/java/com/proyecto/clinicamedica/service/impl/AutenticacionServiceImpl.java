@@ -3,7 +3,10 @@ package com.proyecto.clinicamedica.service.impl;
 import com.proyecto.clinicamedica.dto.EstadoLogin;
 import com.proyecto.clinicamedica.dto.LoginResponse;
 import com.proyecto.clinicamedica.entity.Usuario;
+import com.proyecto.clinicamedica.security.PoliticaAutenticacion;
+import com.proyecto.clinicamedica.security.PoliticaAutenticacionResolver;
 import com.proyecto.clinicamedica.security.ResultadoAutenticacion;
+import com.proyecto.clinicamedica.security.TipoAcceso;
 import com.proyecto.clinicamedica.service.AutenticacionService;
 import com.proyecto.clinicamedica.service.UsuarioService;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -15,36 +18,23 @@ import java.util.Optional;
 
 /**
  * =========================================================
- * IMPLEMENTACIÓN DEL SERVICIO DE AUTENTICACIÓN
+ * IMPLEMENTACIÓN COMÚN DEL SERVICIO DE AUTENTICACIÓN
  * =========================================================
  *
- * Implementa el inicio de sesión de pacientes del CU-00.
+ * Contiene la lógica común utilizada por:
  *
- * Flujos cubiertos:
+ * - Portal de pacientes.
+ * - Portal del personal interno.
  *
- * - Flujo normal:
- *      credenciales correctas + rol Paciente.
+ * La lógica que cambia según el portal se delega a:
  *
- * - FA06:
- *      credenciales incorrectas.
+ * PoliticaAutenticacion
  *
- * - FA07:
- *      máximo 5 intentos y bloqueo temporal
- *      durante 15 minutos.
+ * Implementaciones actuales:
  *
- * - FA09:
- *      credenciales correctas pero rol distinto
- *      de Paciente.
+ * - PoliticaPaciente
+ * - PoliticaInterna
  *
- * Esta clase NO genera JWT.
- * Esa responsabilidad pertenecerá a JwtService.
- *
- * Aplica:
- *
- * - SRP
- * - DIP
- * - Polimorfismo
- * - Separación de responsabilidades
  * =========================================================
  */
 @Service
@@ -52,31 +42,51 @@ public class AutenticacionServiceImpl
         implements AutenticacionService {
 
     // =====================================================
-    // REGLAS DEL CU-00
+    // REGLAS DE BLOQUEO
     // =====================================================
 
+    /**
+     * CU-00 establece máximo 5 intentos consecutivos.
+     *
+     * Esta infraestructura se reutiliza también para
+     * autenticación interna.
+     */
     private static final int MAXIMO_INTENTOS = 5;
 
+
+    /**
+     * CU-00 establece bloqueo temporal de 15 minutos.
+     */
     private static final int MINUTOS_BLOQUEO = 15;
 
-    private static final String ROL_PACIENTE =
-            "Paciente";
 
+    // =====================================================
+    // DEPENDENCIAS
+    // =====================================================
 
     private final UsuarioService usuarioService;
 
     private final PasswordEncoder passwordEncoder;
 
+    private final PoliticaAutenticacionResolver
+            politicaAutenticacionResolver;
 
-    /**
-     * Inyección mediante constructor.
-     */
+
     public AutenticacionServiceImpl(
             UsuarioService usuarioService,
-            PasswordEncoder passwordEncoder
+            PasswordEncoder passwordEncoder,
+            PoliticaAutenticacionResolver
+                    politicaAutenticacionResolver
     ) {
-        this.usuarioService = usuarioService;
-        this.passwordEncoder = passwordEncoder;
+
+        this.usuarioService =
+                usuarioService;
+
+        this.passwordEncoder =
+                passwordEncoder;
+
+        this.politicaAutenticacionResolver =
+                politicaAutenticacionResolver;
     }
 
 
@@ -88,11 +98,23 @@ public class AutenticacionServiceImpl
     @Transactional
     public ResultadoAutenticacion autenticar(
             String nombreUsuario,
-            String contrasena
+            String contrasena,
+            TipoAcceso tipoAcceso
     ) {
 
         // =================================================
-        // 1. VALIDACIÓN DEFENSIVA
+        // 1. RESOLVER POLÍTICA
+        // =================================================
+
+        PoliticaAutenticacion politica =
+                politicaAutenticacionResolver
+                        .resolver(
+                                tipoAcceso
+                        );
+
+
+        // =================================================
+        // 2. VALIDACIÓN DEFENSIVA
         // =================================================
 
         if (nombreUsuario == null
@@ -101,6 +123,7 @@ public class AutenticacionServiceImpl
                 || contrasena.isBlank()) {
 
             return resultadoCredencialesIncorrectas(
+                    politica,
                     MAXIMO_INTENTOS - 1
             );
         }
@@ -111,26 +134,28 @@ public class AutenticacionServiceImpl
 
 
         // =================================================
-        // 2. BUSCAR USUARIO
+        // 3. BUSCAR USUARIO
         // =================================================
 
         Optional<Usuario> usuarioOptional =
-                usuarioService.buscarPorNombreUsuario(
-                        usuarioNormalizado
-                );
+                usuarioService
+                        .buscarPorNombreUsuario(
+                                usuarioNormalizado
+                        );
 
 
         // =================================================
-        // 3. USUARIO INEXISTENTE
+        // 4. USUARIO INEXISTENTE
         // =================================================
         //
-        // No revelamos que el nombre de usuario
-        // no existe.
+        // No revelamos si el nombre ingresado realmente
+        // existe en el sistema.
         // =================================================
 
         if (usuarioOptional.isEmpty()) {
 
             return resultadoCredencialesIncorrectas(
+                    politica,
                     MAXIMO_INTENTOS - 1
             );
         }
@@ -141,27 +166,31 @@ public class AutenticacionServiceImpl
 
 
         // =================================================
-        // 4. USUARIO INACTIVO
+        // 5. USUARIO INACTIVO
         // =================================================
         //
-        // No permitimos autenticar cuentas inactivas.
-        // Tampoco revelamos ese estado al público.
+        // Tampoco revelamos públicamente que la cuenta
+        // se encuentra desactivada.
         // =================================================
 
-        if (!Boolean.TRUE.equals(usuario.getActivo())) {
+        if (!Boolean.TRUE.equals(
+                usuario.getActivo()
+        )) {
 
             return resultadoCredencialesIncorrectas(
+                    politica,
                     MAXIMO_INTENTOS - 1
             );
         }
 
 
         // =================================================
-        // 5. COMPROBAR BLOQUEO ACTUAL
+        // 6. COMPROBAR BLOQUEO VIGENTE
         // =================================================
 
         OffsetDateTime ahora =
                 OffsetDateTime.now();
+
 
         OffsetDateTime bloqueadoHasta =
                 usuario.getFechaBloqueoHasta();
@@ -169,25 +198,25 @@ public class AutenticacionServiceImpl
 
         if (bloqueadoHasta != null) {
 
-            /*
-             * Todavía se encuentra bloqueado.
-             */
-            if (bloqueadoHasta.isAfter(ahora)) {
+            // ---------------------------------------------
+            // BLOQUEO AÚN VIGENTE
+            // ---------------------------------------------
+
+            if (bloqueadoHasta.isAfter(
+                    ahora
+            )) {
 
                 return resultadoCuentaBloqueada(
+                        politica,
                         bloqueadoHasta
                 );
             }
 
 
-            /*
-             * El bloqueo ya venció.
-             *
-             * Reiniciamos:
-             *
-             * intentos = 0
-             * fechaBloqueoHasta = null
-             */
+            // ---------------------------------------------
+            // BLOQUEO YA VENCIDO
+            // ---------------------------------------------
+
             usuario.setIntentosFallidosLogin(
                     (short) 0
             );
@@ -196,6 +225,7 @@ public class AutenticacionServiceImpl
                     null
             );
 
+
             usuarioService.guardar(
                     usuario
             );
@@ -203,7 +233,7 @@ public class AutenticacionServiceImpl
 
 
         // =================================================
-        // 6. VALIDAR CONTRASEÑA
+        // 7. VALIDAR CONTRASEÑA
         // =================================================
 
         boolean contrasenaCorrecta =
@@ -214,20 +244,24 @@ public class AutenticacionServiceImpl
 
 
         // =================================================
-        // 7. FA06 / FA07 - CONTRASEÑA INCORRECTA
+        // 8. CONTRASEÑA INCORRECTA
         // =================================================
 
         if (!contrasenaCorrecta) {
 
             return procesarIntentoFallido(
-                    usuario
+                    usuario,
+                    politica
             );
         }
 
 
         // =================================================
-        // 8. CREDENCIALES CORRECTAS
-        // REINICIAR INTENTOS
+        // 9. CONTRASEÑA CORRECTA
+        // =================================================
+        //
+        // Los intentos fallidos son consecutivos.
+        // Una autenticación correcta los reinicia.
         // =================================================
 
         usuario.setIntentosFallidosLogin(
@@ -238,36 +272,37 @@ public class AutenticacionServiceImpl
                 null
         );
 
+
         usuarioService.guardar(
                 usuario
         );
 
 
         // =================================================
-        // 9. FA09 - VALIDAR ROL PACIENTE
+        // 10. VALIDAR POLÍTICA DEL PORTAL
+        // =================================================
+        //
+        // Ejemplos:
+        //
+        // PACIENTE:
+        // solamente rol Paciente.
+        //
+        // INTERNO:
+        // cualquiera de los roles internos permitidos.
         // =================================================
 
-        boolean esPaciente =
-                usuario.getRol() != null
-                        && usuario.getRol().getNombre() != null
-                        && ROL_PACIENTE.equalsIgnoreCase(
-                        usuario.getRol()
-                                .getNombre()
-                                .trim()
-                );
+        if (!politica.permiteAcceso(
+                usuario
+        )) {
 
-
-        if (!esPaciente) {
-
-            LoginResponse response =
+            LoginResponse respuesta =
                     new LoginResponse(
                             EstadoLogin.ROL_NO_AUTORIZADO,
 
-                            "Este acceso es exclusivo para pacientes. "
-                                    + "Si es personal del hospital, "
-                                    + "use el panel administrativo.",
+                            politica
+                                    .getMensajeRolNoAutorizado(),
 
-                            "/panel-administrativo",
+                            null,
 
                             null,
 
@@ -276,23 +311,27 @@ public class AutenticacionServiceImpl
 
 
             return new ResultadoAutenticacion(
-                    response,
+                    respuesta,
                     null
             );
         }
 
 
         // =================================================
-        // 10. FLUJO NORMAL
+        // 11. AUTENTICACIÓN EXITOSA
         // =================================================
 
-        LoginResponse response =
+        LoginResponse respuesta =
                 new LoginResponse(
                         EstadoLogin.AUTENTICADO,
 
-                        "Inicio de sesión exitoso.",
+                        politica
+                                .getMensajeAutenticacionExitosa(),
 
-                        "/paciente/dashboard",
+                        politica
+                                .getRedireccionExitosa(
+                                        usuario
+                                ),
 
                         null,
 
@@ -301,7 +340,7 @@ public class AutenticacionServiceImpl
 
 
         return new ResultadoAutenticacion(
-                response,
+                respuesta,
                 usuario
         );
     }
@@ -312,13 +351,16 @@ public class AutenticacionServiceImpl
     // =====================================================
 
     private ResultadoAutenticacion procesarIntentoFallido(
-            Usuario usuario
+            Usuario usuario,
+            PoliticaAutenticacion politica
     ) {
 
         int intentosActuales =
-                usuario.getIntentosFallidosLogin() == null
+                usuario.getIntentosFallidosLogin()
+                        == null
                         ? 0
-                        : usuario.getIntentosFallidosLogin();
+                        : usuario
+                        .getIntentosFallidosLogin();
 
 
         int nuevosIntentos =
@@ -331,13 +373,15 @@ public class AutenticacionServiceImpl
 
 
         // =================================================
-        // FA07 - QUINTO INTENTO
+        // ALCANZÓ EL MÁXIMO
         // =================================================
 
-        if (nuevosIntentos >= MAXIMO_INTENTOS) {
+        if (nuevosIntentos
+                >= MAXIMO_INTENTOS) {
 
             OffsetDateTime bloqueadoHasta =
-                    OffsetDateTime.now()
+                    OffsetDateTime
+                            .now()
                             .plusMinutes(
                                     MINUTOS_BLOQUEO
                             );
@@ -354,13 +398,14 @@ public class AutenticacionServiceImpl
 
 
             return resultadoCuentaBloqueada(
+                    politica,
                     bloqueadoHasta
             );
         }
 
 
         // =================================================
-        // FA06 - TODAVÍA QUEDAN INTENTOS
+        // TODAVÍA QUEDAN INTENTOS
         // =================================================
 
         usuarioService.guardar(
@@ -374,28 +419,30 @@ public class AutenticacionServiceImpl
 
 
         return resultadoCredencialesIncorrectas(
+                politica,
                 intentosRestantes
         );
     }
 
 
     // =====================================================
-    // RESPUESTA FA06
+    // RESPUESTA: CREDENCIALES INCORRECTAS
     // =====================================================
 
     private ResultadoAutenticacion
     resultadoCredencialesIncorrectas(
+            PoliticaAutenticacion politica,
             int intentosRestantes
     ) {
 
-        LoginResponse response =
+        LoginResponse respuesta =
                 new LoginResponse(
                         EstadoLogin.CREDENCIALES_INCORRECTAS,
 
-                        "Usuario o contraseña incorrectos. "
-                                + "Intentos restantes: "
-                                + intentosRestantes
-                                + ".",
+                        politica
+                                .getMensajeCredencialesIncorrectas(
+                                        intentosRestantes
+                                ),
 
                         null,
 
@@ -406,27 +453,28 @@ public class AutenticacionServiceImpl
 
 
         return new ResultadoAutenticacion(
-                response,
+                respuesta,
                 null
         );
     }
 
 
     // =====================================================
-    // RESPUESTA FA07
+    // RESPUESTA: CUENTA BLOQUEADA
     // =====================================================
 
     private ResultadoAutenticacion
     resultadoCuentaBloqueada(
+            PoliticaAutenticacion politica,
             OffsetDateTime bloqueadoHasta
     ) {
 
-        LoginResponse response =
+        LoginResponse respuesta =
                 new LoginResponse(
                         EstadoLogin.CUENTA_BLOQUEADA,
 
-                        "Cuenta bloqueada temporalmente. "
-                                + "Intente de nuevo en 15 minutos.",
+                        politica
+                                .getMensajeCuentaBloqueada(),
 
                         null,
 
@@ -437,7 +485,7 @@ public class AutenticacionServiceImpl
 
 
         return new ResultadoAutenticacion(
-                response,
+                respuesta,
                 null
         );
     }
