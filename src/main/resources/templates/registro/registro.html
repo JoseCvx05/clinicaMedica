@@ -1,0 +1,598 @@
+<!DOCTYPE html>
+<html lang="es"
+      xmlns:th="http://www.thymeleaf.org">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>Registro de Paciente</title>
+
+    <!-- Bootstrap -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css"
+          rel="stylesheet">
+
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet"
+          href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css">
+
+</head>
+
+<body class="bg-light">
+
+
+<!-- ===================================================== -->
+<!-- ENCABEZADO                                            -->
+<!-- ===================================================== -->
+
+<nav class="navbar navbar-expand-lg bg-white border-bottom shadow-sm">
+
+    <div class="container">
+
+        <a class="navbar-brand fw-bold"
+           th:href="@{/}">
+
+            <i class="bi bi-hospital me-2"></i>
+
+            Sistema Hospitalario
+
+        </a>
+
+    </div>
+
+</nav>
+
+
+<!-- ===================================================== -->
+<!-- CONTENIDO                                             -->
+<!-- ===================================================== -->
+
+<main class="container py-5">
+
+
+    <div class="row justify-content-center">
+
+        <div class="col-12 col-lg-9 col-xl-8">
+
+
+            <div class="card border-0 shadow-sm">
+
+                <div class="card-body p-4 p-md-5">
+
+
+                    <!-- ================================= -->
+                    <!-- TÍTULO                            -->
+                    <!-- ================================= -->
+
+                    <div class="text-center mb-4">
+
+                        <div class="mb-3">
+
+                            <i class="bi bi-person-plus-fill fs-1 text-primary"></i>
+
+                        </div>
+
+                        <h1 class="h3 fw-bold mb-2">
+                            Crear cuenta de paciente
+                        </h1>
+
+                        <p class="text-secondary mb-0">
+                            Complete sus datos para registrarse
+                            en el Sistema Informático Hospitalario.
+                        </p>
+
+                    </div>
+
+
+                    <!-- ================================= -->
+                    <!-- ERROR GENERAL                     -->
+                    <!-- ================================= -->
+
+                    <div class="alert alert-danger"
+                         role="alert"
+                         th:if="${resultadoValidacion.tieneError('registro')}">
+
+                        <i class="bi bi-exclamation-triangle-fill me-2"></i>
+
+                        <span th:text="${resultadoValidacion.obtenerMensaje('registro')}">
+                            No fue posible completar el registro.
+                        </span>
+
+                    </div>
+
+
+                    <!-- ================================= -->
+                    <!-- FORMULARIO                        -->
+                    <!-- ================================= -->
+
+                    <form th:action="@{/registro}"
+                          th:object="${registro}"
+                          method="post"
+                          novalidate>
+
+
+                        <!-- CSRF -->
+
+                        <input type="hidden"
+                               th:if="${_csrf != null}"
+                               th:name="${_csrf.parameterName}"
+                               th:value="${_csrf.token}">
+
+
+                        <!-- ================================= -->
+                        <!-- NOMBRE COMPLETO                   -->
+                        <!-- ================================= -->
+
+                        <div class="mb-4">
+
+                            <label for="nombreCompleto"
+                                   class="form-label fw-semibold">
+
+                                Nombre completo
+                                <span class="text-danger">*</span>
+
+                            </label>
+
+                            <input type="text"
+                                   id="nombreCompleto"
+                                   class="form-control"
+                                   th:classappend="${resultadoValidacion.tieneError('nombreCompleto')} ? ' is-invalid'"
+                                   th:field="*{nombreCompleto}"
+                                   autocomplete="name">
+
+                            <div class="invalid-feedback"
+                                 th:if="${resultadoValidacion.tieneError('nombreCompleto')}"
+                                 th:text="${resultadoValidacion.obtenerMensaje('nombreCompleto')}">
+                            </div>
+
+                        </div>
+
+
+                        <!-- ================================= -->
+                        <!-- DPI                               -->
+                        <!-- ================================= -->
+
+                        <div class="mb-4">
+
+                            <label for="dpi"
+                                   class="form-label fw-semibold">
+
+                                DPI
+                                <span class="text-danger">*</span>
+
+                            </label>
+
+                            <input type="text"
+                                   id="dpi"
+                                   class="form-control"
+                                   th:classappend="${resultadoValidacion.tieneError('dpi')} ? ' is-invalid'"
+                                   th:field="*{dpi}"
+                                   inputmode="numeric"
+                                   autocomplete="off">
+
+                            <div class="invalid-feedback"
+                                 th:if="${resultadoValidacion.tieneError('dpi')}"
+                                 th:text="${resultadoValidacion.obtenerMensaje('dpi')}">
+                            </div>
+
+                            <div class="form-text">
+                                Ingrese los 13 dígitos de su DPI.
+                            </div>
+
+                        </div>
+
+
+                        <!-- ================================= -->
+                        <!-- NIT                               -->
+                        <!-- ================================= -->
+
+                        <div class="mb-4">
+
+                            <label for="nit"
+                                   class="form-label fw-semibold">
+
+                                NIT
+                                <span class="text-danger">*</span>
+
+                            </label>
+
+                            <input type="text"
+                                   id="nit"
+                                   class="form-control"
+                                   th:classappend="${resultadoValidacion.tieneError('nit')} ? ' is-invalid'"
+                                   th:field="*{nit}"
+                                   autocomplete="off">
+
+                            <div class="invalid-feedback"
+                                 th:if="${resultadoValidacion.tieneError('nit')}"
+                                 th:text="${resultadoValidacion.obtenerMensaje('nit')}">
+                            </div>
+
+                            <div class="form-text">
+                                Debe contener entre 8 y 9 caracteres alfanuméricos.
+                            </div>
+
+                        </div>
+
+
+                        <!-- ================================= -->
+                        <!-- TELÉFONO                          -->
+                        <!-- ================================= -->
+
+                        <div class="mb-4">
+
+                            <label for="telefono"
+                                   class="form-label fw-semibold">
+
+                                Número de teléfono
+                                <span class="text-danger">*</span>
+
+                            </label>
+
+                            <input type="text"
+                                   id="telefono"
+                                   class="form-control"
+                                   th:classappend="${resultadoValidacion.tieneError('telefono')} ? ' is-invalid'"
+                                   th:field="*{telefono}"
+                                   inputmode="numeric"
+                                   autocomplete="tel">
+
+                            <div class="invalid-feedback"
+                                 th:if="${resultadoValidacion.tieneError('telefono')}"
+                                 th:text="${resultadoValidacion.obtenerMensaje('telefono')}">
+                            </div>
+
+                        </div>
+
+
+                        <!-- ================================= -->
+                        <!-- SEGURO MÉDICO                     -->
+                        <!-- ================================= -->
+
+                        <div class="mb-4">
+
+                            <label for="numeroSeguro"
+                                   class="form-label fw-semibold">
+
+                                Número de afiliado del seguro médico
+
+                                <span class="text-secondary fw-normal">
+                                    (opcional)
+                                </span>
+
+                            </label>
+
+                            <input type="text"
+                                   id="numeroSeguro"
+                                   class="form-control"
+                                   th:classappend="${resultadoValidacion.tieneError('numeroSeguro')} ? ' is-invalid'"
+                                   th:field="*{numeroSeguro}"
+                                   autocomplete="off">
+
+                            <div class="invalid-feedback"
+                                 th:if="${resultadoValidacion.tieneError('numeroSeguro')}"
+                                 th:text="${resultadoValidacion.obtenerMensaje('numeroSeguro')}">
+                            </div>
+
+                        </div>
+
+
+                        <hr class="my-4">
+
+
+                        <!-- ================================= -->
+                        <!-- CORREO                            -->
+                        <!-- ================================= -->
+
+                        <div class="mb-4">
+
+                            <label for="correoElectronico"
+                                   class="form-label fw-semibold">
+
+                                Correo electrónico
+                                <span class="text-danger">*</span>
+
+                            </label>
+
+                            <input type="email"
+                                   id="correoElectronico"
+                                   class="form-control"
+                                   th:classappend="${resultadoValidacion.tieneError('correoElectronico')} ? ' is-invalid'"
+                                   th:field="*{correoElectronico}"
+                                   autocomplete="email">
+
+                            <div class="invalid-feedback"
+                                 th:if="${resultadoValidacion.tieneError('correoElectronico')}"
+                                 th:text="${resultadoValidacion.obtenerMensaje('correoElectronico')}">
+                            </div>
+
+                        </div>
+
+
+                        <!-- ================================= -->
+                        <!-- USUARIO                           -->
+                        <!-- ================================= -->
+
+                        <div class="mb-4">
+
+                            <label for="nombreUsuario"
+                                   class="form-label fw-semibold">
+
+                                Nombre de usuario
+                                <span class="text-danger">*</span>
+
+                            </label>
+
+                            <input type="text"
+                                   id="nombreUsuario"
+                                   class="form-control"
+                                   th:classappend="${resultadoValidacion.tieneError('nombreUsuario')} ? ' is-invalid'"
+                                   th:field="*{nombreUsuario}"
+                                   autocomplete="username">
+
+                            <div class="invalid-feedback"
+                                 th:if="${resultadoValidacion.tieneError('nombreUsuario')}"
+                                 th:text="${resultadoValidacion.obtenerMensaje('nombreUsuario')}">
+                            </div>
+
+                            <div class="form-text">
+                                Entre 8 y 9 caracteres alfanuméricos.
+                            </div>
+
+                        </div>
+
+
+                        <!-- ================================= -->
+                        <!-- CONTRASEÑA                        -->
+                        <!-- ================================= -->
+
+                        <div class="mb-4">
+
+                            <label for="contrasena"
+                                   class="form-label fw-semibold">
+
+                                Contraseña
+                                <span class="text-danger">*</span>
+
+                            </label>
+
+
+                            <div class="input-group has-validation">
+
+                                <input type="password"
+                                       id="contrasena"
+                                       class="form-control"
+                                       th:classappend="${resultadoValidacion.tieneError('contrasena')} ? ' is-invalid'"
+                                       th:field="*{contrasena}"
+                                       autocomplete="new-password">
+
+
+                                <button type="button"
+                                        class="btn btn-outline-secondary"
+                                        id="btnMostrarContrasena"
+                                        aria-label="Mostrar contraseña">
+
+                                    <i class="bi bi-eye"
+                                       id="iconoContrasena"></i>
+
+                                </button>
+
+
+                                <div class="invalid-feedback"
+                                     th:if="${resultadoValidacion.tieneError('contrasena')}"
+                                     th:text="${resultadoValidacion.obtenerMensaje('contrasena')}">
+                                </div>
+
+                            </div>
+
+
+                            <div class="form-text">
+                                La contraseña debe contener al menos
+                                12 caracteres.
+                            </div>
+
+                        </div>
+
+
+                        <!-- ================================= -->
+                        <!-- BOTONES                           -->
+                        <!-- ================================= -->
+
+                        <div class="row g-3 mt-4">
+
+
+                            <div class="col-12 col-md-6">
+
+                                <button type="button"
+                                        class="btn btn-outline-secondary w-100"
+                                        data-bs-toggle="modal"
+                                        data-bs-target="#modalVolverPortal">
+
+                                    <i class="bi bi-arrow-left me-2"></i>
+
+                                    Volver al portal
+
+                                </button>
+
+                            </div>
+
+
+                            <div class="col-12 col-md-6">
+
+                                <button type="submit"
+                                        class="btn btn-primary w-100">
+
+                                    <i class="bi bi-person-check-fill me-2"></i>
+
+                                    Registrarse
+
+                                </button>
+
+                            </div>
+
+
+                        </div>
+
+
+                    </form>
+
+
+                    <!-- ================================= -->
+                    <!-- LOGIN                             -->
+                    <!-- ================================= -->
+
+                    <div class="text-center mt-4">
+
+                        <span class="text-secondary">
+                            ¿Ya tiene una cuenta?
+                        </span>
+
+                        <a th:href="@{/login}"
+                           class="text-decoration-none fw-semibold">
+
+                            Iniciar sesión
+
+                        </a>
+
+                    </div>
+
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</main>
+
+
+<!-- ===================================================== -->
+<!-- FA01 - MODAL VOLVER AL PORTAL                         -->
+<!-- ===================================================== -->
+
+<div class="modal fade"
+     id="modalVolverPortal"
+     tabindex="-1"
+     aria-labelledby="tituloModalVolverPortal"
+     aria-hidden="true">
+
+    <div class="modal-dialog modal-dialog-centered">
+
+        <div class="modal-content">
+
+
+            <div class="modal-header">
+
+                <h2 class="modal-title fs-5"
+                    id="tituloModalVolverPortal">
+
+                    Confirmar cancelación
+
+                </h2>
+
+                <button type="button"
+                        class="btn-close"
+                        data-bs-dismiss="modal"
+                        aria-label="Cerrar">
+                </button>
+
+            </div>
+
+
+            <div class="modal-body">
+
+                Los datos ingresados en el formulario se descartarán.
+                ¿Desea regresar al portal?
+
+            </div>
+
+
+            <div class="modal-footer">
+
+                <button type="button"
+                        class="btn btn-secondary"
+                        data-bs-dismiss="modal">
+
+                    Cancelar
+
+                </button>
+
+
+                <a th:href="@{/}"
+                   class="btn btn-danger">
+
+                    Sí, volver al portal
+
+                </a>
+
+            </div>
+
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<!-- Bootstrap JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
+
+
+<!-- ===================================================== -->
+<!-- MOSTRAR / OCULTAR CONTRASEÑA                          -->
+<!-- ===================================================== -->
+
+<script>
+
+    document.addEventListener("DOMContentLoaded", function () {
+
+        const campoContrasena =
+            document.getElementById("contrasena");
+
+        const botonMostrar =
+            document.getElementById("btnMostrarContrasena");
+
+        const icono =
+            document.getElementById("iconoContrasena");
+
+
+        if (!campoContrasena ||
+            !botonMostrar ||
+            !icono) {
+
+            return;
+        }
+
+
+        botonMostrar.addEventListener("click", function () {
+
+            const oculta =
+                campoContrasena.type === "password";
+
+
+            campoContrasena.type =
+                oculta
+                    ? "text"
+                    : "password";
+
+
+            icono.className =
+                oculta
+                    ? "bi bi-eye-slash"
+                    : "bi bi-eye";
+
+        });
+
+    });
+
+</script>
+
+
+</body>
+</html>
