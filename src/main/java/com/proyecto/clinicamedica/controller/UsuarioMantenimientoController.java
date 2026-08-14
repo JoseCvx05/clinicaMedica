@@ -25,13 +25,15 @@ import org.springframework.ui.Model;
 
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
-import org.springframework.web.bind.annotation.PathVariable;
+
 import java.util.List;
 import java.util.Set;
+
 
 /**
  * =========================================================
@@ -42,28 +44,17 @@ import java.util.Set;
  *
  * Responsabilidades:
  *
- * - Mostrar listado.
- * - Recibir filtros.
+ * - Listar usuarios.
+ * - Buscar y filtrar usuarios.
  * - Mostrar formulario de creación.
- * - Procesar creación.
- * - Preparar datos para Thymeleaf.
+ * - Crear usuarios.
+ * - Mostrar formulario de edición.
+ * - Actualizar usuarios.
+ * - Preparar catálogos para Thymeleaf.
  *
- * NO realiza:
+ * La lógica de negocio permanece en:
  *
- * - Consultas directas a PostgreSQL.
- * - Cifrado.
- * - Hash.
- * - BCrypt.
- * - Validaciones de negocio.
- * - Auditoría.
- *
- * Estas responsabilidades pertenecen al Service.
- *
- * Seguridad:
- *
- * /admin/**
- *
- * requiere ROLE_ADMINISTRADOR mediante SecurityConfig.
+ * UsuarioMantenimientoService.
  *
  * =========================================================
  */
@@ -71,12 +62,12 @@ import java.util.Set;
 @RequestMapping("/admin/usuarios")
 public class UsuarioMantenimientoController {
 
+
     // =====================================================
-    // ROLES INTERNOS DISPONIBLES EN CU-01
+    // ROLES INTERNOS
     // =====================================================
 
-    private static final Set<String>
-            ROLES_INTERNOS =
+    private static final Set<String> ROLES_INTERNOS =
             Set.of(
                     "Médico",
                     "Enfermero",
@@ -155,10 +146,6 @@ public class UsuarioMantenimientoController {
 
         } catch (IllegalArgumentException ex) {
 
-            // =============================================
-            // RN-CU01-01
-            // =============================================
-
             model.addAttribute(
                     "errorBusqueda",
                     ex.getMessage()
@@ -204,17 +191,19 @@ public class UsuarioMantenimientoController {
 
 
         // =================================================
-        // CATÁLOGO DE ROLES
+        // ROLES
         // =================================================
 
         model.addAttribute(
                 "roles",
-                obtenerRolesInternos()
+                obtenerRolesFormulario(
+                        null
+                )
         );
 
 
         // =================================================
-        // CATÁLOGO DE SUCURSALES
+        // SUCURSALES
         // =================================================
 
         model.addAttribute(
@@ -239,7 +228,7 @@ public class UsuarioMantenimientoController {
 
 
         // =================================================
-        // INFORMACIÓN DE PAGINACIÓN
+        // PAGINACIÓN
         // =================================================
 
         model.addAttribute(
@@ -268,37 +257,331 @@ public class UsuarioMantenimientoController {
 
         return "admin/usuarios/listado";
     }
+
+
     // =====================================================
-    // CARGAR CATÁLOGOS DEL FORMULARIO
+    // FA01 - MOSTRAR FORMULARIO DE CREACIÓN
+    // =====================================================
+
+    @GetMapping("/nuevo")
+    public String mostrarFormularioNuevo(
+            Model model
+    ) {
+
+        UsuarioFormularioDTO formulario =
+                new UsuarioFormularioDTO();
+
+
+        formulario.setActivo(
+                true
+        );
+
+
+        model.addAttribute(
+                "usuarioFormulario",
+                formulario
+        );
+
+
+        model.addAttribute(
+                "modo",
+                "crear"
+        );
+
+
+        cargarCatalogosFormulario(
+                model
+        );
+
+
+        return "admin/usuarios/formulario";
+    }
+
+
+    // =====================================================
+    // FA01 - CREAR USUARIO
+    // =====================================================
+
+    @PostMapping("/nuevo")
+    public String crearUsuario(
+            @ModelAttribute("usuarioFormulario")
+            UsuarioFormularioDTO formulario,
+
+            Authentication authentication,
+
+            HttpServletRequest request,
+
+            Model model,
+
+            RedirectAttributes redirectAttributes
+    ) {
+
+        String ejecutor =
+                obtenerUsuarioAutenticado(
+                        authentication
+                );
+
+
+        String direccionIp =
+                obtenerDireccionIp(
+                        request
+                );
+
+
+        ResultadoValidacionUsuario resultado =
+                usuarioMantenimientoService
+                        .crearUsuario(
+                                formulario,
+                                ejecutor,
+                                direccionIp
+                        );
+
+
+        // =================================================
+        // ERRORES
+        // =================================================
+
+        if (resultado.tieneErrores()) {
+
+            /*
+             * Nunca devolvemos nuevamente la contraseña
+             * al navegador.
+             */
+            formulario.setContrasena(
+                    null
+            );
+
+
+            model.addAttribute(
+                    "resultadoValidacion",
+                    resultado
+            );
+
+
+            model.addAttribute(
+                    "modo",
+                    "crear"
+            );
+
+
+            cargarCatalogosFormulario(
+                    model
+            );
+
+
+            return "admin/usuarios/formulario";
+        }
+
+
+        // =================================================
+        // ÉXITO
+        // =================================================
+
+        redirectAttributes.addFlashAttribute(
+                "mensajeExito",
+                "Usuario creado correctamente."
+        );
+
+
+        return "redirect:/admin/usuarios";
+    }
+
+
+    // =====================================================
+    // FA04 - MOSTRAR FORMULARIO DE EDICIÓN
+    // =====================================================
+
+    @GetMapping("/{id}/editar")
+    public String mostrarFormularioEditar(
+            @PathVariable Integer id,
+
+            Model model,
+
+            RedirectAttributes redirectAttributes
+    ) {
+
+        try {
+
+            UsuarioFormularioDTO formulario =
+                    usuarioMantenimientoService
+                            .obtenerUsuarioParaEditar(
+                                    id
+                            );
+
+
+            model.addAttribute(
+                    "usuarioFormulario",
+                    formulario
+            );
+
+
+            model.addAttribute(
+                    "modo",
+                    "editar"
+            );
+
+
+            cargarCatalogosFormulario(
+                    model,
+                    formulario.getIdRol()
+            );
+
+
+            return "admin/usuarios/formulario";
+
+
+        } catch (IllegalArgumentException ex) {
+
+            redirectAttributes.addFlashAttribute(
+                    "mensajeError",
+                    ex.getMessage()
+            );
+
+
+            return "redirect:/admin/usuarios";
+        }
+    }
+
+
+    // =====================================================
+    // FA04 - ACTUALIZAR USUARIO
+    // =====================================================
+
+    @PostMapping("/{id}/editar")
+    public String actualizarUsuario(
+            @PathVariable Integer id,
+
+            @ModelAttribute("usuarioFormulario")
+            UsuarioFormularioDTO formulario,
+
+            Authentication authentication,
+
+            HttpServletRequest request,
+
+            Model model,
+
+            RedirectAttributes redirectAttributes
+    ) {
+
+        /*
+         * Siempre utilizamos el ID recibido en la URL.
+         *
+         * No confiamos en un ID enviado desde el formulario.
+         */
+        formulario.setId(
+                id
+        );
+
+
+        String ejecutor =
+                obtenerUsuarioAutenticado(
+                        authentication
+                );
+
+
+        String direccionIp =
+                obtenerDireccionIp(
+                        request
+                );
+
+
+        ResultadoValidacionUsuario resultado =
+                usuarioMantenimientoService
+                        .actualizarUsuario(
+                                formulario,
+                                ejecutor,
+                                direccionIp
+                        );
+
+
+        // =================================================
+        // ERRORES
+        // =================================================
+
+        if (resultado.tieneErrores()) {
+
+            /*
+             * Nunca devolvemos la contraseña nuevamente
+             * al navegador.
+             */
+            formulario.setContrasena(
+                    null
+            );
+
+
+            model.addAttribute(
+                    "resultadoValidacion",
+                    resultado
+            );
+
+
+            model.addAttribute(
+                    "modo",
+                    "editar"
+            );
+
+
+            cargarCatalogosFormulario(
+                    model,
+                    formulario.getIdRol()
+            );
+
+
+            return "admin/usuarios/formulario";
+        }
+
+
+        // =================================================
+        // ÉXITO
+        // =================================================
+
+        redirectAttributes.addFlashAttribute(
+                "mensajeExito",
+                "Usuario actualizado correctamente."
+        );
+
+
+        return "redirect:/admin/usuarios";
+    }
+
+
+    // =====================================================
+    // CARGAR CATÁLOGOS - CREACIÓN
     // =====================================================
 
     private void cargarCatalogosFormulario(
             Model model
     ) {
 
-        // =================================================
-        // ROLES INTERNOS
-        // =================================================
+        cargarCatalogosFormulario(
+                model,
+                null
+        );
+    }
+
+
+    // =====================================================
+    // CARGAR CATÁLOGOS - CREACIÓN / EDICIÓN
+    // =====================================================
+
+    private void cargarCatalogosFormulario(
+            Model model,
+            Integer idRolActual
+    ) {
 
         model.addAttribute(
                 "roles",
-                obtenerRolesInternos()
+                obtenerRolesFormulario(
+                        idRolActual
+                )
         );
 
-
-        // =================================================
-        // SUCURSALES ACTIVAS
-        // =================================================
 
         model.addAttribute(
                 "sucursales",
                 sucursalService.listarActivas()
         );
 
-
-        // =================================================
-        // ESPECIALIDADES ACTIVAS
-        // =================================================
 
         model.addAttribute(
                 "especialidades",
@@ -308,43 +591,84 @@ public class UsuarioMantenimientoController {
 
 
     // =====================================================
-    // OBTENER ROLES INTERNOS
+    // OBTENER ROLES PERMITIDOS
     // =====================================================
 
-    /**
-     * El catálogo Rol puede contener Paciente.
-     *
-     * CU-01 administra usuarios internos, por lo que
-     * solamente enviamos a la vista los roles permitidos.
-     *
-     * La capa Service vuelve a validar esto para evitar
-     * manipulación manual de la petición.
-     */
-    private List<Rol> obtenerRolesInternos() {
+    private List<Rol> obtenerRolesFormulario(
+            Integer idRolActual
+    ) {
 
         return rolService
                 .listarActivos()
                 .stream()
                 .filter(
-                        rol ->
-                                rol != null
-                                        && rol.getNombre() != null
-                                        && ROLES_INTERNOS
-                                        .stream()
-                                        .anyMatch(
-                                                permitido ->
-                                                        permitido
-                                                                .equalsIgnoreCase(
-                                                                        rol.getNombre()
-                                                                )
-                                        )
+                        rol -> {
+
+                            if (rol == null
+                                    || rol.getNombre() == null) {
+
+                                return false;
+                            }
+
+
+                            boolean esRolInterno =
+                                    ROLES_INTERNOS
+                                            .stream()
+                                            .anyMatch(
+                                                    permitido ->
+                                                            permitido
+                                                                    .equalsIgnoreCase(
+                                                                            rol.getNombre()
+                                                                    )
+                                            );
+
+
+                            boolean esRolActual =
+                                    idRolActual != null
+                                            && idRolActual.equals(
+                                            rol.getId()
+                                    );
+
+
+                            /*
+                             * CREAR:
+                             * solamente roles internos.
+                             *
+                             * EDITAR:
+                             * roles internos + rol actual.
+                             */
+                            return esRolInterno
+                                    || esRolActual;
+                        }
                 )
                 .toList();
     }
 
 
     // =====================================================
-    // OBTENER IP
+    // OBTENER USUARIO AUTENTICADO
+    // =====================================================
+
+    private String obtenerUsuarioAutenticado(
+            Authentication authentication
+    ) {
+
+        if (authentication == null
+                || authentication.getName() == null
+                || authentication.getName().isBlank()) {
+
+            throw new IllegalStateException(
+                    "No se pudo identificar al usuario autenticado."
+            );
+        }
+
+
+        return authentication.getName();
+    }
+
+
+    // =====================================================
+    // OBTENER DIRECCIÓN IP
     // =====================================================
 
     private String obtenerDireccionIp(
@@ -357,16 +681,6 @@ public class UsuarioMantenimientoController {
         }
 
 
-        /*
-         * En desarrollo local utilizamos directamente
-         * getRemoteAddr().
-         *
-         * No confiamos todavía en X-Forwarded-For enviado
-         * por el navegador.
-         *
-         * Cuando publiquemos detrás de Azure configuraremos
-         * correctamente los encabezados del proxy.
-         */
         String direccionIp =
                 request.getRemoteAddr();
 
@@ -396,7 +710,7 @@ public class UsuarioMantenimientoController {
 
 
     // =====================================================
-    // TAMAÑO SEGURO
+    // TAMAÑO DE PÁGINA SEGURO
     // =====================================================
 
     private int obtenerTamanioSeguro(
@@ -411,5 +725,111 @@ public class UsuarioMantenimientoController {
             default ->
                     20;
         };
+    }
+    // =====================================================
+// FA05 - ELIMINAR USUARIO
+// =====================================================
+
+    @PostMapping("/{id}/eliminar")
+    public String eliminarUsuario(
+            @PathVariable Integer id,
+
+            Authentication authentication,
+
+            HttpServletRequest request,
+
+            RedirectAttributes redirectAttributes
+    ) {
+
+        // =================================================
+        // USUARIO EJECUTOR
+        // =================================================
+
+        String ejecutor =
+                obtenerUsuarioAutenticado(
+                        authentication
+                );
+
+
+        // =================================================
+        // DIRECCIÓN IP
+        // =================================================
+
+        String direccionIp =
+                obtenerDireccionIp(
+                        request
+                );
+
+
+        // =================================================
+        // OBTENER NOMBRE ANTES DE ELIMINAR
+        // =================================================
+
+        String nombreUsuarioEliminado;
+
+        try {
+
+            nombreUsuarioEliminado =
+                    usuarioMantenimientoService
+                            .obtenerUsuarioParaEditar(
+                                    id
+                            )
+                            .getNombreUsuario();
+
+        } catch (IllegalArgumentException ex) {
+
+            redirectAttributes.addFlashAttribute(
+                    "mensajeError",
+                    ex.getMessage()
+            );
+
+            return "redirect:/admin/usuarios";
+        }
+
+
+        // =================================================
+        // ELIMINACIÓN LÓGICA
+        // =================================================
+
+        ResultadoValidacionUsuario resultado =
+                usuarioMantenimientoService
+                        .eliminarUsuario(
+                                id,
+                                ejecutor,
+                                direccionIp
+                        );
+
+
+        // =================================================
+        // ERROR
+        // =================================================
+
+        if (resultado.tieneErrores()) {
+
+            redirectAttributes.addFlashAttribute(
+                    "mensajeError",
+                    resultado.obtenerMensaje(
+                            "usuario"
+                    )
+            );
+
+
+            return "redirect:/admin/usuarios";
+        }
+
+
+        // =================================================
+        // ÉXITO
+        // =================================================
+
+        redirectAttributes.addFlashAttribute(
+                "mensajeExito",
+                "El usuario "
+                        + nombreUsuarioEliminado
+                        + " ha sido eliminado correctamente."
+        );
+
+
+        return "redirect:/admin/usuarios";
     }
 }

@@ -1,55 +1,145 @@
 package com.proyecto.clinicamedica.service;
 
+import com.proyecto.clinicamedica.config.CacheConfig;
 import com.proyecto.clinicamedica.entity.Sucursal;
+import com.proyecto.clinicamedica.repository.SucursalRepository;
+
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
+
 
 /**
  * =========================================================
  * SERVICIO: SUCURSAL
  * =========================================================
  *
- * Define las operaciones disponibles para trabajar
- * con el catálogo de sucursales del sistema.
+ * Gestiona las consultas relacionadas con el catálogo
+ * de sucursales.
  *
- * Las demás capas dependerán de esta interfaz y no
- * directamente de una implementación concreta.
+ * Responsabilidades:
  *
- * Permite aplicar:
+ * - Obtener sucursales activas.
+ * - Buscar sucursales activas por ID.
+ * - Buscar sucursales activas por nombre.
+ * - Verificar existencia de sucursales activas.
+ * - Mantener en caché el catálogo de sucursales.
  *
- * - Abstracción
- * - Polimorfismo
- * - Inversión de dependencias (SOLID)
  * =========================================================
  */
-public interface SucursalService {
+@Service
+@Transactional(readOnly = true)
+public class SucursalService {
+
+
+    // =====================================================
+    // DEPENDENCIA
+    // =====================================================
+
+    private final SucursalRepository sucursalRepository;
+
+
+    // =====================================================
+    // CONSTRUCTOR
+    // =====================================================
+
+    public SucursalService(
+            SucursalRepository sucursalRepository
+    ) {
+
+        this.sucursalRepository =
+                sucursalRepository;
+    }
+
+
+    // =====================================================
+    // LISTAR SUCURSALES ACTIVAS
+    // =====================================================
 
     /**
-     * Obtiene todas las sucursales activas
-     * ordenadas alfabéticamente.
+     * La primera llamada consulta PostgreSQL.
      *
-     * Este resultado será almacenado en caché.
+     * Las llamadas posteriores utilizan la caché
+     * mientras esta continúe vigente.
      */
-    List<Sucursal> listarActivas();
+    @Cacheable(CacheConfig.SUCURSALES)
+    public List<Sucursal> listarActivas() {
+
+        return sucursalRepository
+                .findByActivoTrueOrderByNombreAsc();
+    }
 
 
-    /**
-     * Busca una sucursal activa por su identificador.
-     */
-    Optional<Sucursal> buscarActivaPorId(Integer id);
+    // =====================================================
+    // BUSCAR ACTIVA POR ID
+    // =====================================================
+
+    public Optional<Sucursal> buscarActivaPorId(
+            Integer id
+    ) {
+
+        if (id == null) {
+
+            return Optional.empty();
+        }
 
 
-    /**
-     * Busca una sucursal activa por nombre,
-     * ignorando mayúsculas y minúsculas.
-     */
-    Optional<Sucursal> buscarActivaPorNombre(String nombre);
+        return sucursalRepository
+                .findById(
+                        id
+                )
+                .filter(
+                        sucursal ->
+                                Boolean.TRUE.equals(
+                                        sucursal.getActivo()
+                                )
+                );
+    }
 
 
-    /**
-     * Comprueba si existe una sucursal activa
-     * con determinado nombre.
-     */
-    boolean existeActivaPorNombre(String nombre);
+    // =====================================================
+    // BUSCAR ACTIVA POR NOMBRE
+    // =====================================================
+
+    public Optional<Sucursal> buscarActivaPorNombre(
+            String nombre
+    ) {
+
+        if (nombre == null
+                || nombre.isBlank()) {
+
+            return Optional.empty();
+        }
+
+
+        return sucursalRepository
+                .findByNombreIgnoreCaseAndActivoTrue(
+                        nombre.trim()
+                );
+    }
+
+
+    // =====================================================
+    // EXISTE SUCURSAL ACTIVA POR NOMBRE
+    // =====================================================
+
+    public boolean existeActivaPorNombre(
+            String nombre
+    ) {
+
+        if (nombre == null
+                || nombre.isBlank()) {
+
+            return false;
+        }
+
+
+        return sucursalRepository
+                .existsByNombreIgnoreCaseAndActivoTrue(
+                        nombre.trim()
+                );
+    }
 }

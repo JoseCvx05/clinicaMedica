@@ -1,53 +1,487 @@
 package com.proyecto.clinicamedica.service;
 
+import com.proyecto.clinicamedica.dto.EstadoLogin;
+import com.proyecto.clinicamedica.dto.LoginResponse;
+import com.proyecto.clinicamedica.entity.Usuario;
+
+import com.proyecto.clinicamedica.security.PoliticaAutenticacion;
+import com.proyecto.clinicamedica.security.PoliticaAutenticacionResolver;
 import com.proyecto.clinicamedica.security.ResultadoAutenticacion;
 import com.proyecto.clinicamedica.security.TipoAcceso;
+
+import org.springframework.security.crypto.password.PasswordEncoder;
+
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.time.OffsetDateTime;
+import java.util.Optional;
+
 
 /**
  * =========================================================
  * SERVICIO: AUTENTICACIÓN
  * =========================================================
  *
- * Define el contrato común para autenticar usuarios
- * del sistema.
- *
- * La misma lógica servirá para:
+ * Contiene la lógica común de autenticación utilizada por:
  *
  * - Portal de pacientes.
  * - Portal del personal interno.
  *
- * Las diferencias entre ambos accesos serán resueltas
+ * Las diferencias entre ambos portales se resuelven
  * mediante PoliticaAutenticacion.
+ *
+ * Políticas actuales:
+ *
+ * - PoliticaPaciente
+ * - PoliticaInterna
+ *
  * =========================================================
  */
-public interface AutenticacionService {
+@Service
+public class AutenticacionService {
+
+
+    // =====================================================
+    // REGLAS DE BLOQUEO
+    // =====================================================
 
     /**
-     * Autentica a un usuario según el tipo de portal
-     * desde el cual intenta ingresar.
-     *
-     * La implementación deberá:
-     *
-     * 1. Resolver la política correspondiente.
-     * 2. Buscar el usuario.
-     * 3. Validar estado activo.
-     * 4. Revisar bloqueo vigente.
-     * 5. Validar contraseña.
-     * 6. Incrementar intentos si falla.
-     * 7. Aplicar bloqueo si corresponde.
-     * 8. Restablecer intentos si acierta.
-     * 9. Validar si el usuario puede usar ese portal.
-     * 10. Retornar el resultado.
-     *
-     * @param nombreUsuario nombre de usuario ingresado
-     * @param contrasena contraseña ingresada
-     * @param tipoAcceso portal desde el que inicia sesión
-     *
-     * @return resultado de autenticación
+     * Máximo de intentos consecutivos permitidos.
      */
-    ResultadoAutenticacion autenticar(
+    private static final int MAXIMO_INTENTOS =
+            5;
+
+
+    /**
+     * Duración del bloqueo temporal.
+     */
+    private static final int MINUTOS_BLOQUEO =
+            15;
+
+
+    // =====================================================
+    // DEPENDENCIAS
+    // =====================================================
+
+    private final UsuarioService usuarioService;
+
+    private final PasswordEncoder passwordEncoder;
+
+    private final PoliticaAutenticacionResolver
+            politicaAutenticacionResolver;
+
+
+    // =====================================================
+    // CONSTRUCTOR
+    // =====================================================
+
+    public AutenticacionService(
+            UsuarioService usuarioService,
+            PasswordEncoder passwordEncoder,
+            PoliticaAutenticacionResolver
+                    politicaAutenticacionResolver
+    ) {
+
+        this.usuarioService =
+                usuarioService;
+
+        this.passwordEncoder =
+                passwordEncoder;
+
+        this.politicaAutenticacionResolver =
+                politicaAutenticacionResolver;
+    }
+
+
+    // =====================================================
+    // AUTENTICAR
+    // =====================================================
+
+    @Transactional
+    public ResultadoAutenticacion autenticar(
             String nombreUsuario,
             String contrasena,
             TipoAcceso tipoAcceso
-    );
+    ) {
+
+        // =================================================
+        // 1. RESOLVER POLÍTICA DEL PORTAL
+        // =================================================
+
+        PoliticaAutenticacion politica =
+                politicaAutenticacionResolver
+                        .resolver(
+                                tipoAcceso
+                        );
+
+
+        // =================================================
+        // 2. VALIDACIÓN DEFENSIVA
+        // =================================================
+
+        if (nombreUsuario == null
+                || nombreUsuario.isBlank()
+                || contrasena == null
+                || contrasena.isBlank()) {
+
+            return resultadoCredencialesIncorrectas(
+                    politica,
+                    MAXIMO_INTENTOS - 1
+            );
+        }
+
+
+        String usuarioNormalizado =
+                nombreUsuario.trim();
+
+
+        // =================================================
+        // 3. BUSCAR USUARIO
+        // =================================================
+
+        Optional<Usuario> usuarioOptional =
+                usuarioService
+                        .buscarPorNombreUsuario(
+                                usuarioNormalizado
+                        );
+
+
+        // =================================================
+        // 4. USUARIO INEXISTENTE
+        // =================================================
+        //
+        // No se revela públicamente si el nombre de
+        // usuario existe o no.
+        // =================================================
+
+        if (usuarioOptional.isEmpty()) {
+
+            return resultadoCredencialesIncorrectas(
+                    politica,
+                    MAXIMO_INTENTOS - 1
+            );
+        }
+
+
+        Usuario usuario =
+                usuarioOptional.get();
+
+
+        // =================================================
+        // 5. USUARIO INACTIVO
+        // =================================================
+        //
+        // Tampoco se revela que la cuenta existe pero
+        // está desactivada.
+        // =================================================
+
+        if (!Boolean.TRUE.equals(
+                usuario.getActivo()
+        )) {
+
+            return resultadoCredencialesIncorrectas(
+                    politica,
+                    MAXIMO_INTENTOS - 1
+            );
+        }
+
+
+        // =================================================
+        // 6. COMPROBAR BLOQUEO
+        // =================================================
+
+        OffsetDateTime ahora =
+                OffsetDateTime.now();
+
+
+        OffsetDateTime bloqueadoHasta =
+                usuario.getFechaBloqueoHasta();
+
+
+        if (bloqueadoHasta != null) {
+
+            // ---------------------------------------------
+            // BLOQUEO TODAVÍA ACTIVO
+            // ---------------------------------------------
+
+            if (bloqueadoHasta.isAfter(
+                    ahora
+            )) {
+
+                return resultadoCuentaBloqueada(
+                        politica,
+                        bloqueadoHasta
+                );
+            }
+
+
+            // ---------------------------------------------
+            // BLOQUEO VENCIDO
+            // ---------------------------------------------
+
+            usuario.setIntentosFallidosLogin(
+                    (short) 0
+            );
+
+            usuario.setFechaBloqueoHasta(
+                    null
+            );
+
+
+            usuarioService.guardar(
+                    usuario
+            );
+        }
+
+
+        // =================================================
+        // 7. VALIDAR CONTRASEÑA
+        // =================================================
+
+        boolean contrasenaCorrecta =
+                passwordEncoder.matches(
+                        contrasena,
+                        usuario.getContrasenaHash()
+                );
+
+
+        // =================================================
+        // 8. CONTRASEÑA INCORRECTA
+        // =================================================
+
+        if (!contrasenaCorrecta) {
+
+            return procesarIntentoFallido(
+                    usuario,
+                    politica
+            );
+        }
+
+
+        // =================================================
+        // 9. CONTRASEÑA CORRECTA
+        // =================================================
+        //
+        // Los intentos son consecutivos.
+        //
+        // Una autenticación correcta reinicia el contador.
+        // =================================================
+
+        usuario.setIntentosFallidosLogin(
+                (short) 0
+        );
+
+        usuario.setFechaBloqueoHasta(
+                null
+        );
+
+
+        usuarioService.guardar(
+                usuario
+        );
+
+
+        // =================================================
+        // 10. VALIDAR POLÍTICA DEL PORTAL
+        // =================================================
+
+        if (!politica.permiteAcceso(
+                usuario
+        )) {
+
+            LoginResponse respuesta =
+                    new LoginResponse(
+                            EstadoLogin.ROL_NO_AUTORIZADO,
+
+                            politica
+                                    .getMensajeRolNoAutorizado(),
+
+                            null,
+
+                            null,
+
+                            null
+                    );
+
+
+            return new ResultadoAutenticacion(
+                    respuesta,
+                    null
+            );
+        }
+
+
+        // =================================================
+        // 11. AUTENTICACIÓN EXITOSA
+        // =================================================
+
+        LoginResponse respuesta =
+                new LoginResponse(
+                        EstadoLogin.AUTENTICADO,
+
+                        politica
+                                .getMensajeAutenticacionExitosa(),
+
+                        politica
+                                .getRedireccionExitosa(
+                                        usuario
+                                ),
+
+                        null,
+
+                        null
+                );
+
+
+        return new ResultadoAutenticacion(
+                respuesta,
+                usuario
+        );
+    }
+
+
+    // =====================================================
+    // PROCESAR INTENTO FALLIDO
+    // =====================================================
+
+    private ResultadoAutenticacion procesarIntentoFallido(
+            Usuario usuario,
+            PoliticaAutenticacion politica
+    ) {
+
+        int intentosActuales =
+                usuario.getIntentosFallidosLogin()
+                        == null
+                        ? 0
+                        : usuario
+                        .getIntentosFallidosLogin();
+
+
+        int nuevosIntentos =
+                intentosActuales + 1;
+
+
+        usuario.setIntentosFallidosLogin(
+                (short) nuevosIntentos
+        );
+
+
+        // =================================================
+        // ALCANZÓ EL MÁXIMO DE INTENTOS
+        // =================================================
+
+        if (nuevosIntentos
+                >= MAXIMO_INTENTOS) {
+
+            OffsetDateTime bloqueadoHasta =
+                    OffsetDateTime
+                            .now()
+                            .plusMinutes(
+                                    MINUTOS_BLOQUEO
+                            );
+
+
+            usuario.setFechaBloqueoHasta(
+                    bloqueadoHasta
+            );
+
+
+            usuarioService.guardar(
+                    usuario
+            );
+
+
+            return resultadoCuentaBloqueada(
+                    politica,
+                    bloqueadoHasta
+            );
+        }
+
+
+        // =================================================
+        // TODAVÍA QUEDAN INTENTOS
+        // =================================================
+
+        usuarioService.guardar(
+                usuario
+        );
+
+
+        int intentosRestantes =
+                MAXIMO_INTENTOS
+                        - nuevosIntentos;
+
+
+        return resultadoCredencialesIncorrectas(
+                politica,
+                intentosRestantes
+        );
+    }
+
+
+    // =====================================================
+    // RESPUESTA: CREDENCIALES INCORRECTAS
+    // =====================================================
+
+    private ResultadoAutenticacion
+    resultadoCredencialesIncorrectas(
+            PoliticaAutenticacion politica,
+            int intentosRestantes
+    ) {
+
+        LoginResponse respuesta =
+                new LoginResponse(
+                        EstadoLogin.CREDENCIALES_INCORRECTAS,
+
+                        politica
+                                .getMensajeCredencialesIncorrectas(
+                                        intentosRestantes
+                                ),
+
+                        null,
+
+                        intentosRestantes,
+
+                        null
+                );
+
+
+        return new ResultadoAutenticacion(
+                respuesta,
+                null
+        );
+    }
+
+
+    // =====================================================
+    // RESPUESTA: CUENTA BLOQUEADA
+    // =====================================================
+
+    private ResultadoAutenticacion
+    resultadoCuentaBloqueada(
+            PoliticaAutenticacion politica,
+            OffsetDateTime bloqueadoHasta
+    ) {
+
+        LoginResponse respuesta =
+                new LoginResponse(
+                        EstadoLogin.CUENTA_BLOQUEADA,
+
+                        politica
+                                .getMensajeCuentaBloqueada(),
+
+                        null,
+
+                        0,
+
+                        bloqueadoHasta
+                );
+
+
+        return new ResultadoAutenticacion(
+                respuesta,
+                null
+        );
+    }
 }

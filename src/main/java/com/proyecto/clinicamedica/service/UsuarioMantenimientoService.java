@@ -4,7 +4,12 @@ import com.proyecto.clinicamedica.dto.ResultadoValidacionUsuario;
 import com.proyecto.clinicamedica.dto.UsuarioBusquedaDTO;
 import com.proyecto.clinicamedica.dto.UsuarioFormularioDTO;
 import com.proyecto.clinicamedica.dto.UsuarioListadoDTO;
+
 import org.springframework.data.domain.Page;
+
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 
 /**
  * =========================================================
@@ -13,103 +18,152 @@ import org.springframework.data.domain.Page;
  *
  * CU-01 - Mantenimiento de Usuarios.
  *
- * Operaciones:
+ * Funciona como fachada para las operaciones del módulo:
  *
  * - Listar y buscar usuarios.
  * - Crear usuarios.
- * - Consultar usuario para edición.
+ * - Obtener datos para edición.
  * - Actualizar usuarios.
- * - Posteriormente eliminación lógica.
+ * - Realizar eliminación lógica.
  *
+ * La lógica especializada continúa delegada en servicios
+ * pequeños mientras revisamos cuáles realmente conviene
+ * conservar.
  * =========================================================
  */
-public interface UsuarioMantenimientoService {
+@Service
+@Transactional(readOnly = true)
+public class UsuarioMantenimientoService {
+
+
+    // =====================================================
+    // DEPENDENCIAS
+    // =====================================================
+
+    private final UsuarioConsultaService
+            usuarioConsultaService;
+
+    private final UsuarioCreacionService
+            usuarioCreacionService;
+
+    private final UsuarioActualizacionService
+            usuarioActualizacionService;
+
+    private final UsuarioEliminacionService
+            usuarioEliminacionService;
+
+
+    // =====================================================
+    // CONSTRUCTOR
+    // =====================================================
+
+    public UsuarioMantenimientoService(
+            UsuarioConsultaService usuarioConsultaService,
+            UsuarioCreacionService usuarioCreacionService,
+            UsuarioActualizacionService usuarioActualizacionService,
+            UsuarioEliminacionService usuarioEliminacionService
+    ) {
+
+        this.usuarioConsultaService =
+                usuarioConsultaService;
+
+        this.usuarioCreacionService =
+                usuarioCreacionService;
+
+        this.usuarioActualizacionService =
+                usuarioActualizacionService;
+
+        this.usuarioEliminacionService =
+                usuarioEliminacionService;
+    }
+
 
     // =====================================================
     // LISTAR / BUSCAR
     // =====================================================
 
-    Page<UsuarioListadoDTO> listarUsuarios(
+    public Page<UsuarioListadoDTO> listarUsuarios(
             UsuarioBusquedaDTO busqueda
-    );
+    ) {
+
+        return usuarioConsultaService
+                .listarUsuarios(
+                        busqueda
+                );
+    }
 
 
     // =====================================================
-    // FA01 - CREAR
+    // FA01 - CREAR USUARIO
     // =====================================================
 
-    ResultadoValidacionUsuario crearUsuario(
+    @Transactional
+    public ResultadoValidacionUsuario crearUsuario(
             UsuarioFormularioDTO formulario,
             String nombreUsuarioEjecutor,
             String direccionIp
-    );
+    ) {
+
+        return usuarioCreacionService
+                .crear(
+                        formulario,
+                        nombreUsuarioEjecutor,
+                        direccionIp
+                );
+    }
 
 
     // =====================================================
     // FA04 - OBTENER USUARIO PARA EDITAR
     // =====================================================
 
-    /**
-     * Recupera los datos del usuario y los prepara
-     * para mostrarlos en el formulario de edición.
-     *
-     * El Service será responsable de:
-     *
-     * - Buscar el usuario por ID.
-     * - Convertir Entity -> DTO.
-     * - Descifrar DPI.
-     * - Descifrar NIT.
-     * - NO enviar contrasenaHash.
-     *
-     * La contraseña siempre llegará vacía al formulario.
-     *
-     * @param id identificador del usuario
-     *
-     * @return datos preparados para edición
-     */
-    UsuarioFormularioDTO obtenerUsuarioParaEditar(
+    public UsuarioFormularioDTO obtenerUsuarioParaEditar(
             Integer id
-    );
+    ) {
+
+        return usuarioConsultaService
+                .obtenerUsuarioParaEditar(
+                        id
+                );
+    }
 
 
     // =====================================================
-    // FA04 - ACTUALIZAR
+    // FA04 - ACTUALIZAR USUARIO
     // =====================================================
 
-    /**
-     * Actualiza un usuario existente.
-     *
-     * Debe:
-     *
-     * 1. Validar el formulario.
-     * 2. Validar que el usuario exista.
-     * 3. Validar duplicados excluyendo su propio ID.
-     * 4. Validar Rol, Sucursal y Especialidad.
-     * 5. Actualizar contraseña solamente si se ingresó
-     *    una nueva.
-     * 6. Volver a cifrar DPI/NIT cuando corresponda.
-     * 7. Actualizar modificadoPor.
-     * 8. Registrar valores anteriores y nuevos
-     *    en bitacora_auditoria.
-     *
-     * @param formulario datos modificados
-     * @param nombreUsuarioEjecutor administrador autenticado
-     * @param direccionIp dirección IP
-     *
-     * @return resultado de validación
-     */
-    ResultadoValidacionUsuario actualizarUsuario(
+    @Transactional
+    public ResultadoValidacionUsuario actualizarUsuario(
             UsuarioFormularioDTO formulario,
             String nombreUsuarioEjecutor,
             String direccionIp
-    );
-    // =====================================================
-// FA05 - ELIMINAR USUARIO
-// =====================================================
+    ) {
 
-    ResultadoValidacionUsuario eliminarUsuario(
+        return usuarioActualizacionService
+                .actualizar(
+                        formulario,
+                        nombreUsuarioEjecutor,
+                        direccionIp
+                );
+    }
+
+
+    // =====================================================
+    // FA05 - ELIMINACIÓN LÓGICA
+    // =====================================================
+
+    @Transactional
+    public ResultadoValidacionUsuario eliminarUsuario(
             Integer idUsuario,
             String nombreUsuarioEjecutor,
             String direccionIp
-    );
+    ) {
+
+        return usuarioEliminacionService
+                .eliminar(
+                        idUsuario,
+                        nombreUsuarioEjecutor,
+                        direccionIp
+                );
+    }
 }

@@ -262,9 +262,32 @@ public class SecurityConfig {
                 .logout(
                         logout -> logout
 
-                                .logoutUrl(
-                                        "/logout"
+                                // =========================================
+                                // ACEPTAR LOS DOS ENDPOINTS DE LOGOUT
+                                // =========================================
+
+                                .logoutRequestMatcher(
+                                        request -> {
+
+                                            if (!"POST".equalsIgnoreCase(
+                                                    request.getMethod()
+                                            )) {
+
+                                                return false;
+                                            }
+
+                                            String ruta =
+                                                    request.getServletPath();
+
+                                            return "/logout".equals(ruta)
+                                                    || "/logout-interno".equals(ruta);
+                                        }
                                 )
+
+
+                                // =========================================
+                                // ELIMINAR COOKIE JWT
+                                // =========================================
 
                                 .addLogoutHandler(
                                         (
@@ -283,13 +306,42 @@ public class SecurityConfig {
                                         }
                                 )
 
-                                .logoutSuccessUrl(
-                                        "/"
+
+                                // =========================================
+                                // REDIRECCIÓN DESPUÉS DEL LOGOUT
+                                // =========================================
+
+                                .logoutSuccessHandler(
+                                        (
+                                                request,
+                                                response,
+                                                authentication
+                                        ) -> {
+
+                                            String ruta =
+                                                    request.getServletPath();
+
+
+                                            // LOGIN INTERNO
+                                            if ("/logout-interno".equals(ruta)) {
+
+                                                response.sendRedirect(
+                                                        "/login-interno"
+                                                );
+
+                                                return;
+                                            }
+
+
+                                            // LOGIN PACIENTE
+                                            response.sendRedirect(
+                                                    "/login"
+                                            );
+                                        }
                                 )
 
                                 .permitAll()
                 )
-
 
                 // =========================================
                 // LOGIN TRADICIONAL DESACTIVADO

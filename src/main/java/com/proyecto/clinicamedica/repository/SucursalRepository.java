@@ -30,7 +30,6 @@ public interface SucursalRepository
      */
     List<Sucursal> findByActivoTrueOrderByNombreAsc();
 
-
     /**
      * Busca una sucursal activa por nombre,
      * ignorando mayúsculas y minúsculas.
@@ -38,6 +37,7 @@ public interface SucursalRepository
     Optional<Sucursal> findByNombreIgnoreCaseAndActivoTrue(
             String nombre
     );
+
 
 
     /**

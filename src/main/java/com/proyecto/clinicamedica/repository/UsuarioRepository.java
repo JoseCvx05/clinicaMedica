@@ -4,9 +4,13 @@ import com.proyecto.clinicamedica.entity.Usuario;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.stereotype.Repository;
-
+import java.util.List;
 import java.util.Optional;
+import jakarta.persistence.LockModeType;
 
+import org.springframework.data.jpa.repository.Lock;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 /**
  * =========================================================
  * REPOSITORIO: USUARIO
@@ -77,6 +81,13 @@ public interface UsuarioRepository
      */
     Optional<Usuario> findByNombreUsuarioIgnoreCaseAndActivoTrue(
             String nombreUsuario
+    );
+
+    List<Usuario>
+    findByActivoTrueAndRol_NombreIgnoreCaseAndSucursal_IdAndEspecialidad_IdOrderByNombreCompletoAsc(
+            String nombreRol,
+            Integer idSucursal,
+            Integer idEspecialidad
     );
 
 
@@ -177,6 +188,28 @@ public interface UsuarioRepository
      */
     boolean existsByNitHashAndIdNot(
             String nitHash,
+            Integer id
+    );
+
+    // =====================================================
+// BLOQUEO PARA RESERVA DE HORARIOS
+// =====================================================
+
+    /**
+     * Obtiene al médico aplicando un bloqueo de escritura
+     * sobre su fila mientras dura la transacción.
+     *
+     * Se utiliza en CU-03 para evitar que dos pacientes
+     * reserven simultáneamente el mismo horario.
+     */
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("""
+        SELECT u
+        FROM Usuario u
+        WHERE u.id = :id
+        """)
+    Optional<Usuario> findByIdForUpdate(
+            @Param("id")
             Integer id
     );
 }

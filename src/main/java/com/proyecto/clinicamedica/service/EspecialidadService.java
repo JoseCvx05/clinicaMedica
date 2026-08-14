@@ -1,55 +1,145 @@
 package com.proyecto.clinicamedica.service;
 
+import com.proyecto.clinicamedica.config.CacheConfig;
 import com.proyecto.clinicamedica.entity.Especialidad;
+import com.proyecto.clinicamedica.repository.EspecialidadRepository;
+
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
+
 
 /**
  * =========================================================
  * SERVICIO: ESPECIALIDAD
  * =========================================================
  *
- * Define las operaciones disponibles para trabajar
- * con el catálogo de especialidades médicas.
+ * Gestiona las consultas relacionadas con el catálogo
+ * de especialidades médicas.
  *
- * Las demás capas dependerán de esta interfaz y no
- * directamente de una implementación concreta.
+ * Responsabilidades:
  *
- * Esto permite aplicar:
+ * - Obtener especialidades activas.
+ * - Buscar especialidades activas por ID.
+ * - Buscar especialidades activas por nombre.
+ * - Verificar existencia de especialidades activas.
+ * - Mantener en caché el catálogo de especialidades.
  *
- * - Abstracción
- * - Polimorfismo
- * - Inversión de dependencias (SOLID)
  * =========================================================
  */
-public interface EspecialidadService {
+@Service
+@Transactional(readOnly = true)
+public class EspecialidadService {
+
+
+    // =====================================================
+    // DEPENDENCIA
+    // =====================================================
+
+    private final EspecialidadRepository especialidadRepository;
+
+
+    // =====================================================
+    // CONSTRUCTOR
+    // =====================================================
+
+    public EspecialidadService(
+            EspecialidadRepository especialidadRepository
+    ) {
+
+        this.especialidadRepository =
+                especialidadRepository;
+    }
+
+
+    // =====================================================
+    // LISTAR ESPECIALIDADES ACTIVAS
+    // =====================================================
 
     /**
-     * Obtiene todas las especialidades activas
-     * ordenadas alfabéticamente.
+     * La primera llamada consulta PostgreSQL.
      *
-     * Esta información será almacenada en caché.
+     * Las llamadas posteriores utilizan la caché
+     * mientras esta continúe vigente.
      */
-    List<Especialidad> listarActivas();
+    @Cacheable(CacheConfig.ESPECIALIDADES)
+    public List<Especialidad> listarActivas() {
+
+        return especialidadRepository
+                .findByActivoTrueOrderByNombreAsc();
+    }
 
 
-    /**
-     * Busca una especialidad activa por identificador.
-     */
-    Optional<Especialidad> buscarActivaPorId(Integer id);
+    // =====================================================
+    // BUSCAR ACTIVA POR ID
+    // =====================================================
+
+    public Optional<Especialidad> buscarActivaPorId(
+            Integer id
+    ) {
+
+        if (id == null) {
+
+            return Optional.empty();
+        }
 
 
-    /**
-     * Busca una especialidad activa por nombre,
-     * ignorando mayúsculas y minúsculas.
-     */
-    Optional<Especialidad> buscarActivaPorNombre(String nombre);
+        return especialidadRepository
+                .findById(
+                        id
+                )
+                .filter(
+                        especialidad ->
+                                Boolean.TRUE.equals(
+                                        especialidad.getActivo()
+                                )
+                );
+    }
 
 
-    /**
-     * Verifica si existe una especialidad activa
-     * con determinado nombre.
-     */
-    boolean existeActivaPorNombre(String nombre);
+    // =====================================================
+    // BUSCAR ACTIVA POR NOMBRE
+    // =====================================================
+
+    public Optional<Especialidad> buscarActivaPorNombre(
+            String nombre
+    ) {
+
+        if (nombre == null
+                || nombre.isBlank()) {
+
+            return Optional.empty();
+        }
+
+
+        return especialidadRepository
+                .findByNombreIgnoreCaseAndActivoTrue(
+                        nombre.trim()
+                );
+    }
+
+
+    // =====================================================
+    // EXISTE ESPECIALIDAD ACTIVA POR NOMBRE
+    // =====================================================
+
+    public boolean existeActivaPorNombre(
+            String nombre
+    ) {
+
+        if (nombre == null
+                || nombre.isBlank()) {
+
+            return false;
+        }
+
+
+        return especialidadRepository
+                .existsByNombreIgnoreCaseAndActivoTrue(
+                        nombre.trim()
+                );
+    }
 }

@@ -3,50 +3,51 @@ package com.proyecto.clinicamedica.controller;
 import com.proyecto.clinicamedica.dto.EstadoLogin;
 import com.proyecto.clinicamedica.dto.LoginRequest;
 import com.proyecto.clinicamedica.dto.LoginResponse;
+
 import com.proyecto.clinicamedica.entity.Usuario;
+
 import com.proyecto.clinicamedica.security.ResultadoAutenticacion;
 import com.proyecto.clinicamedica.security.TipoAcceso;
+
 import com.proyecto.clinicamedica.service.AutenticacionService;
 import com.proyecto.clinicamedica.service.JwtCookieService;
 import com.proyecto.clinicamedica.service.JwtService;
+
 import jakarta.validation.Valid;
+
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
+
+import org.springframework.stereotype.Controller;
+
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.ResponseBody;
+
 
 /**
  * =========================================================
- * CONTROLADOR REST: LOGIN DEL PERSONAL INTERNO
+ * CONTROLADOR: LOGIN DEL PERSONAL INTERNO
  * =========================================================
  *
- * Atiende exclusivamente el inicio de sesión del
- * personal interno del hospital.
+ * Responsabilidades:
  *
- * Reutiliza:
+ * - Mostrar la vista de login interno.
+ * - Recibir las credenciales del personal.
+ * - Coordinar la autenticación interna.
+ * - Generar el JWT.
+ * - Crear la cookie HttpOnly.
  *
- * - AutenticacionService
- * - PasswordEncoder
- * - control de intentos
- * - bloqueo temporal
- * - JwtService
- * - JwtCookieService
- *
- * La diferencia respecto al login de pacientes es:
- *
- * TipoAcceso.INTERNO
- *
- * La autorización posterior de cada módulo se realiza
- * mediante los roles almacenados en el JWT.
+ * La lógica de autenticación permanece en
+ * AutenticacionService.
  * =========================================================
  */
-@RestController
-@RequestMapping("/api/interno")
+@Controller
 public class LoginInternoController {
+
 
     private final AutenticacionService
             autenticacionService;
@@ -76,10 +77,22 @@ public class LoginInternoController {
 
 
     // =====================================================
-    // LOGIN INTERNO
+    // MOSTRAR LOGIN INTERNO
     // =====================================================
 
-    @PostMapping("/login")
+    @GetMapping("/login-interno")
+    public String mostrarLoginInterno() {
+
+        return "login-interno";
+    }
+
+
+    // =====================================================
+    // PROCESAR LOGIN INTERNO
+    // =====================================================
+
+    @PostMapping("/api/interno/login")
+    @ResponseBody
     public ResponseEntity<LoginResponse> login(
             @Valid
             @RequestBody
@@ -87,7 +100,7 @@ public class LoginInternoController {
     ) {
 
         // =================================================
-        // 1. AUTENTICAR COMO USUARIO INTERNO
+        // AUTENTICAR COMO USUARIO INTERNO
         // =================================================
 
         ResultadoAutenticacion resultado =
@@ -103,48 +116,58 @@ public class LoginInternoController {
 
 
         // =================================================
-        // 2. CREDENCIALES INCORRECTAS
-        // RN-GLOBAL-007
+        // CREDENCIALES INCORRECTAS
         // =================================================
 
         if (respuesta.getEstado()
                 == EstadoLogin.CREDENCIALES_INCORRECTAS) {
 
             return ResponseEntity
-                    .status(HttpStatus.UNAUTHORIZED)
-                    .body(respuesta);
+                    .status(
+                            HttpStatus.UNAUTHORIZED
+                    )
+                    .body(
+                            respuesta
+                    );
         }
 
 
         // =================================================
-        // 3. CUENTA BLOQUEADA
-        // RN-GLOBAL-007
+        // CUENTA BLOQUEADA
         // =================================================
 
         if (respuesta.getEstado()
                 == EstadoLogin.CUENTA_BLOQUEADA) {
 
             return ResponseEntity
-                    .status(HttpStatus.UNAUTHORIZED)
-                    .body(respuesta);
+                    .status(
+                            HttpStatus.UNAUTHORIZED
+                    )
+                    .body(
+                            respuesta
+                    );
         }
 
 
         // =================================================
-        // 4. USUARIO NO PERTENECE AL PERSONAL INTERNO
+        // NO PERTENECE AL PERSONAL INTERNO
         // =================================================
 
         if (respuesta.getEstado()
                 == EstadoLogin.ROL_NO_AUTORIZADO) {
 
             return ResponseEntity
-                    .status(HttpStatus.FORBIDDEN)
-                    .body(respuesta);
+                    .status(
+                            HttpStatus.FORBIDDEN
+                    )
+                    .body(
+                            respuesta
+                    );
         }
 
 
         // =================================================
-        // 5. RESULTADO INESPERADO
+        // RESULTADO INESPERADO
         // =================================================
 
         if (respuesta.getEstado()
@@ -169,7 +192,7 @@ public class LoginInternoController {
 
 
         // =================================================
-        // 6. GENERAR JWT
+        // GENERAR JWT
         // =================================================
 
         String token =
@@ -179,7 +202,7 @@ public class LoginInternoController {
 
 
         // =================================================
-        // 7. CREAR COOKIE HTTPONLY
+        // CREAR COOKIE HTTPONLY
         // =================================================
 
         ResponseCookie cookie =
@@ -190,7 +213,7 @@ public class LoginInternoController {
 
 
         // =================================================
-        // 8. RESPUESTA
+        // RESPUESTA
         // =================================================
 
         return ResponseEntity

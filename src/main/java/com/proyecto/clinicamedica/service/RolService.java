@@ -1,56 +1,145 @@
 package com.proyecto.clinicamedica.service;
 
+import com.proyecto.clinicamedica.config.CacheConfig;
 import com.proyecto.clinicamedica.entity.Rol;
+import com.proyecto.clinicamedica.repository.RolRepository;
+
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
+
 
 /**
  * =========================================================
  * SERVICIO: ROL
  * =========================================================
  *
- * Define las operaciones disponibles para trabajar
- * con el catálogo de roles.
+ * Gestiona las consultas relacionadas con el catálogo
+ * de roles.
  *
- * Las clases que necesiten trabajar con roles dependerán
- * de esta interfaz y no de una implementación concreta.
+ * Responsabilidades:
  *
- * Esto permite aplicar:
+ * - Obtener roles activos.
+ * - Buscar roles activos por ID.
+ * - Buscar roles activos por nombre.
+ * - Verificar existencia de roles activos.
+ * - Mantener en caché el catálogo de roles.
  *
- * - Abstracción
- * - Polimorfismo
- * - Principio de inversión de dependencias (SOLID)
  * =========================================================
  */
-public interface RolService {
+@Service
+@Transactional(readOnly = true)
+public class RolService {
+
+
+    // =====================================================
+    // DEPENDENCIA
+    // =====================================================
+
+    private final RolRepository rolRepository;
+
+
+    // =====================================================
+    // CONSTRUCTOR
+    // =====================================================
+
+    public RolService(
+            RolRepository rolRepository
+    ) {
+
+        this.rolRepository =
+                rolRepository;
+    }
+
+
+    // =====================================================
+    // LISTAR ROLES ACTIVOS
+    // =====================================================
 
     /**
-     * Obtiene todos los roles activos ordenados
-     * alfabéticamente.
+     * La primera consulta obtiene los datos desde PostgreSQL.
      *
-     * Esta operación será utilizada por los catálogos
-     * almacenados en caché.
+     * Las siguientes llamadas utilizan la caché
+     * mientras esta continúe vigente.
      */
-    List<Rol> listarActivos();
+    @Cacheable(CacheConfig.ROLES)
+    public List<Rol> listarActivos() {
+
+        return rolRepository
+                .findByActivoTrueOrderByNombreAsc();
+    }
 
 
-    /**
-     * Busca un rol activo por su identificador.
-     */
-    Optional<Rol> buscarActivoPorId(Integer id);
+    // =====================================================
+    // BUSCAR ACTIVO POR ID
+    // =====================================================
+
+    public Optional<Rol> buscarActivoPorId(
+            Integer id
+    ) {
+
+        if (id == null) {
+
+            return Optional.empty();
+        }
 
 
-    /**
-     * Busca un rol activo por nombre ignorando
-     * mayúsculas y minúsculas.
-     */
-    Optional<Rol> buscarActivoPorNombre(String nombre);
+        return rolRepository
+                .findById(
+                        id
+                )
+                .filter(
+                        rol ->
+                                Boolean.TRUE.equals(
+                                        rol.getActivo()
+                                )
+                );
+    }
 
 
-    /**
-     * Verifica si existe un rol activo con
-     * determinado nombre.
-     */
-    boolean existeActivoPorNombre(String nombre);
+    // =====================================================
+    // BUSCAR ACTIVO POR NOMBRE
+    // =====================================================
+
+    public Optional<Rol> buscarActivoPorNombre(
+            String nombre
+    ) {
+
+        if (nombre == null
+                || nombre.isBlank()) {
+
+            return Optional.empty();
+        }
+
+
+        return rolRepository
+                .findByNombreIgnoreCaseAndActivoTrue(
+                        nombre.trim()
+                );
+    }
+
+
+    // =====================================================
+    // EXISTE ROL ACTIVO POR NOMBRE
+    // =====================================================
+
+    public boolean existeActivoPorNombre(
+            String nombre
+    ) {
+
+        if (nombre == null
+                || nombre.isBlank()) {
+
+            return false;
+        }
+
+
+        return rolRepository
+                .existsByNombreIgnoreCaseAndActivoTrue(
+                        nombre.trim()
+                );
+    }
 }

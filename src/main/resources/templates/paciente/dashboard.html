@@ -55,13 +55,17 @@
                 en el siguiente bloque de seguridad.
             -->
             <form th:action="@{/logout}"
-                  action="/logout"
                   method="post"
-                  class="logout-form">
+                  class="m-0">
+
+                <input type="hidden"
+                       th:name="${_csrf.parameterName}"
+                       th:value="${_csrf.token}">
 
                 <button type="submit"
-                        class="btn-logout">
+                        class="btn btn-outline-danger">
 
+                    <i class="bi bi-box-arrow-right me-1"></i>
                     Cerrar sesión
 
                 </button>
@@ -160,18 +164,12 @@
                         solicitar una cita médica.
                     </p>
 
-                    <!--
-                        La ruta se conectará cuando
-                        implementemos el caso de uso
-                        correspondiente.
-                    -->
-                    <button type="button"
-                            class="btn-primary"
-                            disabled>
+                    <a th:href="@{/paciente/citas/agendar}"
+                       class="btn-primary">
 
-                        Próximamente
+                        Agendar cita
 
-                    </button>
+                    </a>
 
                 </article>
 

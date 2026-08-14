@@ -1,114 +1,278 @@
 package com.proyecto.clinicamedica.service;
 
 import com.proyecto.clinicamedica.entity.Usuario;
+import com.proyecto.clinicamedica.repository.UsuarioRepository;
+
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Optional;
+
 
 /**
  * =========================================================
  * SERVICIO: USUARIO
  * =========================================================
  *
- * Define operaciones generales de consulta sobre usuarios.
+ * Contiene operaciones generales y reutilizables
+ * relacionadas con Usuario.
  *
- * IMPORTANTE:
+ * No contiene lógica específica de:
  *
- * Esta interfaz NO contiene la lógica de:
+ * - Contraseñas.
+ * - JWT.
+ * - Bloqueos.
+ * - Intentos fallidos.
+ * - Cifrado AES-GCM.
+ * - Generación de HMAC.
  *
- * - Validación de contraseña.
- * - Generación de JWT.
- * - Incremento de intentos fallidos.
- * - Bloqueo temporal.
- * - Cifrado o descifrado de DPI/NIT.
- *
- * Esas responsabilidades pertenecen a servicios
+ * Esas responsabilidades permanecen en servicios
  * especializados.
  *
- * Esto permite aplicar el principio de responsabilidad
- * única (SRP) de SOLID.
  * =========================================================
  */
-public interface UsuarioService {
-
-    /**
-     * Busca un usuario por su identificador.
-     */
-    Optional<Usuario> buscarPorId(Integer id);
+@Service
+@Transactional(readOnly = true)
+public class UsuarioService {
 
 
-    /**
-     * Busca un usuario utilizando el HMAC-SHA-256
-     * previamente generado a partir del DPI.
-     *
-     * El DPI original nunca se utiliza directamente
-     * para consultar PostgreSQL.
-     */
-    Optional<Usuario> buscarPorDpiHash(String dpiHash);
+    // =====================================================
+    // DEPENDENCIA
+    // =====================================================
+
+    private final UsuarioRepository usuarioRepository;
 
 
-    /**
-     * Busca únicamente un usuario activo mediante
-     * el hash/HMAC del DPI.
-     */
-    Optional<Usuario> buscarActivoPorDpiHash(String dpiHash);
+    // =====================================================
+    // CONSTRUCTOR
+    // =====================================================
+
+    public UsuarioService(
+            UsuarioRepository usuarioRepository
+    ) {
+
+        this.usuarioRepository =
+                usuarioRepository;
+    }
 
 
-    /**
-     * Busca un usuario por nombre de usuario,
-     * ignorando mayúsculas y minúsculas.
-     *
-     * Será utilizado posteriormente por el servicio
-     * de autenticación.
-     */
-    Optional<Usuario> buscarPorNombreUsuario(
+    // =====================================================
+    // BUSCAR POR ID
+    // =====================================================
+
+    public Optional<Usuario> buscarPorId(
+            Integer id
+    ) {
+
+        if (id == null) {
+
+            return Optional.empty();
+        }
+
+
+        return usuarioRepository
+                .findById(
+                        id
+                );
+    }
+
+
+    // =====================================================
+    // BUSCAR POR DPI HASH
+    // =====================================================
+
+    public Optional<Usuario> buscarPorDpiHash(
+            String dpiHash
+    ) {
+
+        if (dpiHash == null
+                || dpiHash.isBlank()) {
+
+            return Optional.empty();
+        }
+
+
+        return usuarioRepository
+                .findByDpiHash(
+                        dpiHash.trim()
+                );
+    }
+
+
+    // =====================================================
+    // BUSCAR ACTIVO POR DPI HASH
+    // =====================================================
+
+    public Optional<Usuario> buscarActivoPorDpiHash(
+            String dpiHash
+    ) {
+
+        if (dpiHash == null
+                || dpiHash.isBlank()) {
+
+            return Optional.empty();
+        }
+
+
+        return usuarioRepository
+                .findByDpiHashAndActivoTrue(
+                        dpiHash.trim()
+                );
+    }
+
+
+    // =====================================================
+    // BUSCAR POR NOMBRE DE USUARIO
+    // =====================================================
+
+    public Optional<Usuario> buscarPorNombreUsuario(
             String nombreUsuario
-    );
+    ) {
+
+        if (nombreUsuario == null
+                || nombreUsuario.isBlank()) {
+
+            return Optional.empty();
+        }
 
 
-    /**
-     * Busca únicamente un usuario activo mediante
-     * su nombre de usuario.
-     */
-    Optional<Usuario> buscarActivoPorNombreUsuario(
+        return usuarioRepository
+                .findByNombreUsuarioIgnoreCase(
+                        nombreUsuario.trim()
+                );
+    }
+
+
+    // =====================================================
+    // BUSCAR ACTIVO POR NOMBRE DE USUARIO
+    // =====================================================
+
+    public Optional<Usuario> buscarActivoPorNombreUsuario(
             String nombreUsuario
-    );
+    ) {
+
+        if (nombreUsuario == null
+                || nombreUsuario.isBlank()) {
+
+            return Optional.empty();
+        }
 
 
-    /**
-     * Comprueba si ya existe determinado nombre
-     * de usuario.
-     */
-    boolean existeNombreUsuario(String nombreUsuario);
+        return usuarioRepository
+                .findByNombreUsuarioIgnoreCaseAndActivoTrue(
+                        nombreUsuario.trim()
+                );
+    }
 
 
-    /**
-     * Comprueba si ya existe determinado correo
-     * electrónico.
-     */
-    boolean existeCorreoElectronico(String correoElectronico);
+    // =====================================================
+    // EXISTE NOMBRE DE USUARIO
+    // =====================================================
+
+    public boolean existeNombreUsuario(
+            String nombreUsuario
+    ) {
+
+        if (nombreUsuario == null
+                || nombreUsuario.isBlank()) {
+
+            return false;
+        }
 
 
-    /**
-     * Comprueba si ya existe un DPI mediante
-     * su HMAC.
-     */
-    boolean existeDpiHash(String dpiHash);
+        return usuarioRepository
+                .existsByNombreUsuarioIgnoreCase(
+                        nombreUsuario.trim()
+                );
+    }
 
 
-    /**
-     * Comprueba si ya existe un NIT mediante
-     * su HMAC.
-     */
-    boolean existeNitHash(String nitHash);
-    /**
-     * Guarda un usuario en PostgreSQL.
-     *
-     * La preparación de datos sensibles, contraseñas
-     * y reglas específicas debe realizarse antes de
-     * llamar este método.
-     *
-     * @param usuario usuario a persistir
-     * @return usuario persistido
-     */
-    Usuario guardar(Usuario usuario);
+    // =====================================================
+    // EXISTE CORREO
+    // =====================================================
+
+    public boolean existeCorreoElectronico(
+            String correoElectronico
+    ) {
+
+        if (correoElectronico == null
+                || correoElectronico.isBlank()) {
+
+            return false;
+        }
+
+
+        return usuarioRepository
+                .existsByCorreoElectronicoIgnoreCase(
+                        correoElectronico.trim()
+                );
+    }
+
+
+    // =====================================================
+    // EXISTE DPI HASH
+    // =====================================================
+
+    public boolean existeDpiHash(
+            String dpiHash
+    ) {
+
+        if (dpiHash == null
+                || dpiHash.isBlank()) {
+
+            return false;
+        }
+
+
+        return usuarioRepository
+                .existsByDpiHash(
+                        dpiHash.trim()
+                );
+    }
+
+
+    // =====================================================
+    // EXISTE NIT HASH
+    // =====================================================
+
+    public boolean existeNitHash(
+            String nitHash
+    ) {
+
+        if (nitHash == null
+                || nitHash.isBlank()) {
+
+            return false;
+        }
+
+
+        return usuarioRepository
+                .existsByNitHash(
+                        nitHash.trim()
+                );
+    }
+
+
+    // =====================================================
+    // GUARDAR
+    // =====================================================
+
+    @Transactional
+    public Usuario guardar(
+            Usuario usuario
+    ) {
+
+        if (usuario == null) {
+
+            throw new IllegalArgumentException(
+                    "El usuario que se desea guardar no puede ser nulo."
+            );
+        }
+
+
+        return usuarioRepository
+                .save(
+                        usuario
+                );
+    }
 }

@@ -3,46 +3,51 @@ package com.proyecto.clinicamedica.controller;
 import com.proyecto.clinicamedica.dto.EstadoLogin;
 import com.proyecto.clinicamedica.dto.LoginRequest;
 import com.proyecto.clinicamedica.dto.LoginResponse;
+
 import com.proyecto.clinicamedica.entity.Usuario;
+
 import com.proyecto.clinicamedica.security.ResultadoAutenticacion;
 import com.proyecto.clinicamedica.security.TipoAcceso;
+
 import com.proyecto.clinicamedica.service.AutenticacionService;
 import com.proyecto.clinicamedica.service.JwtCookieService;
 import com.proyecto.clinicamedica.service.JwtService;
+
 import jakarta.validation.Valid;
+
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
+
+import org.springframework.stereotype.Controller;
+
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.ResponseBody;
+
 
 /**
  * =========================================================
- * CONTROLADOR REST: LOGIN DE PACIENTES
+ * CONTROLADOR: LOGIN DE PACIENTES
  * =========================================================
  *
- * Atiende exclusivamente el inicio de sesión desde
- * el portal de pacientes.
+ * Responsabilidades:
  *
- * La lógica común de autenticación se encuentra en
+ * - Mostrar la vista de login del paciente.
+ * - Recibir las credenciales mediante REST.
+ * - Coordinar la autenticación.
+ * - Generar el JWT.
+ * - Crear la cookie HttpOnly.
+ *
+ * La lógica de autenticación permanece en
  * AutenticacionService.
- *
- * Este controlador únicamente especifica:
- *
- * TipoAcceso.PACIENTE
- *
- * De esta forma posteriormente podremos tener otro
- * controlador para personal interno utilizando:
- *
- * TipoAcceso.INTERNO
  * =========================================================
  */
-@RestController
-@RequestMapping("/api/public")
+@Controller
 public class LoginController {
+
 
     private final AutenticacionService
             autenticacionService;
@@ -72,10 +77,22 @@ public class LoginController {
 
 
     // =====================================================
-    // LOGIN DE PACIENTE
+    // MOSTRAR LOGIN
     // =====================================================
 
-    @PostMapping("/login")
+    @GetMapping("/login")
+    public String mostrarLogin() {
+
+        return "login";
+    }
+
+
+    // =====================================================
+    // PROCESAR LOGIN
+    // =====================================================
+
+    @PostMapping("/api/public/login")
+    @ResponseBody
     public ResponseEntity<LoginResponse> login(
             @Valid
             @RequestBody
@@ -83,7 +100,7 @@ public class LoginController {
     ) {
 
         // =================================================
-        // 1. AUTENTICAR COMO PACIENTE
+        // AUTENTICAR COMO PACIENTE
         // =================================================
 
         ResultadoAutenticacion resultado =
@@ -99,7 +116,7 @@ public class LoginController {
 
 
         // =================================================
-        // 2. FA06 - CREDENCIALES INCORRECTAS
+        // CREDENCIALES INCORRECTAS
         // =================================================
 
         if (respuesta.getEstado()
@@ -116,7 +133,7 @@ public class LoginController {
 
 
         // =================================================
-        // 3. FA07 - CUENTA BLOQUEADA
+        // CUENTA BLOQUEADA
         // =================================================
 
         if (respuesta.getEstado()
@@ -133,7 +150,7 @@ public class LoginController {
 
 
         // =================================================
-        // 4. FA09 - PORTAL INCORRECTO
+        // ROL NO AUTORIZADO
         // =================================================
 
         if (respuesta.getEstado()
@@ -150,7 +167,7 @@ public class LoginController {
 
 
         // =================================================
-        // 5. AUTENTICACIÓN EXITOSA
+        // VALIDAR RESULTADO EXITOSO
         // =================================================
 
         if (respuesta.getEstado()
@@ -175,7 +192,7 @@ public class LoginController {
 
 
         // =================================================
-        // 6. GENERAR JWT
+        // GENERAR JWT
         // =================================================
 
         String token =
@@ -185,7 +202,7 @@ public class LoginController {
 
 
         // =================================================
-        // 7. CREAR COOKIE HTTPONLY
+        // CREAR COOKIE HTTPONLY
         // =================================================
 
         ResponseCookie cookie =
@@ -196,7 +213,7 @@ public class LoginController {
 
 
         // =================================================
-        // 8. DEVOLVER COOKIE + RESPUESTA
+        // DEVOLVER RESPUESTA
         // =================================================
 
         return ResponseEntity

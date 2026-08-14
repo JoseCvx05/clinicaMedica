@@ -1,60 +1,84 @@
 package com.proyecto.clinicamedica.cache;
 
+import com.proyecto.clinicamedica.dto.cita.OpcionCatalogoCitaDTO;
+
+import com.proyecto.clinicamedica.service.CatalogoCitaService;
 import com.proyecto.clinicamedica.service.EspecialidadService;
 import com.proyecto.clinicamedica.service.RolService;
 import com.proyecto.clinicamedica.service.SucursalService;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 
+import java.util.List;
+
+
 /**
  * =========================================================
- * PRECARGA DE CATÁLOGOS EN CACHÉ
+ * PRECARGA GENERAL DE CATÁLOGOS EN CACHÉ
  * =========================================================
  *
- * Se ejecuta automáticamente cuando Spring Boot termina
- * de iniciar correctamente.
+ * Se ejecuta cuando Spring Boot termina de iniciar.
  *
- * Su responsabilidad es precargar los catálogos requeridos
- * por el portal para que las primeras solicitudes de los
- * usuarios no tengan que consultar directamente PostgreSQL.
+ * Precarga:
  *
- * Catálogos iniciales:
+ * - Roles.
+ * - Especialidades.
+ * - Sucursales.
+ * - Sucursales disponibles para citas.
+ * - Especialidades disponibles por sucursal para citas.
  *
- * - Roles
- * - Especialidades
- * - Sucursales
- *
- * Las dependencias se realizan mediante interfaces de
- * servicio, manteniendo inversión de dependencias (SOLID).
+ * Centraliza toda la precarga de catálogos en una sola
+ * clase para evitar inicializadores duplicados.
  * =========================================================
  */
 @Component
 public class CatalogosCacheInitializer {
 
+
     private static final Logger LOGGER =
-            LoggerFactory.getLogger(CatalogosCacheInitializer.class);
+            LoggerFactory.getLogger(
+                    CatalogosCacheInitializer.class
+            );
+
 
     private final RolService rolService;
+
     private final EspecialidadService especialidadService;
+
     private final SucursalService sucursalService;
+
+    private final CatalogoCitaService catalogoCitaService;
+
 
     public CatalogosCacheInitializer(
             RolService rolService,
             EspecialidadService especialidadService,
-            SucursalService sucursalService
+            SucursalService sucursalService,
+            CatalogoCitaService catalogoCitaService
     ) {
-        this.rolService = rolService;
-        this.especialidadService = especialidadService;
-        this.sucursalService = sucursalService;
+
+        this.rolService =
+                rolService;
+
+        this.especialidadService =
+                especialidadService;
+
+        this.sucursalService =
+                sucursalService;
+
+        this.catalogoCitaService =
+                catalogoCitaService;
     }
 
 
     /**
-     * Precarga los catálogos cuando la aplicación
-     * se encuentra completamente iniciada.
+     * Precarga los catálogos después de que la aplicación
+     * haya iniciado correctamente.
      */
     @EventListener(ApplicationReadyEvent.class)
     public void precargarCatalogos() {
@@ -67,16 +91,29 @@ public class CatalogosCacheInitializer {
                 "Iniciando precarga de catálogos en caché..."
         );
 
+
         try {
 
+            // =================================================
+            // CATÁLOGOS GENERALES
+            // =================================================
+
             int totalRoles =
-                    rolService.listarActivos().size();
+                    rolService
+                            .listarActivos()
+                            .size();
+
 
             int totalEspecialidades =
-                    especialidadService.listarActivas().size();
+                    especialidadService
+                            .listarActivas()
+                            .size();
+
 
             int totalSucursales =
-                    sucursalService.listarActivas().size();
+                    sucursalService
+                            .listarActivas()
+                            .size();
 
 
             LOGGER.info(
@@ -84,19 +121,66 @@ public class CatalogosCacheInitializer {
                     totalRoles
             );
 
+
             LOGGER.info(
                     "Especialidades cargadas en caché: {}",
                     totalEspecialidades
             );
+
 
             LOGGER.info(
                     "Sucursales cargadas en caché: {}",
                     totalSucursales
             );
 
+
+            // =================================================
+            // CATÁLOGOS ESPECÍFICOS DE CITAS
+            // =================================================
+
+            List<OpcionCatalogoCitaDTO> sucursalesCita =
+                    catalogoCitaService
+                            .listarSucursales();
+
+
+            int relacionesEspecialidadCargadas =
+                    0;
+
+
+            for (
+                    OpcionCatalogoCitaDTO sucursal :
+                    sucursalesCita
+            ) {
+
+                List<OpcionCatalogoCitaDTO> especialidades =
+                        catalogoCitaService
+                                .listarEspecialidades(
+                                        sucursal.id()
+                                );
+
+
+                relacionesEspecialidadCargadas +=
+                        especialidades.size();
+            }
+
+
+            LOGGER.info(
+                    "Sucursales de citas cargadas en caché: {}",
+                    sucursalesCita.size()
+            );
+
+
+            LOGGER.info(
+                    "Relaciones sucursal-especialidad "
+                            + "cargadas en caché: {}",
+                    relacionesEspecialidadCargadas
+            );
+
+
             LOGGER.info(
                     "Precarga de catálogos finalizada correctamente."
             );
+
 
         } catch (Exception exception) {
 
@@ -105,6 +189,7 @@ public class CatalogosCacheInitializer {
                     exception
             );
         }
+
 
         LOGGER.info(
                 "================================================="

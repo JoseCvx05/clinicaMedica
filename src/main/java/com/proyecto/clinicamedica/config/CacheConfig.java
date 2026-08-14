@@ -25,16 +25,32 @@ import java.util.List;
 @EnableCaching
 public class CacheConfig {
 
+
     /**
      * Nombres centralizados de las cachés.
-     *
-     * Conforme avancemos con los casos de uso podremos
-     * agregar otros catálogos a esta lista.
      */
-    public static final String ROLES = "roles";
-    public static final String ESPECIALIDADES = "especialidades";
-    public static final String SUCURSALES = "sucursales";
-    public static final String ESTADOS_CITA = "estadosCita";
+    public static final String ROLES =
+            "roles";
+
+    public static final String ESPECIALIDADES =
+            "especialidades";
+
+    public static final String SUCURSALES =
+            "sucursales";
+
+    public static final String ESTADOS_CITA =
+            "estadosCita";
+
+
+    // =====================================================
+    // CU-03 - AGENDAR CITAS
+    // =====================================================
+
+    public static final String CITA_SUCURSALES_ACTIVAS =
+            "citaSucursalesActivas";
+
+    public static final String CITA_ESPECIALIDADES_POR_SUCURSAL =
+            "citaEspecialidadesPorSucursal";
 
 
     /**
@@ -46,6 +62,7 @@ public class CacheConfig {
         CaffeineCacheManager cacheManager =
                 new CaffeineCacheManager();
 
+
         /*
          * Definimos explícitamente las cachés permitidas.
          */
@@ -54,9 +71,13 @@ public class CacheConfig {
                         ROLES,
                         ESPECIALIDADES,
                         SUCURSALES,
-                        ESTADOS_CITA
+                        ESTADOS_CITA,
+
+                        CITA_SUCURSALES_ACTIVAS,
+                        CITA_ESPECIALIDADES_POR_SUCURSAL
                 )
         );
+
 
         /*
          * Configuración general de Caffeine.
@@ -72,6 +93,7 @@ public class CacheConfig {
                         .maximumSize(500)
                         .recordStats()
         );
+
 
         return cacheManager;
     }
