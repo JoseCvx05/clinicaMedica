@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+
+<html lang="es"
+      xmlns:th="http://www.thymeleaf.org">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>Mis Citas</title>
+
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css"
+          rel="stylesheet">
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.css"
+          rel="stylesheet">
+
+
+    <style>
+
+        body {
+            background-color: #f5f7fa;
+        }
+
+        .contenedor {
+            max-width: 1100px;
+        }
+
+        .card-cita {
+            border: 0;
+            border-radius: 14px;
+        }
+
+    </style>
+
+</head>
+
+
+<body>
+
+
+<main class="container contenedor py-5">
+
+
+    <!-- =================================================
+         ENCABEZADO
+         ================================================= -->
+
+    <div class="d-flex flex-column flex-md-row
+                justify-content-between
+                align-items-md-center
+                gap-3 mb-4">
+
+
+        <div>
+
+            <h1 class="h3 fw-bold mb-1">
+
+                Mis Citas
+
+            </h1>
+
+
+            <p class="text-secondary mb-0">
+
+                Consulte sus citas médicas registradas.
+
+            </p>
+
+        </div>
+
+
+        <a th:href="@{/paciente/dashboard}"
+           class="btn btn-outline-primary">
+
+            <i class="bi bi-arrow-left me-2"></i>
+
+            Volver al Portal
+
+        </a>
+
+    </div>
+
+
+    <!-- =================================================
+         SIN CITAS
+         ================================================= -->
+
+    <div th:if="${#lists.isEmpty(citas)}"
+         class="card border-0 shadow-sm">
+
+        <div class="card-body text-center py-5">
+
+            <i class="bi bi-calendar-x
+                      fs-1 text-secondary">
+            </i>
+
+
+            <h2 class="h5 fw-bold mt-3">
+
+                No tiene citas registradas
+
+            </h2>
+
+
+            <p class="text-secondary mb-0">
+
+                Cuando agende una cita aparecerá
+                en esta sección.
+
+            </p>
+
+        </div>
+
+    </div>
+
+
+    <!-- =================================================
+         LISTADO
+         ================================================= -->
+
+    <div th:if="${!#lists.isEmpty(citas)}"
+         class="row g-3">
+
+
+        <div th:each="cita : ${citas}"
+             class="col-12">
+
+
+            <div class="card card-cita shadow-sm">
+
+                <div class="card-body p-4">
+
+
+                    <div class="row align-items-center g-3">
+
+
+                        <!-- CITA -->
+
+                        <div class="col-lg-3">
+
+                            <small class="text-secondary d-block">
+
+                                Fecha y hora
+
+                            </small>
+
+
+                            <strong th:text="${#temporals.format(
+                                    cita.fechaHora,
+                                    'dd/MM/yyyy HH:mm'
+                            )}">
+
+                                14/08/2026 10:00
+
+                            </strong>
+
+                        </div>
+
+
+                        <!-- MÉDICO -->
+
+                        <div class="col-lg-3">
+
+                            <small class="text-secondary d-block">
+
+                                Médico
+
+                            </small>
+
+
+                            <strong th:text="${cita.medico}">
+
+                                Médico
+
+                            </strong>
+
+
+                            <small class="text-secondary d-block"
+                                   th:text="${cita.especialidad}">
+
+                                Especialidad
+
+                            </small>
+
+                        </div>
+
+
+                        <!-- SEDE -->
+
+                        <div class="col-lg-3">
+
+                            <small class="text-secondary d-block">
+
+                                Sede
+
+                            </small>
+
+
+                            <strong th:text="${cita.sucursal}">
+
+                                Sucursal
+
+                            </strong>
+
+                        </div>
+
+
+                        <!-- ESTADO -->
+
+                        <div class="col-lg-3 text-lg-end">
+
+                            <span class="badge rounded-pill px-3 py-2"
+
+                                  th:classappend="${#strings.equalsIgnoreCase(
+                                        cita.estado,
+                                        'Pagada'
+                                  )}
+                                  ? ' text-bg-success'
+                                  : (${#strings.equalsIgnoreCase(
+                                        cita.estado,
+                                        'Cancelada'
+                                  )}
+                                  ? ' text-bg-danger'
+                                  : ' text-bg-warning')"
+
+                                  th:text="${cita.estado}">
+
+                                Estado
+
+                            </span>
+
+                        </div>
+
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+</main>
+
+
+</body>
+
+</html>

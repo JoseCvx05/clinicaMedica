@@ -1,11 +1,15 @@
 package com.proyecto.clinicamedica.service;
 
+import com.proyecto.clinicamedica.entity.Cita;
 import com.proyecto.clinicamedica.entity.NotificacionCorreo;
+import com.proyecto.clinicamedica.entity.Pago;
 import com.proyecto.clinicamedica.entity.Usuario;
 
 import com.proyecto.clinicamedica.repository.NotificacionCorreoRepository;
+import com.proyecto.clinicamedica.repository.PagoRepository;
 import com.proyecto.clinicamedica.repository.UsuarioRepository;
 
+import com.proyecto.clinicamedica.service.correo.PlantillaCorreoPago;
 import com.proyecto.clinicamedica.service.correo.PlantillaCorreoRegistroExterno;
 
 import org.springframework.beans.factory.annotation.Value;
@@ -26,18 +30,15 @@ import java.util.List;
  * SERVICIO: REINTENTO DE NOTIFICACIONES
  * =========================================================
  *
- * CU-02 Registro de Usuarios Externos.
+ * Procesa notificaciones pendientes o fallidas.
  *
- * Procesa notificaciones de correo que se encuentren:
+ * Actualmente soporta:
  *
- * - Pendientes.
- * - Fallidas.
+ * - CU-02 Registro de Usuarios Externos.
+ * - CU-04 Comprobante de Pago.
  *
- * y que todavía no hayan alcanzado el número máximo
- * permitido de intentos.
- *
- * Actualmente procesa las notificaciones asociadas al
- * registro externo de pacientes.
+ * Se utiliza un único mecanismo de reintentos para evitar
+ * duplicar schedulers e infraestructura de correo.
  *
  * =========================================================
  */
@@ -46,21 +47,28 @@ public class ReintentoNotificacionService {
 
 
     // =====================================================
-    // CONSTANTES
+    // CONFIGURACIÓN
     // =====================================================
 
     /**
-     * Número máximo TOTAL de intentos de envío.
+     * Número máximo TOTAL de intentos.
      *
-     * El primer intento realizado durante el registro
-     * también cuenta.
+     * El primer envío también cuenta.
      */
     private static final short MAXIMO_INTENTOS =
             3;
 
 
+    // =====================================================
+    // TIPOS DE NOTIFICACIÓN
+    // =====================================================
+
     private static final String TIPO_REGISTRO_EXTERNO =
             "REGISTRO_USUARIO_EXTERNO";
+
+
+    private static final String TIPO_COMPROBANTE_PAGO =
+            "COMPROBANTE_PAGO";
 
 
     // =====================================================
@@ -73,15 +81,21 @@ public class ReintentoNotificacionService {
     private final UsuarioRepository
             usuarioRepository;
 
+    private final PagoRepository
+            pagoRepository;
+
     private final JavaMailSender
             mailSender;
 
     private final PlantillaCorreoRegistroExterno
-            plantillaCorreo;
+            plantillaRegistro;
+
+    private final PlantillaCorreoPago
+            plantillaPago;
 
 
     // =====================================================
-    // CONFIGURACIÓN
+    // CONFIGURACIÓN DE CORREO
     // =====================================================
 
     private final String correoRemitente;
@@ -92,10 +106,24 @@ public class ReintentoNotificacionService {
     // =====================================================
 
     public ReintentoNotificacionService(
-            NotificacionCorreoRepository notificacionCorreoRepository,
-            UsuarioRepository usuarioRepository,
-            JavaMailSender mailSender,
-            PlantillaCorreoRegistroExterno plantillaCorreo,
+
+            NotificacionCorreoRepository
+                    notificacionCorreoRepository,
+
+            UsuarioRepository
+                    usuarioRepository,
+
+            PagoRepository
+                    pagoRepository,
+
+            JavaMailSender
+                    mailSender,
+
+            PlantillaCorreoRegistroExterno
+                    plantillaRegistro,
+
+            PlantillaCorreoPago
+                    plantillaPago,
 
             @Value("${spring.mail.username}")
             String correoRemitente
@@ -107,11 +135,17 @@ public class ReintentoNotificacionService {
         this.usuarioRepository =
                 usuarioRepository;
 
+        this.pagoRepository =
+                pagoRepository;
+
         this.mailSender =
                 mailSender;
 
-        this.plantillaCorreo =
-                plantillaCorreo;
+        this.plantillaRegistro =
+                plantillaRegistro;
+
+        this.plantillaPago =
+                plantillaPago;
 
         this.correoRemitente =
                 correoRemitente;
@@ -125,10 +159,6 @@ public class ReintentoNotificacionService {
     @Transactional
     public void procesarPendientes() {
 
-        // =================================================
-        // BUSCAR MÁXIMO 20 NOTIFICACIONES
-        // =================================================
-
         List<NotificacionCorreo> notificaciones =
                 notificacionCorreoRepository
                         .findTop20ByEstadoEnvioInAndIntentosEnvioLessThanOrderByFechaCreacionAsc(
@@ -139,10 +169,6 @@ public class ReintentoNotificacionService {
                                 MAXIMO_INTENTOS
                         );
 
-
-        // =================================================
-        // PROCESAR CADA NOTIFICACIÓN
-        // =================================================
 
         for (NotificacionCorreo notificacion :
                 notificaciones) {
@@ -162,31 +188,62 @@ public class ReintentoNotificacionService {
             NotificacionCorreo notificacion
     ) {
 
-        if (notificacion == null) {
+        if (notificacion == null
+                || notificacion.getTipoNotificacion() == null) {
 
             return;
         }
 
 
-        // =================================================
-        // VALIDAR TIPO DE NOTIFICACIÓN
-        // =================================================
-        //
-        // Por ahora este servicio únicamente procesa
-        // correos correspondientes al CU-02.
-        // =================================================
+        switch (notificacion.getTipoNotificacion()) {
 
-        if (!TIPO_REGISTRO_EXTERNO.equals(
-                notificacion.getTipoNotificacion()
-        )) {
 
-            return;
+            // =================================================
+            // CU-02
+            // =================================================
+
+            case TIPO_REGISTRO_EXTERNO ->
+
+                    procesarRegistroExterno(
+                            notificacion
+                    );
+
+
+            // =================================================
+            // CU-04
+            // =================================================
+
+            case TIPO_COMPROBANTE_PAGO ->
+
+                    procesarComprobantePago(
+                            notificacion
+                    );
+
+
+            // =================================================
+            // TIPO NO SOPORTADO
+            // =================================================
+
+            default -> {
+
+                /*
+                 * No modificamos notificaciones desconocidas.
+                 *
+                 * Esto evita que este servicio afecte
+                 * futuros casos de uso.
+                 */
+            }
         }
+    }
 
 
-        // =================================================
-        // OBTENER USUARIO ASOCIADO
-        // =================================================
+    // =====================================================
+    // CU-02 - REGISTRO EXTERNO
+    // =====================================================
+
+    private void procesarRegistroExterno(
+            NotificacionCorreo notificacion
+    ) {
 
         Integer idUsuario =
                 notificacion.getIdReferencia();
@@ -224,11 +281,7 @@ public class ReintentoNotificacionService {
         }
 
 
-        // =================================================
-        // INTENTAR NUEVAMENTE EL ENVÍO
-        // =================================================
-
-        intentarEnvio(
+        intentarEnvioRegistro(
                 notificacion,
                 usuario
         );
@@ -236,40 +289,49 @@ public class ReintentoNotificacionService {
 
 
     // =====================================================
-    // INTENTAR ENVÍO
+    // REINTENTAR REGISTRO
     // =====================================================
 
-    private void intentarEnvio(
+    private void intentarEnvioRegistro(
             NotificacionCorreo notificacion,
             Usuario usuario
     ) {
 
-        // =================================================
-        // MARCAR COMO REINTENTANDO
-        // =================================================
-
-        notificacion.setEstadoEnvio(
-                NotificacionCorreo.ESTADO_REINTENTANDO
+        marcarReintentando(
+                notificacion
         );
 
-
-        notificacionCorreoRepository
-                .saveAndFlush(
-                        notificacion
-                );
-
-
-        // =================================================
-        // ENVIAR CORREO
-        // =================================================
 
         try {
 
             SimpleMailMessage mensaje =
-                    construirMensaje(
-                            notificacion,
-                            usuario
-                    );
+                    new SimpleMailMessage();
+
+
+            mensaje.setFrom(
+                    correoRemitente
+            );
+
+
+            mensaje.setTo(
+                    notificacion.getDestinatarioCorreo()
+            );
+
+
+            /*
+             * Utilizamos el asunto guardado originalmente.
+             */
+            mensaje.setSubject(
+                    notificacion.getAsunto()
+            );
+
+
+            mensaje.setText(
+                    plantillaRegistro
+                            .construirCuerpo(
+                                    usuario.getNombreCompleto()
+                            )
+            );
 
 
             mailSender.send(
@@ -292,48 +354,166 @@ public class ReintentoNotificacionService {
 
 
     // =====================================================
-    // CONSTRUIR MENSAJE
+    // CU-04 - COMPROBANTE DE PAGO
     // =====================================================
 
-    private SimpleMailMessage construirMensaje(
-            NotificacionCorreo notificacion,
-            Usuario usuario
+    private void procesarComprobantePago(
+            NotificacionCorreo notificacion
     ) {
 
-        SimpleMailMessage mensaje =
-                new SimpleMailMessage();
+        Integer idPago =
+                notificacion.getIdReferencia();
 
 
-        mensaje.setFrom(
-                correoRemitente
-        );
+        if (idPago == null) {
+
+            marcarFallido(
+                    notificacion,
+                    "La notificación no posee un pago asociado."
+            );
+
+            return;
+        }
 
 
-        mensaje.setTo(
-                notificacion.getDestinatarioCorreo()
-        );
-
-
-        mensaje.setSubject(
-                plantillaCorreo
-                        .construirAsunto()
-        );
-
-
-        mensaje.setText(
-                plantillaCorreo
-                        .construirCuerpo(
-                                usuario.getNombreCompleto()
+        Pago pago =
+                pagoRepository
+                        .buscarParaNotificacion(
+                                idPago
                         )
+                        .orElse(
+                                null
+                        );
+
+
+        if (pago == null) {
+
+            marcarFallido(
+                    notificacion,
+                    "No se encontró el pago aprobado asociado a la notificación."
+            );
+
+            return;
+        }
+
+
+        intentarEnvioPago(
+                notificacion,
+                pago
         );
-
-
-        return mensaje;
     }
 
 
     // =====================================================
-    // MARCAR COMO ENVIADO
+    // REINTENTAR COMPROBANTE
+    // =====================================================
+
+    private void intentarEnvioPago(
+            NotificacionCorreo notificacion,
+            Pago pago
+    ) {
+
+        marcarReintentando(
+                notificacion
+        );
+
+
+        try {
+
+            Cita cita =
+                    pago.getCita();
+
+
+            SimpleMailMessage mensaje =
+                    new SimpleMailMessage();
+
+
+            mensaje.setFrom(
+                    correoRemitente
+            );
+
+
+            mensaje.setTo(
+                    notificacion.getDestinatarioCorreo()
+            );
+
+
+            mensaje.setSubject(
+                    notificacion.getAsunto()
+            );
+
+
+            mensaje.setText(
+                    plantillaPago
+                            .construirCuerpo(
+
+                                    cita.getPaciente()
+                                            .getNombreCompleto(),
+
+                                    pago.getNumeroTransaccion(),
+
+                                    cita.getMedico()
+                                            .getNombreCompleto(),
+
+                                    cita.getEspecialidad()
+                                            .getNombre(),
+
+                                    cita.getSucursal()
+                                            .getNombre(),
+
+                                    cita.getFechaHoraCita(),
+
+                                    pago.getMonto(),
+
+                                    pago.getFormaPago()
+                                            .getNombre(),
+
+                                    pago.getFechaHoraPago()
+                            )
+            );
+
+
+            mailSender.send(
+                    mensaje
+            );
+
+
+            marcarEnviado(
+                    notificacion
+            );
+
+        } catch (MailException ex) {
+
+            marcarFallido(
+                    notificacion,
+                    ex.getMessage()
+            );
+        }
+    }
+
+
+    // =====================================================
+    // MARCAR REINTENTANDO
+    // =====================================================
+
+    private void marcarReintentando(
+            NotificacionCorreo notificacion
+    ) {
+
+        notificacion.setEstadoEnvio(
+                NotificacionCorreo.ESTADO_REINTENTANDO
+        );
+
+
+        notificacionCorreoRepository
+                .saveAndFlush(
+                        notificacion
+                );
+    }
+
+
+    // =====================================================
+    // MARCAR ENVIADO
     // =====================================================
 
     private void marcarEnviado(
@@ -368,7 +548,7 @@ public class ReintentoNotificacionService {
 
 
     // =====================================================
-    // MARCAR COMO FALLIDO
+    // MARCAR FALLIDO
     // =====================================================
 
     private void marcarFallido(
@@ -426,7 +606,7 @@ public class ReintentoNotificacionService {
 
 
     // =====================================================
-    // LIMITAR MENSAJE DE ERROR
+    // LIMITAR ERROR
     // =====================================================
 
     private String limitarError(

@@ -1,10 +1,16 @@
 package com.proyecto.clinicamedica.controller;
 
+import com.proyecto.clinicamedica.service.CitaPacienteService;
+
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
+
 import org.springframework.stereotype.Controller;
+
 import org.springframework.ui.Model;
+
 import org.springframework.web.bind.annotation.GetMapping;
+
 
 /**
  * =========================================================
@@ -14,26 +20,49 @@ import org.springframework.web.bind.annotation.GetMapping;
  * Controla las vistas privadas correspondientes
  * al portal del paciente.
  *
- * La ruta:
+ * Las rutas:
  *
  * /paciente/**
  *
- * se encuentra protegida por Spring Security y exige:
+ * se encuentran protegidas por Spring Security y exigen:
  *
  * ROLE_PACIENTE
  *
- * El usuario autenticado se obtiene directamente
- * del JWT previamente validado por Spring Security.
  * =========================================================
  */
 @Controller
 public class PacienteDashboardController {
 
+
+    // =====================================================
+    // DEPENDENCIAS
+    // =====================================================
+
+    private final CitaPacienteService citaPacienteService;
+
+
+    // =====================================================
+    // CONSTRUCTOR
+    // =====================================================
+
+    public PacienteDashboardController(
+            CitaPacienteService citaPacienteService
+    ) {
+
+        this.citaPacienteService =
+                citaPacienteService;
+    }
+
+
+    // =====================================================
+    // DASHBOARD DEL PACIENTE
+    // =====================================================
+
     /**
      * Muestra el dashboard principal del paciente.
      *
-     * @param jwt JWT autenticado y validado
-     * @param model modelo utilizado por Thymeleaf
+     * @param jwt   JWT autenticado y validado.
+     * @param model modelo utilizado por Thymeleaf.
      *
      * @return templates/paciente/dashboard.html
      */
@@ -62,5 +91,33 @@ public class PacienteDashboardController {
 
 
         return "paciente/dashboard";
+    }
+
+
+    // =====================================================
+    // MIS CITAS
+    // =====================================================
+
+    /**
+     * Muestra únicamente las citas pertenecientes
+     * al paciente actualmente autenticado.
+     *
+     * @param model modelo utilizado por Thymeleaf.
+     *
+     * @return templates/paciente/mis-citas.html
+     */
+    @GetMapping("/paciente/citas")
+    public String mostrarMisCitas(
+            Model model
+    ) {
+
+        model.addAttribute(
+                "citas",
+                citaPacienteService
+                        .listarMisCitas()
+        );
+
+
+        return "paciente/mis-citas";
     }
 }

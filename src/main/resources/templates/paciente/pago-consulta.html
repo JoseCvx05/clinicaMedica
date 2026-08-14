@@ -1,0 +1,1084 @@
+<!DOCTYPE html>
+<html lang="es"
+      xmlns:th="http://www.thymeleaf.org">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>Pago de Consulta</title>
+
+
+    <!-- =================================================
+         BOOTSTRAP
+         ================================================= -->
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css"
+          rel="stylesheet">
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.css"
+          rel="stylesheet">
+
+
+    <style>
+
+        body {
+            background-color: #f5f7fa;
+        }
+
+
+        .pago-container {
+            max-width: 1050px;
+        }
+
+
+        .card-pago {
+            border: 0;
+            border-radius: 16px;
+        }
+
+
+        .resumen-item {
+            padding: 12px 0;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+
+        .resumen-item:last-child {
+            border-bottom: none;
+        }
+
+
+        .temporizador {
+            font-size: 1.45rem;
+            font-weight: 700;
+        }
+
+
+        .temporizador-critico {
+            animation: parpadeo 1s infinite;
+        }
+
+
+        @keyframes parpadeo {
+
+            50% {
+                opacity: 0.55;
+            }
+        }
+
+
+        .campo-seguro {
+            position: relative;
+        }
+
+
+        .campo-seguro .icono {
+            position: absolute;
+            right: 14px;
+            top: 42px;
+            color: #6c757d;
+            pointer-events: none;
+        }
+
+
+        .nota-seguridad {
+            font-size: 0.88rem;
+        }
+
+    </style>
+
+</head>
+
+
+<body>
+
+
+<!-- =====================================================
+     FA02 - PAGO EXPIRADO
+     ===================================================== -->
+
+<div th:if="${pagoExpirado}"
+     class="container pago-container py-5">
+
+    <div class="alert alert-danger shadow-sm"
+         role="alert">
+
+        <div class="d-flex">
+
+            <i class="bi bi-clock-history fs-3 me-3"></i>
+
+            <div>
+
+                <h1 class="h5 fw-bold mb-2">
+                    Tiempo de pago expirado
+                </h1>
+
+                <p class="mb-0"
+                   th:text="${mensajePago}">
+                    El tiempo para confirmar su cita ha expirado.
+                </p>
+
+                <p class="small mt-3 mb-0">
+                    Será redirigido al agendamiento de citas
+                    en unos segundos...
+                </p>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<!-- =====================================================
+     PANTALLA NORMAL
+     ===================================================== -->
+
+<main th:if="${pagoExpirado != true}"
+      class="container pago-container py-4 py-lg-5">
+
+
+    <!-- =================================================
+         ENCABEZADO
+         ================================================= -->
+
+    <div class="mb-4">
+
+        <h1 class="h3 fw-bold mb-1">
+            Pago de Consulta
+        </h1>
+
+        <p class="text-secondary mb-0">
+            Revise la información de su cita e ingrese
+            los datos de su tarjeta.
+        </p>
+
+    </div>
+
+
+    <!-- =================================================
+         MENSAJE FA03 / PROCESAMIENTO
+         ================================================= -->
+
+    <div th:if="${mensajePago != null}"
+         class="alert mb-4"
+         th:classappend="${pagoEnProceso == true}
+        ? ' alert-warning'
+        : ' alert-danger'"
+         role="alert">
+
+        <i class="bi me-2"
+           th:classappend="${pagoEnProceso == true}
+        ? 'bi-hourglass-split'
+        : 'bi-exclamation-triangle'"
+        </i>
+
+        <span th:text="${mensajePago}">
+            Mensaje de pago
+        </span>
+
+    </div>
+
+
+    <div class="row g-4">
+
+
+        <!-- =================================================
+             RESUMEN DE CITA
+             ================================================= -->
+
+        <div class="col-lg-5">
+
+            <div class="card card-pago shadow-sm h-100">
+
+                <div class="card-body p-4">
+
+
+                    <div class="d-flex justify-content-between
+                                align-items-start mb-3">
+
+                        <div>
+
+                            <h2 class="h5 fw-bold mb-1">
+                                Resumen de la cita
+                            </h2>
+
+                            <p class="text-secondary small mb-0">
+                                Verifique los datos antes de pagar.
+                            </p>
+
+                        </div>
+
+                        <i class="bi bi-calendar-check fs-3 text-primary"></i>
+
+                    </div>
+
+
+                    <!-- MÉDICO -->
+
+                    <div class="resumen-item">
+
+                        <small class="text-secondary d-block">
+                            Médico
+                        </small>
+
+                        <strong th:text="${resumen.medico}">
+                            Médico
+                        </strong>
+
+                    </div>
+
+
+                    <!-- ESPECIALIDAD -->
+
+                    <div class="resumen-item">
+
+                        <small class="text-secondary d-block">
+                            Especialidad
+                        </small>
+
+                        <strong th:text="${resumen.especialidad}">
+                            Especialidad
+                        </strong>
+
+                    </div>
+
+
+                    <!-- SUCURSAL -->
+
+                    <div class="resumen-item">
+
+                        <small class="text-secondary d-block">
+                            Sede
+                        </small>
+
+                        <strong th:text="${resumen.sucursal}">
+                            Sucursal
+                        </strong>
+
+                    </div>
+
+
+                    <!-- FECHA -->
+
+                    <div class="resumen-item">
+
+                        <small class="text-secondary d-block">
+                            Fecha y hora
+                        </small>
+
+                        <strong th:text="${#temporals.format(
+                            resumen.fechaHoraCita,
+                            'dd/MM/yyyy HH:mm'
+                        )}">
+                            14/08/2026 10:00
+                        </strong>
+
+                    </div>
+
+
+                    <!-- TOTAL -->
+
+                    <div class="mt-4 p-3 bg-light rounded-3">
+
+                        <div class="d-flex justify-content-between
+                                    align-items-center">
+
+                            <span class="fw-semibold">
+                                Total a pagar
+                            </span>
+
+                            <span class="h4 fw-bold text-primary mb-0">
+
+                                Q<span th:text="${#numbers.formatDecimal(
+                                        resumen.monto,
+                                        1,
+                                        2
+                                )}">
+                                    0.00
+                                </span>
+
+                            </span>
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- TEMPORIZADOR -->
+
+                    <div class="text-center mt-4">
+
+                        <small class="text-secondary d-block mb-1">
+                            Tiempo restante para completar el pago
+                        </small>
+
+                        <div id="temporizador"
+                             class="temporizador text-success">
+
+                            05:00
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- =================================================
+             FORMULARIO DE PAGO
+             ================================================= -->
+
+        <div class="col-lg-7">
+
+            <div class="card card-pago shadow-sm">
+
+                <div class="card-body p-4 p-lg-5">
+
+
+                    <h2 class="h5 fw-bold mb-4">
+                        Datos de pago
+                    </h2>
+
+
+                    <form id="formPago"
+
+                          th:action="@{/paciente/pagos/cita/{idCita}
+                          (idCita=${resumen.idCita})}"
+
+                          th:object="${formulario}"
+
+                          method="post"
+
+                          autocomplete="off">
+
+
+                        <!-- =================================
+                             IDEMPOTENCY KEY
+                             ================================= -->
+
+                        <input type="hidden"
+                               th:field="*{idempotencyKey}">
+
+
+                        <!-- =================================
+                             NÚMERO DE TARJETA
+                             ================================= -->
+
+                        <div class="mb-4 campo-seguro">
+
+                            <label for="numeroTarjeta"
+                                   class="form-label fw-semibold">
+
+                                Número de tarjeta
+
+                            </label>
+
+
+                            <input type="text"
+
+                                   id="numeroTarjeta"
+
+                                   th:field="*{numeroTarjeta}"
+
+                                   class="form-control form-control-lg"
+
+                                   th:classappend="${#fields.hasErrors(
+                                        'numeroTarjeta'
+                                   )} ? ' is-invalid' : ''"
+
+                                   inputmode="numeric"
+
+                                   maxlength="19"
+
+                                   autocomplete="cc-number"
+
+                                   placeholder="0000 0000 0000 0000"
+
+                                   aria-describedby="errorNumeroTarjeta">
+
+
+                            <i class="bi bi-credit-card icono"></i>
+
+
+                            <div id="errorNumeroTarjeta"
+                                 class="invalid-feedback"
+                                 th:if="${#fields.hasErrors(
+                                    'numeroTarjeta'
+                                 )}"
+                                 th:errors="*{numeroTarjeta}">
+                            </div>
+
+                        </div>
+
+
+                        <!-- =================================
+                             TITULAR
+                             ================================= -->
+
+                        <div class="mb-4">
+
+                            <label for="nombreTitular"
+                                   class="form-label fw-semibold">
+
+                                Nombre del titular
+
+                            </label>
+
+
+                            <input type="text"
+
+                                   id="nombreTitular"
+
+                                   th:field="*{nombreTitular}"
+
+                                   class="form-control form-control-lg text-uppercase"
+
+                                   th:classappend="${#fields.hasErrors(
+                                        'nombreTitular'
+                                   )} ? ' is-invalid' : ''"
+
+                                   maxlength="100"
+
+                                   autocomplete="cc-name"
+
+                                   placeholder="NOMBRE DEL TITULAR">
+
+
+                            <div class="invalid-feedback"
+                                 th:if="${#fields.hasErrors(
+                                    'nombreTitular'
+                                 )}"
+                                 th:errors="*{nombreTitular}">
+                            </div>
+
+                        </div>
+
+
+                        <!-- =================================
+                             VENCIMIENTO + CVV
+                             ================================= -->
+
+                        <div class="row g-3 mb-3">
+
+
+                            <!-- VENCIMIENTO -->
+
+                            <div class="col-md-6">
+
+                                <label for="vencimiento"
+                                       class="form-label fw-semibold">
+
+                                    Vencimiento
+
+                                </label>
+
+
+                                <input type="text"
+
+                                       id="vencimiento"
+
+                                       th:field="*{vencimiento}"
+
+                                       class="form-control form-control-lg"
+
+                                       th:classappend="${#fields.hasErrors(
+                                            'vencimiento'
+                                       )} ? ' is-invalid' : ''"
+
+                                       inputmode="numeric"
+
+                                       maxlength="5"
+
+                                       autocomplete="cc-exp"
+
+                                       placeholder="MM/AA">
+
+
+                                <div class="invalid-feedback"
+                                     th:if="${#fields.hasErrors(
+                                        'vencimiento'
+                                     )}"
+                                     th:errors="*{vencimiento}">
+                                </div>
+
+                            </div>
+
+
+                            <!-- CVV -->
+
+                            <div class="col-md-6">
+
+                                <label for="cvv"
+                                       class="form-label fw-semibold">
+
+                                    CVV
+
+                                </label>
+
+
+                                <input type="password"
+
+                                       id="cvv"
+
+                                       th:field="*{cvv}"
+
+                                       class="form-control form-control-lg"
+
+                                       th:classappend="${#fields.hasErrors(
+                                            'cvv'
+                                       )} ? ' is-invalid' : ''"
+
+                                       inputmode="numeric"
+
+                                       maxlength="4"
+
+                                       autocomplete="cc-csc"
+
+                                       placeholder="***">
+
+
+                                <div class="invalid-feedback"
+                                     th:if="${#fields.hasErrors(
+                                        'cvv'
+                                     )}"
+                                     th:errors="*{cvv}">
+                                </div>
+
+                            </div>
+
+                        </div>
+
+
+                        <!-- =================================
+                             ERROR GLOBAL
+                             ================================= -->
+
+                        <div th:if="${#fields.hasGlobalErrors()}"
+                             class="alert alert-danger">
+
+                            <div th:each="error :
+                                    ${#fields.globalErrors()}"
+                                 th:text="${error}">
+                            </div>
+
+                        </div>
+
+
+                        <!-- =================================
+                             NOTA DE SEGURIDAD
+                             ================================= -->
+
+                        <div class="alert alert-light border
+                                    nota-seguridad mb-4">
+
+                            <div class="d-flex">
+
+                                <i class="bi bi-shield-lock-fill
+                                          text-success me-2"></i>
+
+                                <span>
+                                    Tu información de pago está protegida.
+                                    El CVV nunca se almacena en el sistema.
+                                </span>
+
+                            </div>
+
+                        </div>
+
+
+                        <!-- =================================
+                             BOTÓN PAGAR
+                             ================================= -->
+
+                        <button type="submit"
+
+                                id="botonPagar"
+
+                                class="btn btn-primary btn-lg w-100">
+
+                            <i class="bi bi-lock-fill me-2"></i>
+
+                            <span id="textoBotonPagar">
+
+                                Pagar Q<span th:text="${#numbers.formatDecimal(
+                                    resumen.monto,
+                                    1,
+                                    2
+                                )}">
+                                    0.00
+                                </span>
+
+                            </span>
+
+                        </button>
+
+
+                    </form>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</main>
+
+
+<!-- =====================================================
+     JAVASCRIPT
+     ===================================================== -->
+
+<script th:inline="javascript">
+
+    document.addEventListener(
+        "DOMContentLoaded",
+        function () {
+
+
+            // =================================================
+            // FA02 - REDIRECCIÓN POR EXPIRACIÓN
+            // =================================================
+
+            const pagoExpirado =
+                /*[[${pagoExpirado == true}]]*/ false;
+
+
+            if (pagoExpirado) {
+
+                const urlRedireccion =
+                    /*[[${urlRedireccionExpirado}]]*/ "/";
+
+
+                setTimeout(
+                    function () {
+
+                        window.location.href =
+                            urlRedireccion;
+
+                    },
+                    4000
+                );
+
+
+                return;
+            }
+
+
+            // =================================================
+            // ELEMENTOS
+            // =================================================
+
+            const formulario =
+                document.getElementById(
+                    "formPago"
+                );
+
+
+            const campoTarjeta =
+                document.getElementById(
+                    "numeroTarjeta"
+                );
+
+
+            const campoTitular =
+                document.getElementById(
+                    "nombreTitular"
+                );
+
+
+            const campoVencimiento =
+                document.getElementById(
+                    "vencimiento"
+                );
+
+
+            const campoCvv =
+                document.getElementById(
+                    "cvv"
+                );
+
+
+            const botonPagar =
+                document.getElementById(
+                    "botonPagar"
+                );
+
+
+            const textoBoton =
+                document.getElementById(
+                    "textoBotonPagar"
+                );
+
+
+            const temporizador =
+                document.getElementById(
+                    "temporizador"
+                );
+
+
+            // =================================================
+            // TARJETA
+            // =================================================
+            //
+            // El PAN original permanece únicamente en memoria
+            // mientras el usuario se encuentra en la página.
+            //
+            // Al perder foco se muestran solamente los últimos
+            // cuatro dígitos.
+            // =================================================
+
+            let tarjetaOriginal =
+                campoTarjeta
+                    ? campoTarjeta.value
+                    : "";
+
+
+            if (campoTarjeta) {
+
+
+                campoTarjeta.addEventListener(
+                    "input",
+                    function () {
+
+                        const valor =
+                            this.value.replace(
+                                /\D/g,
+                                ""
+                            );
+
+
+                        this.value =
+                            valor.substring(
+                                0,
+                                19
+                            );
+
+
+                        tarjetaOriginal =
+                            this.value;
+                    }
+                );
+
+
+                campoTarjeta.addEventListener(
+                    "blur",
+                    function () {
+
+                        tarjetaOriginal =
+                            this.value.replace(
+                                /\D/g,
+                                ""
+                            );
+
+
+                        if (tarjetaOriginal.length >= 4) {
+
+                            const ultimosCuatro =
+                                tarjetaOriginal.slice(
+                                    -4
+                                );
+
+
+                            this.value =
+                                "•••• •••• •••• "
+                                + ultimosCuatro;
+                        }
+                    }
+                );
+
+
+                campoTarjeta.addEventListener(
+                    "focus",
+                    function () {
+
+                        if (tarjetaOriginal) {
+
+                            this.value =
+                                tarjetaOriginal;
+                        }
+                    }
+                );
+
+            }
+
+
+            // =================================================
+            // TITULAR -> MAYÚSCULAS
+            // =================================================
+
+            if (campoTitular) {
+
+                campoTitular.addEventListener(
+                    "input",
+                    function () {
+
+                        this.value =
+                            this.value.toUpperCase();
+                    }
+                );
+            }
+
+
+            // =================================================
+            // VENCIMIENTO -> MM/AA
+            // =================================================
+
+            if (campoVencimiento) {
+
+                campoVencimiento.addEventListener(
+                    "input",
+                    function () {
+
+                        let valor =
+                            this.value.replace(
+                                /\D/g,
+                                ""
+                            );
+
+
+                        valor =
+                            valor.substring(
+                                0,
+                                4
+                            );
+
+
+                        if (valor.length > 2) {
+
+                            valor =
+                                valor.substring(0, 2)
+                                + "/"
+                                + valor.substring(2);
+                        }
+
+
+                        this.value =
+                            valor;
+                    }
+                );
+            }
+
+
+            // =================================================
+            // CVV -> SOLO DÍGITOS
+            // =================================================
+
+            if (campoCvv) {
+
+                campoCvv.addEventListener(
+                    "input",
+                    function () {
+
+                        this.value =
+                            this.value
+                                .replace(
+                                    /\D/g,
+                                    ""
+                                )
+                                .substring(
+                                    0,
+                                    4
+                                );
+                    }
+                );
+            }
+
+
+            // =================================================
+            // EVITAR DOBLE ENVÍO
+            // =================================================
+
+            if (formulario) {
+
+                formulario.addEventListener(
+                    "submit",
+                    function () {
+
+
+                        /*
+                         * Si el número estaba visualmente
+                         * enmascarado, restauramos el PAN real
+                         * justo antes del POST.
+                         */
+                        if (campoTarjeta
+                            && tarjetaOriginal) {
+
+                            campoTarjeta.value =
+                                tarjetaOriginal;
+                        }
+
+
+                        if (botonPagar) {
+
+                            botonPagar.disabled =
+                                true;
+                        }
+
+
+                        if (textoBoton) {
+
+                            textoBoton.textContent =
+                                "Procesando pago...";
+                        }
+                    }
+                );
+            }
+
+
+            // =================================================
+            // TEMPORIZADOR REAL
+            // =================================================
+
+            const fechaExpiracionTexto =
+                /*[[${resumen.fechaExpiracionPago}]]*/ null;
+
+
+            if (fechaExpiracionTexto
+                && temporizador) {
+
+
+                const fechaExpiracion =
+                    new Date(
+                        fechaExpiracionTexto
+                    );
+
+
+                function actualizarTemporizador() {
+
+                    const ahora =
+                        new Date();
+
+
+                    const restante =
+                        fechaExpiracion.getTime()
+                        - ahora.getTime();
+
+
+                    // =========================================
+                    // EXPIRADO
+                    // =========================================
+
+                    if (restante <= 0) {
+
+                        temporizador.textContent =
+                            "00:00";
+
+
+                        temporizador.classList.remove(
+                            "text-success",
+                            "text-warning"
+                        );
+
+
+                        temporizador.classList.add(
+                            "text-danger"
+                        );
+
+
+                        if (botonPagar) {
+
+                            botonPagar.disabled =
+                                true;
+                        }
+
+
+                        /*
+                         * Recargamos la ruta.
+                         *
+                         * El backend es quien realmente valida
+                         * la expiración, cancela la cita y
+                         * libera el horario.
+                         */
+                        window.location.reload();
+
+
+                        return;
+                    }
+
+
+                    const segundosTotales =
+                        Math.floor(
+                            restante / 1000
+                        );
+
+
+                    const minutos =
+                        Math.floor(
+                            segundosTotales / 60
+                        );
+
+
+                    const segundos =
+                        segundosTotales % 60;
+
+
+                    temporizador.textContent =
+                        String(minutos)
+                            .padStart(2, "0")
+
+                        + ":"
+
+                        + String(segundos)
+                            .padStart(2, "0");
+
+
+                    // =========================================
+                    // MENOS DE 1 MINUTO
+                    // =========================================
+
+                    if (segundosTotales <= 60) {
+
+                        temporizador.classList.remove(
+                            "text-success"
+                        );
+
+
+                        temporizador.classList.add(
+                            "text-danger",
+                            "temporizador-critico"
+                        );
+
+                    } else if (segundosTotales <= 120) {
+
+                        temporizador.classList.remove(
+                            "text-success"
+                        );
+
+
+                        temporizador.classList.add(
+                            "text-warning"
+                        );
+                    }
+
+
+                    setTimeout(
+                        actualizarTemporizador,
+                        1000
+                    );
+                }
+
+
+                actualizarTemporizador();
+            }
+
+        }
+    );
+
+</script>
+
+
+</body>
+</html>

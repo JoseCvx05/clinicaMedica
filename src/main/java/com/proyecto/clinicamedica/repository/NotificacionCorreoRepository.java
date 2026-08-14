@@ -28,4 +28,10 @@ public interface NotificacionCorreoRepository
             Collection<String> estados,
             Short maximoIntentos
     );
+
+    boolean existsByTipoNotificacionAndTablaReferenciaAndIdReferencia(
+            String tipoNotificacion,
+            String tablaReferencia,
+            Integer idReferencia
+    );
 }

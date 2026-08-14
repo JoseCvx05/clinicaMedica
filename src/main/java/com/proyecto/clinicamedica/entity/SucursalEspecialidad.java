@@ -1,5 +1,5 @@
 package com.proyecto.clinicamedica.entity;
-
+import java.math.BigDecimal;
 import jakarta.persistence.*;
 
 /**
@@ -76,6 +76,29 @@ public class SucursalEspecialidad {
     private Especialidad especialidad;
 
 
+    // =====================================================
+// PRECIO DE CONSULTA
+// =====================================================
+
+    @Column(
+            name = "precio_consulta",
+            nullable = false,
+            precision = 10,
+            scale = 2
+    )
+    private BigDecimal precioConsulta;
+
+
+    public BigDecimal getPrecioConsulta() {
+        return precioConsulta;
+    }
+
+    public void setPrecioConsulta(
+            BigDecimal precioConsulta
+    ) {
+        this.precioConsulta =
+                precioConsulta;
+    }
     // =====================================================
     // ESTADO
     // =====================================================

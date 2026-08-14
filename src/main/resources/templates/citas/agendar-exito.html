@@ -71,15 +71,14 @@
                     al proceso real de pago.
                     -->
 
-                    <button type="button"
-                            class="btn btn-primary px-4"
-                            disabled>
+                    <a th:href="@{/paciente/pagos/cita/{idCita}(idCita=${idCita})}"
+                       class="btn btn-primary">
 
                         <i class="bi bi-credit-card me-2"></i>
 
                         Continuar al pago
 
-                    </button>
+                    </a>
 
 
                 </div>
