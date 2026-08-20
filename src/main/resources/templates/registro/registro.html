@@ -75,13 +75,24 @@
 
                         </div>
 
-                        <h1 class="h3 fw-bold mb-2">
+                        <h1 class="h3 fw-bold mb-2"
+                            th:text="${origen == 'recepcion'}
+        ? 'Registrar paciente'
+        : 'Crear cuenta de paciente'">
+
                             Crear cuenta de paciente
+
                         </h1>
 
-                        <p class="text-secondary mb-0">
+
+                        <p class="text-secondary mb-0"
+                           th:text="${origen == 'recepcion'}
+        ? 'Complete los datos del paciente para continuar con el proceso de recepción.'
+        : 'Complete sus datos para registrarse en el Sistema Informático Hospitalario.'">
+
                             Complete sus datos para registrarse
                             en el Sistema Informático Hospitalario.
+
                         </p>
 
                     </div>
@@ -112,6 +123,15 @@
                           th:object="${registro}"
                           method="post"
                           novalidate>
+
+
+                        <!-- ================================================= -->
+                        <!-- CU-05 FA03 - CONSERVAR ORIGEN RECEPCIÓN          -->
+                        <!-- ================================================= -->
+
+                        <input type="hidden"
+                               name="origen"
+                               th:value="${origen}">
 
 
                         <!-- CSRF -->
@@ -406,7 +426,10 @@
 
                             <div class="col-12 col-md-6">
 
-                                <button type="button"
+                                <!-- CU-02 - REGISTRO NORMAL -->
+
+                                <button th:if="${origen != 'recepcion'}"
+                                        type="button"
                                         class="btn btn-outline-secondary w-100"
                                         data-bs-toggle="modal"
                                         data-bs-target="#modalVolverPortal">
@@ -416,6 +439,19 @@
                                     Volver al portal
 
                                 </button>
+
+
+                                <!-- CU-05 FA03 - REGISTRO DESDE RECEPCIÓN -->
+
+                                <a th:if="${origen == 'recepcion'}"
+                                   th:href="@{/interno/recepcion}"
+                                   class="btn btn-outline-secondary w-100">
+
+                                    <i class="bi bi-arrow-left me-2"></i>
+
+                                    Volver a Recepción
+
+                                </a>
 
                             </div>
 
@@ -444,11 +480,12 @@
                     <!-- LOGIN                             -->
                     <!-- ================================= -->
 
-                    <div class="text-center mt-4">
+                    <div th:if="${origen != 'recepcion'}"
+                         class="text-center mt-4">
 
-                        <span class="text-secondary">
-                            ¿Ya tiene una cuenta?
-                        </span>
+    <span class="text-secondary">
+        ¿Ya tiene una cuenta?
+    </span>
 
                         <a th:href="@{/login}"
                            class="text-decoration-none fw-semibold">

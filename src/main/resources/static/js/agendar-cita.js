@@ -243,6 +243,34 @@ function establecerFechaMinima(
 
 
 // =========================================================
+// OBTENER RUTA BASE SEGÚN EL TIPO DE AGENDAMIENTO
+// =========================================================
+
+function obtenerRutaBaseCitas() {
+
+    const rutaActual =
+        window.location.pathname;
+
+
+    console.log(
+        "Ruta actual:",
+        rutaActual
+    );
+
+
+    if (rutaActual.startsWith(
+        "/interno/recepcion/"
+    )) {
+
+        return "/interno/recepcion/citas";
+    }
+
+
+    return "/paciente/citas";
+}
+
+
+// =========================================================
 // CONSULTAR DISPONIBILIDAD
 // =========================================================
 
@@ -250,12 +278,22 @@ async function consultarDisponibilidad(
     fecha
 ) {
 
+    const rutaBase =
+        obtenerRutaBaseCitas();
+
+
     const url =
-        `/paciente/citas/disponibilidad?fecha=${
+        `${rutaBase}/disponibilidad?fecha=${
             encodeURIComponent(
                 fecha
             )
         }`;
+
+
+    console.log(
+        "Consultando disponibilidad en:",
+        url
+    );
 
 
     const respuesta =
@@ -272,15 +310,42 @@ async function consultarDisponibilidad(
         );
 
 
+    console.log(
+        "Estado HTTP:",
+        respuesta.status
+    );
+
+
     if (!respuesta.ok) {
 
+        const cuerpoError =
+            await respuesta.text();
+
+
+        console.error(
+            "Respuesta del servidor:",
+            cuerpoError
+        );
+
+
         throw new Error(
-            "El servidor rechazó la consulta de disponibilidad."
+            "El servidor respondió HTTP "
+            + respuesta.status
         );
     }
 
 
-    return await respuesta.json();
+    const horarios =
+        await respuesta.json();
+
+
+    console.log(
+        "Horarios recibidos:",
+        horarios
+    );
+
+
+    return horarios;
 }
 
 
@@ -532,8 +597,12 @@ function inicializarContadorReserva() {
                 // realmente expiró.
                 // =============================================
 
+                const rutaBase =
+                    obtenerRutaBaseCitas();
+
+
                 window.location.href =
-                    "/paciente/citas/agendar/reserva-expirada";
+                    `${rutaBase}/agendar/reserva-expirada`;
 
 
                 return false;

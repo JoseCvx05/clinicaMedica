@@ -277,6 +277,86 @@ public class DisponibilidadCitaService {
                 finLocal
         );
     }
+    // =====================================================
+// VALIDAR DISPONIBILIDAD PARA REASIGNACIÓN
+// =====================================================
+//
+// FA07 CU-05.
+//
+// A diferencia del agendamiento normal, una cita puede
+// estar ya en estado "Paciente Presente", por lo que no
+// exigimos que la hora de inicio sea posterior a "ahora".
+//
+// Sí mantenemos:
+// - horario habitual del médico,
+// - citas existentes,
+// - eventos,
+// - reservas temporales.
+//
+// =====================================================
+
+    public boolean estaDisponibleParaReasignacion(
+            Integer idMedico,
+            OffsetDateTime inicio,
+            OffsetDateTime fin
+    ) {
+
+        if (idMedico == null
+                || inicio == null
+                || fin == null) {
+
+            return false;
+        }
+
+
+        if (!fin.isAfter(
+                inicio
+        )) {
+
+            return false;
+        }
+
+
+        OffsetDateTime inicioLocal =
+                inicio
+                        .atZoneSameInstant(
+                                zonaHoraria
+                        )
+                        .toOffsetDateTime();
+
+
+        OffsetDateTime finLocal =
+                fin
+                        .atZoneSameInstant(
+                                zonaHoraria
+                        )
+                        .toOffsetDateTime();
+
+
+        // =================================================
+        // HORARIO REAL DEL MÉDICO
+        // =================================================
+
+        if (!perteneceAHorarioMedico(
+                idMedico,
+                inicioLocal,
+                finLocal
+        )) {
+
+            return false;
+        }
+
+
+        // =================================================
+        // FUENTES DE OCUPACIÓN
+        // =================================================
+
+        return !estaOcupado(
+                idMedico,
+                inicioLocal,
+                finLocal
+        );
+    }
 
 
     // =====================================================

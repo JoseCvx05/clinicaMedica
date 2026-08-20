@@ -170,6 +170,34 @@ public class SecurityConfig {
 
 
                                 // =========================
+                                // CU-05
+                                // RECEPCIÓN
+                                // =========================
+                                //
+                                // Toda operación de recepción queda restringida
+                                // a Recepcionista y Administrador.
+                                //
+                                // Incluye:
+                                // - búsqueda de citas;
+                                // - registro de llegada;
+                                // - Walk-in;
+                                // - emergencia;
+                                // - reasignación de médico;
+                                // - consulta automática de estado.
+                                //
+                                // IMPORTANTE:
+                                // Este matcher debe estar ANTES de /interno/**
+                                // porque Spring Security evalúa las reglas en orden.
+                                // =========================
+
+                                .requestMatchers(
+                                        "/interno/recepcion/**"
+                                )
+                                .hasRole(
+                                        "RECEPCIONISTA"
+                                )
+
+                                // =========================
                                 // PORTAL INTERNO GENERAL
                                 // =========================
 

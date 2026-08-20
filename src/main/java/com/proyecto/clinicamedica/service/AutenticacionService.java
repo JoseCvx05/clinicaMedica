@@ -167,26 +167,6 @@ public class AutenticacionService {
         Usuario usuario =
                 usuarioOptional.get();
 
-
-        // =================================================
-        // 5. USUARIO INACTIVO
-        // =================================================
-        //
-        // Tampoco se revela que la cuenta existe pero
-        // está desactivada.
-        // =================================================
-
-        if (!Boolean.TRUE.equals(
-                usuario.getActivo()
-        )) {
-
-            return resultadoCredencialesIncorrectas(
-                    politica,
-                    MAXIMO_INTENTOS - 1
-            );
-        }
-
-
         // =================================================
         // 6. COMPROBAR BLOQUEO
         // =================================================
@@ -247,8 +227,12 @@ public class AutenticacionService {
 
 
         // =================================================
-        // 8. CONTRASEÑA INCORRECTA
-        // =================================================
+// CONTRASEÑA INCORRECTA
+// =================================================
+//
+// Aunque la cuenta esté inactiva, una contraseña
+// incorrecta sigue siendo un intento fallido.
+// =================================================
 
         if (!contrasenaCorrecta) {
 
@@ -259,14 +243,13 @@ public class AutenticacionService {
         }
 
 
-        // =================================================
-        // 9. CONTRASEÑA CORRECTA
-        // =================================================
-        //
-        // Los intentos son consecutivos.
-        //
-        // Una autenticación correcta reinicia el contador.
-        // =================================================
+// =================================================
+// CONTRASEÑA CORRECTA
+// =================================================
+//
+// Como las credenciales fueron correctas,
+// reiniciamos los intentos consecutivos.
+// =================================================
 
         usuario.setIntentosFallidosLogin(
                 (short) 0
@@ -280,6 +263,22 @@ public class AutenticacionService {
         usuarioService.guardar(
                 usuario
         );
+
+
+// =================================================
+// USUARIO INACTIVO
+// =================================================
+//
+// La contraseña fue correcta, pero una cuenta
+// inactiva no puede acceder al sistema.
+// =================================================
+
+        if (!Boolean.TRUE.equals(
+                usuario.getActivo()
+        )) {
+
+            return resultadoCuentaInactiva();
+        }
 
 
         // =================================================
@@ -476,6 +475,34 @@ public class AutenticacionService {
                         0,
 
                         bloqueadoHasta
+                );
+
+
+        return new ResultadoAutenticacion(
+                respuesta,
+                null
+        );
+    }
+    // =====================================================
+// RESPUESTA: CUENTA INACTIVA
+// =====================================================
+
+    private ResultadoAutenticacion
+    resultadoCuentaInactiva() {
+
+        LoginResponse respuesta =
+                new LoginResponse(
+
+                        EstadoLogin.CUENTA_INACTIVA,
+
+                        "Este usuario se encuentra inactivo. "
+                                + "No puede iniciar sesión ni acceder al sistema.",
+
+                        null,
+
+                        null,
+
+                        null
                 );
 
 

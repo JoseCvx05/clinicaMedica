@@ -2,33 +2,46 @@ package com.proyecto.clinicamedica.controller;
 
 import com.proyecto.clinicamedica.dto.cita.CitaWizardDTO;
 import com.proyecto.clinicamedica.dto.cita.ResultadoValidacionCita;
-import com.proyecto.clinicamedica.model.cita.PasoCita;
-import com.proyecto.clinicamedica.service.CatalogoCitaService;
-import com.proyecto.clinicamedica.service.CitaWizardNavegacionService;
-import com.proyecto.clinicamedica.service.ValidacionCitaWizardService;
+
+import com.proyecto.clinicamedica.entity.Cita;
 import com.proyecto.clinicamedica.entity.ReservaTemporalCita;
 import com.proyecto.clinicamedica.entity.Usuario;
 
+import com.proyecto.clinicamedica.exception.DocumentoCitaInvalidoException;
 import com.proyecto.clinicamedica.exception.HorarioNoDisponibleException;
 import com.proyecto.clinicamedica.exception.ReservaCitaInvalidaException;
-
-import com.proyecto.clinicamedica.service.ReservaTemporalCitaService;
-import com.proyecto.clinicamedica.service.UsuarioActualService;
-import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.*;
-import com.proyecto.clinicamedica.model.cita.EstadoReservaTemporal;
-import java.util.Objects;
-import com.proyecto.clinicamedica.entity.Cita;
-
-import com.proyecto.clinicamedica.exception.DocumentoCitaInvalidoException;
 import com.proyecto.clinicamedica.exception.ReservaExpiradaException;
 
+import com.proyecto.clinicamedica.model.cita.EstadoReservaTemporal;
+import com.proyecto.clinicamedica.model.cita.PasoCita;
+
+import com.proyecto.clinicamedica.service.CatalogoCitaService;
+import com.proyecto.clinicamedica.service.CitaWizardNavegacionService;
 import com.proyecto.clinicamedica.service.FinalizacionCitaService;
+import com.proyecto.clinicamedica.service.RecepcionCitaService;
+import com.proyecto.clinicamedica.service.ReservaTemporalCitaService;
+import com.proyecto.clinicamedica.service.UsuarioActualService;
+import com.proyecto.clinicamedica.service.ValidacionCitaWizardService;
+
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpSession;
+
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.SessionAttributes;
 
 import org.springframework.web.bind.support.SessionStatus;
+
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.Objects;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 /**
  * =========================================================
@@ -36,6 +49,10 @@ import org.springframework.web.multipart.MultipartFile;
  * =========================================================
  *
  * CU-03 Agendar Citas.
+ *
+ * Reutilizado también por:
+ *
+ * CU-05 FA04 - Nueva Cita Walk-in desde recepción.
  *
  * Flujo:
  *
@@ -48,10 +65,27 @@ import org.springframework.web.multipart.MultipartFile;
  * =========================================================
  */
 @Controller
-@RequestMapping("/paciente/citas")
 @SessionAttributes("citaWizard")
 public class CitaWizardController {
 
+
+    // =====================================================
+    // CONSTANTES
+    // =====================================================
+
+    private static final String RUTA_PACIENTE =
+            "/paciente/citas";
+
+    private static final String RUTA_RECEPCION =
+            "/interno/recepcion/citas";
+
+    private static final String SESION_PACIENTE_WALKIN =
+            "recepcionPacienteWalkInId";
+
+
+    // =====================================================
+    // DEPENDENCIAS
+    // =====================================================
 
     private final CatalogoCitaService
             catalogoCitaService;
@@ -71,13 +105,35 @@ public class CitaWizardController {
     private final FinalizacionCitaService
             finalizacionCitaService;
 
+    private final RecepcionCitaService
+            recepcionCitaService;
+
+
+    // =====================================================
+    // CONSTRUCTOR
+    // =====================================================
+
     public CitaWizardController(
+
             CatalogoCitaService catalogoCitaService,
-            ValidacionCitaWizardService validacionCitaWizardService,
-            CitaWizardNavegacionService navegacionService,
-            ReservaTemporalCitaService reservaTemporalCitaService,
-            UsuarioActualService usuarioActualService,
-            FinalizacionCitaService finalizacionCitaService
+
+            ValidacionCitaWizardService
+                    validacionCitaWizardService,
+
+            CitaWizardNavegacionService
+                    navegacionService,
+
+            ReservaTemporalCitaService
+                    reservaTemporalCitaService,
+
+            UsuarioActualService
+                    usuarioActualService,
+
+            FinalizacionCitaService
+                    finalizacionCitaService,
+
+            RecepcionCitaService
+                    recepcionCitaService
     ) {
 
         this.catalogoCitaService =
@@ -97,6 +153,9 @@ public class CitaWizardController {
 
         this.finalizacionCitaService =
                 finalizacionCitaService;
+
+        this.recepcionCitaService =
+                recepcionCitaService;
     }
 
 
@@ -121,23 +180,63 @@ public class CitaWizardController {
 
 
     // =====================================================
-    // INICIAR CU-03
+    // RUTA BASE PARA LA VISTA
     // =====================================================
 
-    @GetMapping("/agendar")
+    @ModelAttribute("rutaBaseCitas")
+    public String rutaBaseCitas(
+            HttpServletRequest request
+    ) {
+
+        return esFlujoRecepcion(
+                request
+        )
+                ? RUTA_RECEPCION
+                : RUTA_PACIENTE;
+    }
+
+
+    // =====================================================
+    // IDENTIFICAR MODO WALK-IN
+    // =====================================================
+
+    @ModelAttribute("modoWalkIn")
+    public boolean modoWalkIn(
+            HttpServletRequest request
+    ) {
+
+        return esFlujoRecepcion(
+                request
+        );
+    }
+
+
+    // =====================================================
+    // INICIAR CU-03 NORMAL
+    // =====================================================
+
+    @GetMapping("/paciente/citas/agendar")
     public String iniciar(
+
             @ModelAttribute("citaWizard")
             CitaWizardDTO wizard,
+
+            HttpSession session,
+
             Model model
     ) {
 
         /*
-         * Cada vez que el usuario inicia expresamente
-         * un nuevo agendamiento, comenzamos desde Paso 1.
+         * Si antes existió un flujo Walk-in,
+         * eliminamos cualquier contexto residual.
          */
-        navegacionService.regresarA(
-                wizard,
-                PasoCita.SUCURSAL
+        session.removeAttribute(
+                SESION_PACIENTE_WALKIN
+        );
+
+
+        reiniciarWizard(
+                wizard
         );
 
 
@@ -151,14 +250,137 @@ public class CitaWizardController {
 
 
     // =====================================================
+    // CU-05 FA04 - INICIAR WALK-IN
+    // =====================================================
+
+    @GetMapping(
+            "/interno/recepcion/citas/agendar/walk-in/{idPaciente}"
+    )
+    public String iniciarWalkIn(
+
+            @PathVariable("idPaciente")
+            Integer idPaciente,
+
+            @ModelAttribute("citaWizard")
+            CitaWizardDTO wizard,
+
+            HttpSession session,
+
+            Model model
+    ) {
+
+        /*
+         * Validamos en backend que el ID realmente
+         * corresponda a un paciente.
+         */
+        recepcionCitaService
+                .obtenerPacienteParaAgendamiento(
+                        idPaciente
+                );
+
+
+        /*
+         * Guardamos solamente el ID en sesión.
+         * No guardamos una entidad JPA completa.
+         */
+        session.setAttribute(
+                SESION_PACIENTE_WALKIN,
+                idPaciente
+        );
+
+
+        reiniciarWizard(
+                wizard
+        );
+
+
+        cargarPaso1(
+                model
+        );
+
+
+        return "citas/agendar";
+    }
+
+    // =====================================================
+// MOSTRAR PASO ACTUAL DEL WIZARD
+// =====================================================
+//
+// PRG:
+//
+// POST
+//   ↓
+// REDIRECT
+//   ↓
+// GET
+//
+// Evita el reenvío de formularios al:
+// - actualizar;
+// - regresar con el navegador;
+// - navegar entre pasos.
+// =====================================================
+
+    @GetMapping({
+            "/paciente/citas/agendar/paso",
+            "/interno/recepcion/citas/agendar/paso"
+    })
+    public String mostrarPasoActual(
+
+            @ModelAttribute("citaWizard")
+            CitaWizardDTO wizard,
+
+            HttpServletRequest request,
+
+            HttpSession session,
+
+            Model model
+    ) {
+
+        // =================================================
+        // VALIDAR CONTEXTO WALK-IN
+        // =================================================
+
+        if (esFlujoRecepcion(request)) {
+
+            Object pacienteWalkIn =
+                    session.getAttribute(
+                            SESION_PACIENTE_WALKIN
+                    );
+
+
+            if (!(pacienteWalkIn instanceof Integer)) {
+
+                return "redirect:/interno/recepcion";
+            }
+        }
+
+
+        cargarModeloDelPaso(
+                wizard,
+                model
+        );
+
+
+        return "citas/agendar";
+    }
+
+
+    // =====================================================
     // PASO 1 → PASO 2
     // =====================================================
 
-    @PostMapping("/agendar/sucursal")
+    @PostMapping({
+            "/paciente/citas/agendar/sucursal",
+            "/interno/recepcion/citas/agendar/sucursal"
+    })
     public String seleccionarSucursal(
+
             @ModelAttribute("citaWizard")
             CitaWizardDTO wizard,
-            Model model
+
+            HttpServletRequest request,
+
+            RedirectAttributes redirectAttributes
     ) {
 
         ResultadoValidacionCita resultado =
@@ -171,13 +393,460 @@ public class CitaWizardController {
 
         if (resultado.tieneErrores()) {
 
-            cargarPaso1(
-                    model
+            wizard.setPasoActual(
+                    PasoCita.SUCURSAL
             );
 
-            model.addAttribute(
+
+            redirectAttributes.addFlashAttribute(
                     "errores",
                     resultado
+            );
+
+
+            return
+                    redirigirAlPasoActual(
+                    request
+            );
+        }
+
+
+        wizard.setIdEspecialidad(null);
+
+        wizard.setIdMedico(null);
+
+        wizard.setFechaHoraInicio(null);
+
+        wizard.setFechaHoraFin(null);
+
+        wizard.setTokenReserva(null);
+
+        wizard.setFechaExpiracionReserva(null);
+
+        wizard.setMotivoConsulta(null);
+
+
+        wizard.setPasoActual(
+                PasoCita.ESPECIALIDAD
+        );
+
+
+        return redirigirAlPasoActual(
+                request
+        );
+    }
+
+
+    // =====================================================
+    // PASO 2 → PASO 3
+    // =====================================================
+
+    @PostMapping({
+            "/paciente/citas/agendar/especialidad",
+            "/interno/recepcion/citas/agendar/especialidad"
+    })
+    public String seleccionarEspecialidad(
+
+            @ModelAttribute("citaWizard")
+            CitaWizardDTO wizard,
+
+            HttpServletRequest request,
+
+            RedirectAttributes redirectAttributes
+    ) {
+
+        // =================================================
+        // VALIDAR SUCURSAL
+        // =================================================
+
+        if (!catalogoCitaService
+                .existeSucursalActiva(
+                        wizard.getIdSucursal()
+                )) {
+
+            navegacionService.regresarA(
+                    wizard,
+                    PasoCita.SUCURSAL
+            );
+
+
+            redirectAttributes.addFlashAttribute(
+                    "mensajeError",
+                    "La sucursal seleccionada ya no está disponible."
+            );
+
+
+            return redirigirAlPasoActual(
+                    request
+            );
+        }
+
+
+        // =================================================
+        // VALIDAR ESPECIALIDAD
+        // =================================================
+
+        ResultadoValidacionCita resultado =
+                validacionCitaWizardService
+                        .validar(
+                                PasoCita.ESPECIALIDAD,
+                                wizard
+                        );
+
+
+        if (resultado.tieneErrores()) {
+
+            wizard.setPasoActual(
+                    PasoCita.ESPECIALIDAD
+            );
+
+
+            redirectAttributes.addFlashAttribute(
+                    "errores",
+                    resultado
+            );
+
+
+            return redirigirAlPasoActual(
+                    request
+            );
+        }
+
+
+        wizard.setIdMedico(null);
+
+        wizard.setFechaHoraInicio(null);
+
+        wizard.setFechaHoraFin(null);
+
+        wizard.setTokenReserva(null);
+
+        wizard.setFechaExpiracionReserva(null);
+
+        wizard.setMotivoConsulta(null);
+
+
+        wizard.setPasoActual(
+                PasoCita.MEDICO
+        );
+
+
+        return redirigirAlPasoActual(
+                request
+        );
+    }
+
+
+    // =====================================================
+    // PASO 3 → PASO 4
+    // =====================================================
+
+    @PostMapping({
+            "/paciente/citas/agendar/medico",
+            "/interno/recepcion/citas/agendar/medico"
+    })
+    public String seleccionarMedico(
+
+            @ModelAttribute("citaWizard")
+            CitaWizardDTO wizard,
+
+            HttpServletRequest request,
+
+            RedirectAttributes redirectAttributes
+    ) {
+
+        // =================================================
+        // VALIDAR SUCURSAL
+        // =================================================
+
+        if (!catalogoCitaService
+                .existeSucursalActiva(
+                        wizard.getIdSucursal()
+                )) {
+
+            navegacionService.regresarA(
+                    wizard,
+                    PasoCita.SUCURSAL
+            );
+
+
+            redirectAttributes.addFlashAttribute(
+                    "mensajeError",
+                    "La sucursal seleccionada ya no está disponible."
+            );
+
+
+            return redirigirAlPasoActual(
+                    request
+            );
+        }
+
+
+        // =================================================
+        // VALIDAR ESPECIALIDAD
+        // =================================================
+
+        if (!catalogoCitaService
+                .especialidadDisponibleEnSucursal(
+                        wizard.getIdSucursal(),
+                        wizard.getIdEspecialidad()
+                )) {
+
+            navegacionService.regresarA(
+                    wizard,
+                    PasoCita.ESPECIALIDAD
+            );
+
+
+            redirectAttributes.addFlashAttribute(
+                    "mensajeError",
+                    "La especialidad seleccionada ya no está disponible."
+            );
+
+
+            return redirigirAlPasoActual(
+                    request
+            );
+        }
+
+
+        // =================================================
+        // VALIDAR MÉDICO
+        // =================================================
+
+        ResultadoValidacionCita resultado =
+                validacionCitaWizardService
+                        .validar(
+                                PasoCita.MEDICO,
+                                wizard
+                        );
+
+
+        if (resultado.tieneErrores()) {
+
+            wizard.setPasoActual(
+                    PasoCita.MEDICO
+            );
+
+
+            redirectAttributes.addFlashAttribute(
+                    "errores",
+                    resultado
+            );
+
+
+            return redirigirAlPasoActual(
+                    request
+            );
+        }
+
+
+        wizard.setFechaHoraInicio(null);
+
+        wizard.setFechaHoraFin(null);
+
+        wizard.setTokenReserva(null);
+
+        wizard.setFechaExpiracionReserva(null);
+
+        wizard.setMotivoConsulta(null);
+
+
+        wizard.setPasoActual(
+                PasoCita.FECHA_HORA
+        );
+
+
+        return redirigirAlPasoActual(
+                request
+        );
+    }
+
+    // =====================================================
+    // VOLVER
+    // =====================================================
+
+    @PostMapping({
+            "/paciente/citas/agendar/volver",
+            "/interno/recepcion/citas/agendar/volver"
+    })
+    public String volver(
+
+            @RequestParam("paso")
+            Integer numeroPaso,
+
+            @ModelAttribute("citaWizard")
+            CitaWizardDTO wizard,
+
+            HttpServletRequest request
+    ) {
+
+        PasoCita destino =
+                obtenerPaso(
+                        numeroPaso
+                );
+
+
+        navegacionService.regresarA(
+                wizard,
+                destino
+        );
+
+
+        return redirigirAlPasoActual(
+                request
+        );
+    }
+
+
+    // =====================================================
+    // PASO 4 → PASO 5
+    // =====================================================
+
+    @PostMapping({
+            "/paciente/citas/agendar/horario",
+            "/interno/recepcion/citas/agendar/horario"
+    })
+    public String seleccionarHorario(
+
+            @ModelAttribute("citaWizard")
+            CitaWizardDTO wizard,
+
+            HttpServletRequest request,
+
+            HttpSession session,
+
+            RedirectAttributes redirectAttributes
+    ) {
+
+        ResultadoValidacionCita resultado =
+                validacionCitaWizardService
+                        .validar(
+                                PasoCita.FECHA_HORA,
+                                wizard
+                        );
+
+
+        if (resultado.tieneErrores()) {
+
+            wizard.setPasoActual(
+                    PasoCita.FECHA_HORA
+            );
+
+
+            redirectAttributes.addFlashAttribute(
+                    "errores",
+                    resultado
+            );
+
+
+            return redirigirAlPasoActual(
+                    request
+            );
+        }
+
+
+        Usuario paciente =
+                obtenerPacienteObjetivo(
+                        request,
+                        session
+                );
+
+
+        try {
+
+            ReservaTemporalCita reserva =
+                    reservaTemporalCitaService
+                            .reservar(
+                                    paciente.getId(),
+                                    wizard.getIdMedico(),
+                                    wizard.getIdSucursal(),
+                                    wizard.getIdEspecialidad(),
+                                    wizard.getFechaHoraInicio(),
+                                    wizard.getFechaHoraFin()
+                            );
+
+
+            wizard.setTokenReserva(
+                    reserva.getTokenReserva()
+            );
+
+
+            wizard.setFechaExpiracionReserva(
+                    reserva.getFechaExpiracion()
+            );
+
+
+            wizard.setPasoActual(
+                    PasoCita.CONFIRMACION
+            );
+
+
+            return redirigirAlPasoActual(
+                    request
+            );
+
+
+        } catch (
+                HorarioNoDisponibleException
+                | ReservaCitaInvalidaException ex
+        ) {
+
+            wizard.setPasoActual(
+                    PasoCita.FECHA_HORA
+            );
+
+
+            redirectAttributes.addFlashAttribute(
+                    "mensajeError",
+                    ex.getMessage()
+            );
+
+
+            return redirigirAlPasoActual(
+                    request
+            );
+        }
+    }
+
+
+    // =====================================================
+    // FA03 CU-03 - RESERVA TEMPORAL EXPIRADA
+    // =====================================================
+
+    @GetMapping({
+            "/paciente/citas/agendar/reserva-expirada",
+            "/interno/recepcion/citas/agendar/reserva-expirada"
+    })
+    public String procesarReservaExpirada(
+
+            @ModelAttribute("citaWizard")
+            CitaWizardDTO wizard,
+
+            Model model
+    ) {
+
+        EstadoReservaTemporal estado =
+                reservaTemporalCitaService
+                        .obtenerEstado(
+                                wizard.getTokenReserva()
+                        );
+
+
+        // =================================================
+        // TODAVÍA ESTÁ VIGENTE
+        // =================================================
+
+        if (estado == EstadoReservaTemporal.VIGENTE) {
+
+            wizard.setPasoActual(
+                    PasoCita.CONFIRMACION
+            );
+
+
+            cargarPaso5(
+                    wizard,
+                    model
             );
 
 
@@ -185,10 +854,355 @@ public class CitaWizardController {
         }
 
 
-        /*
-         * Si cambió la sucursal, cualquier selección
-         * posterior deja de ser válida.
-         */
+        // =================================================
+        // VOLVER AL HORARIO
+        // =================================================
+
+        navegacionService.regresarA(
+                wizard,
+                PasoCita.FECHA_HORA
+        );
+
+
+        if (estado == EstadoReservaTemporal.EXPIRADA) {
+
+            model.addAttribute(
+                    "mensajeError",
+
+                    "El tiempo para confirmar su cita ha expirado. "
+                            + "El horario seleccionado ha sido liberado. "
+                            + "Por favor, seleccione un nuevo horario."
+            );
+
+        } else {
+
+            model.addAttribute(
+                    "mensajeError",
+
+                    "La reserva temporal ya no está disponible. "
+                            + "Seleccione un nuevo horario."
+            );
+        }
+
+
+        return "citas/agendar";
+    }
+
+
+    // =====================================================
+    // PASO 5 - CONFIRMAR CITA
+    // =====================================================
+    @PostMapping({
+            "/paciente/citas/agendar/confirmar",
+            "/interno/recepcion/citas/agendar/confirmar"
+    })
+    public String confirmarCita(
+
+            @ModelAttribute("citaWizard")
+            CitaWizardDTO wizard,
+
+            @RequestParam(
+                    value = "documento",
+                    required = false
+            )
+            MultipartFile documento,
+
+            HttpServletRequest request,
+
+            HttpSession session,
+
+            RedirectAttributes redirectAttributes,
+
+            SessionStatus sessionStatus
+    ) {
+
+        // =================================================
+        // VALIDAR MOTIVO
+        // =================================================
+
+        ResultadoValidacionCita resultado =
+                validacionCitaWizardService
+                        .validar(
+                                PasoCita.CONFIRMACION,
+                                wizard
+                        );
+
+
+        if (resultado.tieneErrores()) {
+
+            wizard.setPasoActual(
+                    PasoCita.CONFIRMACION
+            );
+
+
+            redirectAttributes.addFlashAttribute(
+                    "errores",
+                    resultado
+            );
+
+
+            return redirigirAlPasoActual(
+                    request
+            );
+        }
+
+
+        // =================================================
+        // PACIENTE OBJETIVO
+        // =================================================
+
+        Usuario paciente =
+                obtenerPacienteObjetivo(
+                        request,
+                        session
+                );
+
+
+        try {
+
+            Cita cita;
+
+
+            // =============================================
+            // CU-05 WALK-IN
+            // =============================================
+
+            if (esFlujoRecepcion(
+                    request
+            )) {
+
+                Usuario recepcionista =
+                        usuarioActualService
+                                .obtenerUsuarioActual();
+
+
+                cita =
+                        finalizacionCitaService
+                                .finalizar(
+                                        paciente,
+                                        recepcionista,
+                                        wizard,
+                                        documento,
+                                        "Presencial",
+                                        "Normal"
+                                );
+
+            } else {
+
+                // =========================================
+                // CU-03 NORMAL
+                // =========================================
+
+                cita =
+                        finalizacionCitaService
+                                .finalizar(
+                                        paciente,
+                                        wizard,
+                                        documento
+                                );
+            }
+
+
+            // =================================================
+            // FINALIZAR WIZARD
+            // =================================================
+
+            sessionStatus.setComplete();
+
+
+            // =================================================
+            // CU-05 - REGRESAR A RECEPCIÓN
+            // =================================================
+
+            if (esFlujoRecepcion(
+                    request
+            )) {
+
+                session.removeAttribute(
+                        SESION_PACIENTE_WALKIN
+                );
+
+
+                return "redirect:/interno/recepcion/cita/"
+                        + cita.getId();
+            }
+
+
+            // =================================================
+            // CU-03 - CITA CREADA
+            // =================================================
+
+            return "redirect:/paciente/citas/agendar/exito?idCita="
+                    + cita.getId();
+
+
+        } catch (
+                ReservaExpiradaException ex
+        ) {
+
+            // =================================================
+            // RESERVA EXPIRADA
+            // =================================================
+
+            navegacionService.regresarA(
+                    wizard,
+                    PasoCita.FECHA_HORA
+            );
+
+
+            redirectAttributes.addFlashAttribute(
+                    "mensajeError",
+                    ex.getMessage()
+            );
+
+
+            return redirigirAlPasoActual(
+                    request
+            );
+
+
+        } catch (
+                DocumentoCitaInvalidoException
+                | ReservaCitaInvalidaException ex
+        ) {
+
+            // =================================================
+            // ERROR EN CONFIRMACIÓN
+            // =================================================
+
+            wizard.setPasoActual(
+                    PasoCita.CONFIRMACION
+            );
+
+
+            redirectAttributes.addFlashAttribute(
+                    "mensajeError",
+                    ex.getMessage()
+            );
+
+
+            return redirigirAlPasoActual(
+                    request
+            );
+        }
+    }
+
+
+    // =====================================================
+    // RESULTADO EXITOSO CU-03
+    // =====================================================
+
+    @GetMapping("/paciente/citas/agendar/exito")
+    public String citaRegistrada(
+
+            @RequestParam("idCita")
+            Integer idCita,
+
+            Model model
+    ) {
+
+        model.addAttribute(
+                "idCita",
+                idCita
+        );
+
+
+        model.addAttribute(
+                "mensajeExito",
+
+                "Su cita ha sido registrada exitosamente. "
+                        + "Será redirigido al proceso de pago "
+                        + "para confirmar la reserva."
+        );
+
+
+        return "citas/agendar-exito";
+    }
+
+
+    // =====================================================
+    // DETERMINAR FLUJO
+    // =====================================================
+
+    private boolean esFlujoRecepcion(
+            HttpServletRequest request
+    ) {
+
+        return request != null
+                && request
+                .getRequestURI()
+                .startsWith(
+                        "/interno/recepcion/"
+                );
+    }
+
+
+    // =====================================================
+    // OBTENER PACIENTE OBJETIVO
+    // =====================================================
+
+    private Usuario obtenerPacienteObjetivo(
+
+            HttpServletRequest request,
+
+            HttpSession session
+    ) {
+
+        // =================================================
+        // CU-03 NORMAL
+        // =================================================
+
+        if (!esFlujoRecepcion(
+                request
+        )) {
+
+            return usuarioActualService
+                    .obtenerUsuarioActual();
+        }
+
+
+        // =================================================
+        // CU-05 WALK-IN
+        // =================================================
+
+        Object valor =
+                session.getAttribute(
+                        SESION_PACIENTE_WALKIN
+                );
+
+
+        if (!(valor instanceof Integer idPaciente)) {
+
+            throw new ReservaCitaInvalidaException(
+                    "No existe un paciente seleccionado "
+                            + "para el agendamiento Walk-in."
+            );
+        }
+
+
+        return recepcionCitaService
+                .obtenerPacienteParaAgendamiento(
+                        idPaciente
+                );
+    }
+
+
+    // =====================================================
+    // REINICIAR WIZARD
+    // =====================================================
+
+    private void reiniciarWizard(
+            CitaWizardDTO wizard
+    ) {
+
+        wizard.setPasoActual(
+                PasoCita.SUCURSAL
+        );
+
+        wizard.setIdSucursal(
+                null
+        );
+
         wizard.setIdEspecialidad(
                 null
         );
@@ -216,300 +1230,11 @@ public class CitaWizardController {
         wizard.setMotivoConsulta(
                 null
         );
-
-
-        wizard.setPasoActual(
-                PasoCita.ESPECIALIDAD
-        );
-
-
-        cargarPaso2(
-                wizard,
-                model
-        );
-
-
-        return "citas/agendar";
     }
 
 
     // =====================================================
-    // PASO 2 → PASO 3
-    // =====================================================
-
-    @PostMapping("/agendar/especialidad")
-    public String seleccionarEspecialidad(
-            @ModelAttribute("citaWizard")
-            CitaWizardDTO wizard,
-            Model model
-    ) {
-
-        /*
-         * Primero comprobamos que todavía exista
-         * una sucursal válida.
-         */
-        if (!catalogoCitaService
-                .existeSucursalActiva(
-                        wizard.getIdSucursal()
-                )) {
-
-            navegacionService.regresarA(
-                    wizard,
-                    PasoCita.SUCURSAL
-            );
-
-
-            cargarPaso1(
-                    model
-            );
-
-
-            model.addAttribute(
-                    "mensajeError",
-                    "La sucursal seleccionada ya no está disponible."
-            );
-
-
-            return "citas/agendar";
-        }
-
-
-        ResultadoValidacionCita resultado =
-                validacionCitaWizardService
-                        .validar(
-                                PasoCita.ESPECIALIDAD,
-                                wizard
-                        );
-
-
-        if (resultado.tieneErrores()) {
-
-            cargarPaso2(
-                    wizard,
-                    model
-            );
-
-            model.addAttribute(
-                    "errores",
-                    resultado
-            );
-
-
-            return "citas/agendar";
-        }
-
-
-        wizard.setIdMedico(
-                null
-        );
-
-        wizard.setFechaHoraInicio(
-                null
-        );
-
-        wizard.setFechaHoraFin(
-                null
-        );
-
-        wizard.setTokenReserva(
-                null
-        );
-
-        wizard.setFechaExpiracionReserva(
-                null
-        );
-
-        wizard.setMotivoConsulta(
-                null
-        );
-
-
-        wizard.setPasoActual(
-                PasoCita.MEDICO
-        );
-
-
-        cargarPaso3(
-                wizard,
-                model
-        );
-
-
-        return "citas/agendar";
-    }
-
-    // =====================================================
-// PASO 3 → PASO 4
-// =====================================================
-
-    @PostMapping("/agendar/medico")
-    public String seleccionarMedico(
-            @ModelAttribute("citaWizard")
-            CitaWizardDTO wizard,
-            Model model
-    ) {
-
-        // =================================================
-        // VALIDAR QUE LA SUCURSAL SIGA DISPONIBLE
-        // =================================================
-
-        if (!catalogoCitaService
-                .existeSucursalActiva(
-                        wizard.getIdSucursal()
-                )) {
-
-            navegacionService.regresarA(
-                    wizard,
-                    PasoCita.SUCURSAL
-            );
-
-            cargarPaso1(
-                    model
-            );
-
-            model.addAttribute(
-                    "mensajeError",
-                    "La sucursal seleccionada ya no está disponible."
-            );
-
-            return "citas/agendar";
-        }
-
-
-        // =================================================
-        // VALIDAR ESPECIALIDAD EN LA SUCURSAL
-        // =================================================
-
-        if (!catalogoCitaService
-                .especialidadDisponibleEnSucursal(
-                        wizard.getIdSucursal(),
-                        wizard.getIdEspecialidad()
-                )) {
-
-            navegacionService.regresarA(
-                    wizard,
-                    PasoCita.ESPECIALIDAD
-            );
-
-            cargarPaso2(
-                    wizard,
-                    model
-            );
-
-            model.addAttribute(
-                    "mensajeError",
-                    "La especialidad seleccionada ya no está disponible."
-            );
-
-            return "citas/agendar";
-        }
-
-
-        // =================================================
-        // VALIDACIÓN POLIMÓRFICA DEL MÉDICO
-        // =================================================
-
-        ResultadoValidacionCita resultado =
-                validacionCitaWizardService
-                        .validar(
-                                PasoCita.MEDICO,
-                                wizard
-                        );
-
-
-        if (resultado.tieneErrores()) {
-
-            cargarPaso3(
-                    wizard,
-                    model
-            );
-
-            model.addAttribute(
-                    "errores",
-                    resultado
-            );
-
-            return "citas/agendar";
-        }
-
-
-        // =================================================
-        // LIMPIAR HORARIO ANTERIOR
-        // =================================================
-
-        wizard.setFechaHoraInicio(
-                null
-        );
-
-        wizard.setFechaHoraFin(
-                null
-        );
-
-        wizard.setTokenReserva(
-                null
-        );
-
-        wizard.setFechaExpiracionReserva(
-                null
-        );
-
-        wizard.setMotivoConsulta(
-                null
-        );
-
-
-        // =================================================
-        // PASAR AL PASO 4
-        // =================================================
-
-        wizard.setPasoActual(
-                PasoCita.FECHA_HORA
-        );
-
-
-        return "citas/agendar";
-    }
-
-
-    // =====================================================
-    // VOLVER
-    // =====================================================
-
-    @PostMapping("/agendar/volver")
-    public String volver(
-            @RequestParam("paso")
-            Integer numeroPaso,
-
-            @ModelAttribute("citaWizard")
-            CitaWizardDTO wizard,
-
-            Model model
-    ) {
-
-        PasoCita destino =
-                obtenerPaso(
-                        numeroPaso
-                );
-
-
-        navegacionService.regresarA(
-                wizard,
-                destino
-        );
-
-
-        cargarModeloDelPaso(
-                wizard,
-                model
-        );
-
-
-        return "citas/agendar";
-    }
-
-
-    // =====================================================
-    // CARGA DE MODELOS
+    // CARGAR PASO 1
     // =====================================================
 
     private void cargarPaso1(
@@ -518,19 +1243,27 @@ public class CitaWizardController {
 
         model.addAttribute(
                 "sucursales",
+
                 catalogoCitaService
                         .listarSucursales()
         );
     }
 
 
+    // =====================================================
+    // CARGAR PASO 2
+    // =====================================================
+
     private void cargarPaso2(
+
             CitaWizardDTO wizard,
+
             Model model
     ) {
 
         model.addAttribute(
                 "especialidades",
+
                 catalogoCitaService
                         .listarEspecialidades(
                                 wizard.getIdSucursal()
@@ -539,13 +1272,20 @@ public class CitaWizardController {
     }
 
 
+    // =====================================================
+    // CARGAR PASO 3
+    // =====================================================
+
     private void cargarPaso3(
+
             CitaWizardDTO wizard,
+
             Model model
     ) {
 
         model.addAttribute(
                 "medicos",
+
                 catalogoCitaService
                         .listarMedicos(
                                 wizard.getIdSucursal(),
@@ -555,8 +1295,14 @@ public class CitaWizardController {
     }
 
 
+    // =====================================================
+    // CARGAR PASO CORRESPONDIENTE
+    // =====================================================
+
     private void cargarModeloDelPaso(
+
             CitaWizardDTO wizard,
+
             Model model
     ) {
 
@@ -567,11 +1313,13 @@ public class CitaWizardController {
                             model
                     );
 
+
             case ESPECIALIDAD ->
                     cargarPaso2(
                             wizard,
                             model
                     );
+
 
             case MEDICO ->
                     cargarPaso3(
@@ -579,11 +1327,12 @@ public class CitaWizardController {
                             model
                     );
 
+
             case FECHA_HORA -> {
 
                 /*
-                 * Los horarios se consultan mediante
-                 * el endpoint AJAX.
+                 * La disponibilidad se obtiene
+                 * mediante AJAX.
                  */
             }
 
@@ -598,157 +1347,13 @@ public class CitaWizardController {
 
 
     // =====================================================
-    // CONVERTIR NÚMERO → PASO
+    // CARGAR PASO 5
     // =====================================================
-
-    private PasoCita obtenerPaso(
-            Integer numero
-    ) {
-
-        if (numero == null) {
-
-            return PasoCita.SUCURSAL;
-        }
-
-
-        for (PasoCita paso : PasoCita.values()) {
-
-            if (Objects.equals(
-                    paso.getNumero(),
-                    numero
-            )) {
-
-                return paso;
-            }
-        }
-
-
-        return PasoCita.SUCURSAL;
-    }
-
-    // =====================================================
-// PASO 4 → PASO 5
-// =====================================================
-
-    @PostMapping("/agendar/horario")
-    public String seleccionarHorario(
-
-            @ModelAttribute("citaWizard")
-            CitaWizardDTO wizard,
-
-            Model model
-    ) {
-
-        // =================================================
-        // VALIDAR FECHA/HORA
-        // =================================================
-
-        ResultadoValidacionCita resultado =
-                validacionCitaWizardService
-                        .validar(
-                                PasoCita.FECHA_HORA,
-                                wizard
-                        );
-
-
-        if (resultado.tieneErrores()) {
-
-            wizard.setPasoActual(
-                    PasoCita.FECHA_HORA
-            );
-
-
-            model.addAttribute(
-                    "errores",
-                    resultado
-            );
-
-
-            return "citas/agendar";
-        }
-
-
-        // =================================================
-        // OBTENER PACIENTE AUTENTICADO
-        // =================================================
-
-        Usuario paciente =
-                usuarioActualService
-                        .obtenerUsuarioActual();
-
-
-        try {
-
-            // =============================================
-            // CREAR RESERVA TEMPORAL
-            // =============================================
-
-            ReservaTemporalCita reserva =
-                    reservaTemporalCitaService
-                            .reservar(
-                                    paciente.getId(),
-                                    wizard.getIdMedico(),
-                                    wizard.getIdSucursal(),
-                                    wizard.getIdEspecialidad(),
-                                    wizard.getFechaHoraInicio(),
-                                    wizard.getFechaHoraFin()
-                            );
-
-
-            // =============================================
-            // GUARDAR TOKEN EN EL WIZARD
-            // =============================================
-
-            wizard.setTokenReserva(
-                    reserva.getTokenReserva()
-            );
-
-
-            wizard.setFechaExpiracionReserva(
-                    reserva.getFechaExpiracion()
-            );
-
-
-            // =============================================
-            // PASO 5
-            // =============================================
-
-            wizard.setPasoActual(
-                    PasoCita.CONFIRMACION
-            );
-
-
-            cargarPaso5(
-                    wizard,
-                    model
-            );
-
-
-            return "citas/agendar";
-
-
-        } catch (
-                HorarioNoDisponibleException
-                | ReservaCitaInvalidaException ex
-        ) {
-
-            wizard.setPasoActual(
-                    PasoCita.FECHA_HORA
-            );
-
-
-            model.addAttribute(
-                    "mensajeError",
-                    ex.getMessage()
-            );
-
-
-            return "citas/agendar";
-        }
-    }
 
     private void cargarPaso5(
+
             CitaWizardDTO wizard,
+
             Model model
     ) {
 
@@ -758,9 +1363,11 @@ public class CitaWizardController {
                         .stream()
                         .filter(
                                 opcion ->
-                                        opcion.id().equals(
-                                                wizard.getIdSucursal()
-                                        )
+                                        opcion
+                                                .id()
+                                                .equals(
+                                                        wizard.getIdSucursal()
+                                                )
                         )
                         .map(
                                 opcion ->
@@ -780,9 +1387,11 @@ public class CitaWizardController {
                         .stream()
                         .filter(
                                 opcion ->
-                                        opcion.id().equals(
-                                                wizard.getIdEspecialidad()
-                                        )
+                                        opcion
+                                                .id()
+                                                .equals(
+                                                        wizard.getIdEspecialidad()
+                                                )
                         )
                         .map(
                                 opcion ->
@@ -803,9 +1412,11 @@ public class CitaWizardController {
                         .stream()
                         .filter(
                                 opcion ->
-                                        opcion.id().equals(
-                                                wizard.getIdMedico()
-                                        )
+                                        opcion
+                                                .id()
+                                                .equals(
+                                                        wizard.getIdMedico()
+                                                )
                         )
                         .map(
                                 opcion ->
@@ -822,240 +1433,75 @@ public class CitaWizardController {
                 nombreSucursal
         );
 
+
         model.addAttribute(
                 "nombreEspecialidad",
                 nombreEspecialidad
         );
+
 
         model.addAttribute(
                 "nombreMedico",
                 nombreMedico
         );
     }
+
     // =====================================================
-// FA03 - RESERVA TEMPORAL EXPIRADA
+// REDIRECCIÓN AL PASO ACTUAL
+// =====================================================
+//
+// Permite aplicar el patrón:
+//
+// POST -> REDIRECT -> GET
+//
+// tanto para:
+// - paciente;
+// - Walk-in desde recepción.
 // =====================================================
 
-    @GetMapping("/agendar/reserva-expirada")
-    public String procesarReservaExpirada(
-
-            @ModelAttribute("citaWizard")
-            CitaWizardDTO wizard,
-
-            Model model
+    private String redirigirAlPasoActual(
+            HttpServletRequest request
     ) {
 
-        EstadoReservaTemporal estado =
-                reservaTemporalCitaService
-                        .obtenerEstado(
-                                wizard.getTokenReserva()
-                        );
+        if (esFlujoRecepcion(
+                request
+        )) {
 
-
-        // =================================================
-        // EL BACKEND DICE QUE TODAVÍA ESTÁ VIGENTE
-        // =================================================
-
-        if (estado == EstadoReservaTemporal.VIGENTE) {
-
-            wizard.setPasoActual(
-                    PasoCita.CONFIRMACION
-            );
-
-            cargarPaso5(
-                    wizard,
-                    model
-            );
-
-            return "citas/agendar";
+            return "redirect:/interno/recepcion/citas/agendar/paso";
         }
 
 
-        // =================================================
-        // EXPIRADA O YA NO DISPONIBLE
-        // =================================================
-
-        navegacionService.regresarA(
-                wizard,
-                PasoCita.FECHA_HORA
-        );
-
-
-        if (estado == EstadoReservaTemporal.EXPIRADA) {
-
-            model.addAttribute(
-                    "mensajeError",
-
-                    "El tiempo para confirmar su cita ha expirado. "
-                            + "El horario seleccionado ha sido liberado. "
-                            + "Por favor, seleccione un nuevo horario."
-            );
-
-        } else {
-
-            model.addAttribute(
-                    "mensajeError",
-                    "La reserva temporal ya no está disponible. "
-                            + "Seleccione un nuevo horario."
-            );
-        }
-
-
-        return "citas/agendar";
+        return "redirect:/paciente/citas/agendar/paso";
     }
+
+
     // =====================================================
-// PASO 5 - CONFIRMAR CITA
-// =====================================================
+    // CONVERTIR NÚMERO → PASO
+    // =====================================================
 
-    @PostMapping("/agendar/confirmar")
-    public String confirmarCita(
-
-            @ModelAttribute("citaWizard")
-            CitaWizardDTO wizard,
-
-            @RequestParam(
-                    value = "documento",
-                    required = false
-            )
-            MultipartFile documento,
-
-            Model model,
-
-            SessionStatus sessionStatus
+    private PasoCita obtenerPaso(
+            Integer numero
     ) {
 
-        // =================================================
-        // VALIDAR MOTIVO 10 - 2000
-        // =================================================
+        if (numero == null) {
 
-        ResultadoValidacionCita resultado =
-                validacionCitaWizardService
-                        .validar(
-                                PasoCita.CONFIRMACION,
-                                wizard
-                        );
-
-
-        if (resultado.tieneErrores()) {
-
-            wizard.setPasoActual(
-                    PasoCita.CONFIRMACION
-            );
-
-
-            cargarPaso5(
-                    wizard,
-                    model
-            );
-
-
-            model.addAttribute(
-                    "errores",
-                    resultado
-            );
-
-
-            return "citas/agendar";
+            return PasoCita.SUCURSAL;
         }
 
 
-        Usuario paciente =
-                usuarioActualService
-                        .obtenerUsuarioActual();
+        for (PasoCita paso :
+                PasoCita.values()) {
 
+            if (Objects.equals(
+                    paso.getNumero(),
+                    numero
+            )) {
 
-        try {
-
-            Cita cita =
-                    finalizacionCitaService
-                            .finalizar(
-                                    paciente,
-                                    wizard,
-                                    documento
-                            );
-
-
-            /*
-             * El wizard ya terminó.
-             */
-            sessionStatus.setComplete();
-
-
-            return "redirect:/paciente/citas/agendar/exito?idCita="
-                    + cita.getId();
-
-
-        } catch (
-                ReservaExpiradaException ex
-        ) {
-
-            navegacionService.regresarA(
-                    wizard,
-                    PasoCita.FECHA_HORA
-            );
-
-
-            model.addAttribute(
-                    "mensajeError",
-                    ex.getMessage()
-            );
-
-
-            return "citas/agendar";
-
-
-        } catch (
-                DocumentoCitaInvalidoException
-                | ReservaCitaInvalidaException ex
-        ) {
-
-            wizard.setPasoActual(
-                    PasoCita.CONFIRMACION
-            );
-
-
-            cargarPaso5(
-                    wizard,
-                    model
-            );
-
-
-            model.addAttribute(
-                    "mensajeError",
-                    ex.getMessage()
-            );
-
-
-            return "citas/agendar";
+                return paso;
+            }
         }
-    }
-    // =====================================================
-// RESULTADO EXITOSO
-// =====================================================
-
-    @GetMapping("/agendar/exito")
-    public String citaRegistrada(
-            @RequestParam("idCita")
-            Integer idCita,
-
-            Model model
-    ) {
-
-        model.addAttribute(
-                "idCita",
-                idCita
-        );
 
 
-        model.addAttribute(
-                "mensajeExito",
-
-                "Su cita ha sido registrada exitosamente. "
-                        + "Será redirigido al proceso de pago "
-                        + "para confirmar la reserva."
-        );
-
-
-        return "citas/agendar-exito";
+        return PasoCita.SUCURSAL;
     }
 }

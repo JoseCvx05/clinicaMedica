@@ -189,4 +189,107 @@ public class FinalizacionCitaService {
 
         return cita;
     }
+    // =====================================================
+// FINALIZAR CON CONTEXTO DE AGENDAMIENTO
+// =====================================================
+
+    @Transactional
+    public Cita finalizar(
+            Usuario paciente,
+            Usuario creadoPor,
+            CitaWizardDTO wizard,
+            MultipartFile documento,
+            String canalOrigen,
+            String prioridad
+    ) {
+
+        // =================================================
+        // VALIDAR DOCUMENTO
+        // =================================================
+
+        ResultadoValidacionDocumentoCita validacion =
+                validacionDocumentoCitaService
+                        .validar(
+                                documento
+                        );
+
+
+        if (!validacion.valido()) {
+
+            throw new DocumentoCitaInvalidoException(
+                    validacion.mensaje()
+            );
+        }
+
+
+        boolean tieneDocumento =
+                documento != null
+                        && !documento.isEmpty();
+
+
+        // =================================================
+        // ANTIVIRUS
+        // =================================================
+
+        if (tieneDocumento) {
+
+            ResultadoAnalisisAntivirus antivirus =
+                    antivirusDocumentoService
+                            .analizar(
+                                    documento
+                            );
+
+
+            if (antivirus.estaInfectado()) {
+
+                throw new DocumentoCitaInvalidoException(
+                        "El documento adjunto fue rechazado "
+                                + "porque se detectó contenido potencialmente peligroso."
+                );
+            }
+
+
+            if (antivirus.tieneError()) {
+
+                throw new DocumentoCitaInvalidoException(
+                        "No fue posible verificar el documento con el "
+                                + "servicio antivirus. Intente nuevamente "
+                                + "o continúe sin adjuntar el documento."
+                );
+            }
+        }
+
+
+        // =================================================
+        // CONFIRMAR CITA
+        // =================================================
+
+        Cita cita =
+                confirmacionCitaService
+                        .confirmar(
+                                paciente,
+                                creadoPor,
+                                wizard,
+                                canalOrigen,
+                                prioridad
+                        );
+
+
+        // =================================================
+        // DOCUMENTO
+        // =================================================
+
+        if (tieneDocumento) {
+
+            documentoCitaService
+                    .guardar(
+                            cita,
+                            paciente,
+                            documento
+                    );
+        }
+
+
+        return cita;
+    }
 }

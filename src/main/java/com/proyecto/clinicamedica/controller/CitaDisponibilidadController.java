@@ -28,7 +28,6 @@ import java.util.List;
  * =========================================================
  */
 @Controller
-@RequestMapping("/paciente/citas")
 public class CitaDisponibilidadController {
 
 
@@ -56,7 +55,10 @@ public class CitaDisponibilidadController {
     // HORARIOS DISPONIBLES DE UN DÍA
     // =====================================================
 
-    @GetMapping("/disponibilidad")
+    @GetMapping({
+            "/paciente/citas/disponibilidad",
+            "/interno/recepcion/citas/disponibilidad"
+    })
     @ResponseBody
     public ResponseEntity<List<HorarioDisponibleDTO>>
     obtenerDisponibilidad(

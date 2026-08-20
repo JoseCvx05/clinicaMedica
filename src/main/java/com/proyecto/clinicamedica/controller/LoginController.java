@@ -40,14 +40,20 @@ import org.springframework.web.bind.annotation.ResponseBody;
  * - Coordinar la autenticación.
  * - Generar el JWT.
  * - Crear la cookie HttpOnly.
+ * - Devolver los estados de autenticación al frontend.
  *
  * La lógica de autenticación permanece en
  * AutenticacionService.
+ *
  * =========================================================
  */
 @Controller
 public class LoginController {
 
+
+    // =====================================================
+    // DEPENDENCIAS
+    // =====================================================
 
     private final AutenticacionService
             autenticacionService;
@@ -58,6 +64,10 @@ public class LoginController {
     private final JwtCookieService
             jwtCookieService;
 
+
+    // =====================================================
+    // CONSTRUCTOR
+    // =====================================================
 
     public LoginController(
             AutenticacionService autenticacionService,
@@ -94,19 +104,23 @@ public class LoginController {
     @PostMapping("/api/public/login")
     @ResponseBody
     public ResponseEntity<LoginResponse> login(
+
             @Valid
             @RequestBody
             LoginRequest request
     ) {
 
         // =================================================
-        // AUTENTICAR COMO PACIENTE
+        // 1. AUTENTICAR COMO PACIENTE
         // =================================================
 
         ResultadoAutenticacion resultado =
                 autenticacionService.autenticar(
+
                         request.getNombreUsuario(),
+
                         request.getContrasena(),
+
                         TipoAcceso.PACIENTE
                 );
 
@@ -116,7 +130,7 @@ public class LoginController {
 
 
         // =================================================
-        // CREDENCIALES INCORRECTAS
+        // 2. CREDENCIALES INCORRECTAS
         // =================================================
 
         if (respuesta.getEstado()
@@ -133,7 +147,7 @@ public class LoginController {
 
 
         // =================================================
-        // CUENTA BLOQUEADA
+        // 3. CUENTA BLOQUEADA
         // =================================================
 
         if (respuesta.getEstado()
@@ -150,7 +164,30 @@ public class LoginController {
 
 
         // =================================================
-        // ROL NO AUTORIZADO
+        // 4. CUENTA INACTIVA
+        // =================================================
+        //
+        // Las credenciales son correctas,
+        // pero activo = false.
+        //
+        // No se genera JWT ni cookie de sesión.
+        // =================================================
+
+        if (respuesta.getEstado()
+                == EstadoLogin.CUENTA_INACTIVA) {
+
+            return ResponseEntity
+                    .status(
+                            HttpStatus.FORBIDDEN
+                    )
+                    .body(
+                            respuesta
+                    );
+        }
+
+
+        // =================================================
+        // 5. ROL NO AUTORIZADO
         // =================================================
 
         if (respuesta.getEstado()
@@ -167,7 +204,7 @@ public class LoginController {
 
 
         // =================================================
-        // VALIDAR RESULTADO EXITOSO
+        // 6. VALIDAR RESULTADO EXITOSO
         // =================================================
 
         if (respuesta.getEstado()
@@ -178,6 +215,10 @@ public class LoginController {
             );
         }
 
+
+        // =================================================
+        // 7. OBTENER USUARIO AUTENTICADO
+        // =================================================
 
         Usuario usuario =
                 resultado.getUsuarioAutenticado();
@@ -192,7 +233,7 @@ public class LoginController {
 
 
         // =================================================
-        // GENERAR JWT
+        // 8. GENERAR JWT
         // =================================================
 
         String token =
@@ -202,18 +243,20 @@ public class LoginController {
 
 
         // =================================================
-        // CREAR COOKIE HTTPONLY
+        // 9. CREAR COOKIE HTTPONLY
         // =================================================
 
         ResponseCookie cookie =
                 jwtCookieService.crearCookie(
+
                         token,
+
                         jwtService.obtenerDuracionToken()
                 );
 
 
         // =================================================
-        // DEVOLVER RESPUESTA
+        // 10. DEVOLVER RESPUESTA EXITOSA
         // =================================================
 
         return ResponseEntity

@@ -420,4 +420,254 @@ public class ConfirmacionCitaService {
             );
         }
     }
+    // =====================================================
+// CONFIRMAR CITA CON CONTEXTO DE CREACIÓN
+// =====================================================
+
+    @Transactional
+    public Cita confirmar(
+            Usuario paciente,
+            Usuario creadoPor,
+            CitaWizardDTO wizard,
+            String canalOrigen,
+            String prioridad
+    ) {
+
+        // =================================================
+        // VALIDAR ENTRADA
+        // =================================================
+
+        validarEntrada(
+                paciente,
+                wizard
+        );
+
+
+        if (creadoPor == null
+                || creadoPor.getId() == null) {
+
+            throw new ReservaCitaInvalidaException(
+                    "No existe un usuario responsable del agendamiento."
+            );
+        }
+
+
+        // =================================================
+        // NORMALIZAR CONTEXTO
+        // =================================================
+
+        String canalSeguro =
+                canalOrigen == null
+                        || canalOrigen.isBlank()
+                        ? "Portal Web"
+                        : canalOrigen.trim();
+
+
+        String prioridadSegura =
+                prioridad == null
+                        || prioridad.isBlank()
+                        ? "Normal"
+                        : prioridad.trim();
+
+
+        // =================================================
+        // VERIFICAR ESTADO DE RESERVA
+        // =================================================
+
+        EstadoReservaTemporal estadoReserva =
+                reservaTemporalCitaService
+                        .obtenerEstado(
+                                wizard.getTokenReserva()
+                        );
+
+
+        if (estadoReserva
+                == EstadoReservaTemporal.EXPIRADA) {
+
+            throw new ReservaExpiradaException(
+                    MENSAJE_RESERVA_EXPIRADA
+            );
+        }
+
+
+        if (estadoReserva
+                != EstadoReservaTemporal.VIGENTE) {
+
+            throw new ReservaCitaInvalidaException(
+                    "La reserva temporal ya no está disponible."
+            );
+        }
+
+
+        // =================================================
+        // OBTENER RESERVA VIGENTE
+        // =================================================
+
+        ReservaTemporalCita reserva =
+                reservaTemporalCitaService
+                        .buscarVigente(
+                                wizard.getTokenReserva()
+                        )
+                        .orElseThrow(
+                                () ->
+                                        new ReservaExpiradaException(
+                                                MENSAJE_RESERVA_EXPIRADA
+                                        )
+                        );
+
+
+        // =================================================
+        // VALIDAR PACIENTE DE LA RESERVA
+        // =================================================
+
+        if (reserva.getPaciente() == null
+                || reserva.getPaciente().getId() == null
+                || !paciente.getId().equals(
+                reserva.getPaciente().getId()
+        )) {
+
+            throw new ReservaCitaInvalidaException(
+                    "La reserva no pertenece al paciente indicado."
+            );
+        }
+
+
+        // =================================================
+        // ESTADO PENDIENTE DE PAGO
+        // =================================================
+
+        EstadoCita estadoPendientePago =
+                estadoCitaRepository
+                        .findByNombreIgnoreCaseAndActivoTrue(
+                                ESTADO_PENDIENTE_PAGO
+                        )
+                        .orElseThrow(
+                                () ->
+                                        new IllegalStateException(
+                                                "No existe el estado de cita "
+                                                        + "'Pendiente de pago'."
+                                        )
+                        );
+
+
+        // =================================================
+        // CREAR CITA
+        // =================================================
+
+        Cita cita =
+                new Cita();
+
+
+        cita.setPaciente(
+                paciente
+        );
+
+
+        /*
+         * Médico, sede, especialidad y horario siempre salen
+         * de la reserva validada.
+         */
+        cita.setMedico(
+                reserva.getMedico()
+        );
+
+
+        cita.setSucursal(
+                reserva.getSucursal()
+        );
+
+
+        cita.setEspecialidad(
+                reserva.getEspecialidad()
+        );
+
+
+        cita.setFechaHoraCita(
+                reserva.getFechaHoraInicio()
+        );
+
+
+        cita.setFechaHoraFin(
+                reserva.getFechaHoraFin()
+        );
+
+
+        cita.setEstadoCita(
+                estadoPendientePago
+        );
+
+
+        cita.setMotivoConsulta(
+                wizard
+                        .getMotivoConsulta()
+                        .trim()
+        );
+
+
+        // =================================================
+        // CONTEXTO
+        // =================================================
+
+        cita.setPrioridad(
+                prioridadSegura
+        );
+
+
+        cita.setCanalOrigen(
+                canalSeguro
+        );
+
+
+        cita.setEsSeguimiento(
+                false
+        );
+
+
+        // =================================================
+        // AUDITORÍA
+        // =================================================
+
+        cita.setCreadoPor(
+                creadoPor
+        );
+
+
+        // =================================================
+        // EXPIRACIÓN DEL PAGO
+        // =================================================
+
+        cita.setFechaExpiracionPago(
+                OffsetDateTime
+                        .now(
+                                zonaHoraria
+                        )
+                        .plusMinutes(
+                                duracionPagoMinutos
+                        )
+        );
+
+
+        // =================================================
+        // GUARDAR
+        // =================================================
+
+        Cita citaGuardada =
+                citaRepository
+                        .saveAndFlush(
+                                cita
+                        );
+
+
+        // =================================================
+        // LIBERAR RESERVA TEMPORAL
+        // =================================================
+
+        reservaTemporalCitaService
+                .liberar(
+                        wizard.getTokenReserva()
+                );
+
+
+        return citaGuardada;
+    }
 }

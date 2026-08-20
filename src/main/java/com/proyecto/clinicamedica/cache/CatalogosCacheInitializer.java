@@ -34,11 +34,16 @@ import java.util.List;
  *
  * Centraliza toda la precarga de catálogos en una sola
  * clase para evitar inicializadores duplicados.
+ *
  * =========================================================
  */
 @Component
 public class CatalogosCacheInitializer {
 
+
+    // =====================================================
+    // LOGGER
+    // =====================================================
 
     private static final Logger LOGGER =
             LoggerFactory.getLogger(
@@ -46,19 +51,35 @@ public class CatalogosCacheInitializer {
             );
 
 
-    private final RolService rolService;
+    // =====================================================
+    // DEPENDENCIAS
+    // =====================================================
 
-    private final EspecialidadService especialidadService;
+    private final RolService
+            rolService;
 
-    private final SucursalService sucursalService;
+    private final EspecialidadService
+            especialidadService;
 
-    private final CatalogoCitaService catalogoCitaService;
+    private final SucursalService
+            sucursalService;
 
+    private final CatalogoCitaService
+            catalogoCitaService;
+
+
+    // =====================================================
+    // CONSTRUCTOR
+    // =====================================================
 
     public CatalogosCacheInitializer(
+
             RolService rolService,
+
             EspecialidadService especialidadService,
+
             SucursalService sucursalService,
+
             CatalogoCitaService catalogoCitaService
     ) {
 
@@ -75,6 +96,10 @@ public class CatalogosCacheInitializer {
                 catalogoCitaService;
     }
 
+
+    // =====================================================
+    // PRECARGAR CATÁLOGOS
+    // =====================================================
 
     /**
      * Precarga los catálogos después de que la aplicación
