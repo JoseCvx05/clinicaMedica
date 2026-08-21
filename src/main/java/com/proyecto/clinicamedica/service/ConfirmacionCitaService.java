@@ -82,7 +82,7 @@ public class ConfirmacionCitaService {
             EstadoCitaRepository estadoCitaRepository,
             ReservaTemporalCitaService reservaTemporalCitaService,
 
-            @Value("${cita.pago.duracion-minutos:5}")
+            @Value("${cita.pago.duracion-minutos:10}")
             int duracionPagoMinutos,
 
             @Value("${cita.zona-horaria:America/Guatemala}")
@@ -314,10 +314,18 @@ public class ConfirmacionCitaService {
 
 
         // =================================================
-        // EXPIRACIÓN DEL PAGO
-        // =================================================
+// EXPIRACIÓN DEL PAGO
+// =================================================
+//
+// Cita creada directamente por el paciente
+// desde el Portal Web.
+//
+// CU-06 - FA03:
+// Tiene 10 minutos para realizar el pago.
+// =================================================
 
         cita.setFechaExpiracionPago(
+
                 OffsetDateTime
                         .now(
                                 zonaHoraria
@@ -633,19 +641,40 @@ public class ConfirmacionCitaService {
 
 
         // =================================================
-        // EXPIRACIÓN DEL PAGO
-        // =================================================
+// EXPIRACIÓN DEL PAGO
+// =================================================
+//
+// CU-06 - FA03:
+//
+// Portal Web:
+//     Tiene 10 minutos para realizar el pago.
+//
+// Presencial:
+//     No se cancela automáticamente por falta
+//     de pago.
+// =================================================
 
-        cita.setFechaExpiracionPago(
-                OffsetDateTime
-                        .now(
-                                zonaHoraria
-                        )
-                        .plusMinutes(
-                                duracionPagoMinutos
-                        )
-        );
+        if ("Portal Web".equalsIgnoreCase(
+                canalSeguro
+        )) {
 
+            cita.setFechaExpiracionPago(
+
+                    OffsetDateTime
+                            .now(
+                                    zonaHoraria
+                            )
+                            .plusMinutes(
+                                    duracionPagoMinutos
+                            )
+            );
+
+        } else {
+
+            cita.setFechaExpiracionPago(
+                    null
+            );
+        }
 
         // =================================================
         // GUARDAR

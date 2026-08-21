@@ -47,7 +47,7 @@ public interface CitaRepository
     // CU-03 - ¿EXISTE CITA QUE SE SOLAPA?
     // =====================================================
 
-    @Query("""
+@Query("""
         SELECT COUNT(c) > 0
         FROM Cita c
 
@@ -103,29 +103,31 @@ public interface CitaRepository
 
 
     // =====================================================
-    // CU-03 - CANCELAR PAGOS EXPIRADOS
-    // =====================================================
+// CU-03 / CU-06 - CANCELAR PAGOS EXPIRADOS
+// =====================================================
 
     @Modifying
     @Query("""
-        UPDATE Cita c
+    UPDATE Cita c
 
-        SET c.estadoCita = :estadoCancelada,
-            c.fechaModificacion = :ahora
+    SET c.estadoCita = :estadoCancelada,
+        c.fechaModificacion = :ahora
 
-        WHERE LOWER(c.estadoCita.nombre) = 'pendiente de pago'
+    WHERE LOWER(c.estadoCita.nombre) = 'pendiente de pago'
 
-          AND c.fechaExpiracionPago IS NOT NULL
+      AND LOWER(TRIM(c.canalOrigen)) = 'portal web'
 
-          AND c.fechaExpiracionPago <= :ahora
+      AND c.fechaExpiracionPago IS NOT NULL
 
-          AND NOT EXISTS (
-                SELECT p.id
-                FROM Pago p
-                WHERE p.cita = c
-                  AND p.estado = 'PROCESANDO'
-          )
-        """)
+      AND c.fechaExpiracionPago <= :ahora
+
+      AND NOT EXISTS (
+            SELECT p.id
+            FROM Pago p
+            WHERE p.cita = c
+              AND UPPER(p.estado) IN ('PROCESANDO', 'APROBADO')
+      )
+    """)
     int cancelarPendientesDePagoExpiradas(
 
             @Param("estadoCancelada")
@@ -345,6 +347,128 @@ public interface CitaRepository
         """)
     Optional<Cita> buscarParaRegistrarLlegadaConBloqueo(
 
+            @Param("idCita")
+            Integer idCita
+    );
+    // =====================================================
+// CU-06 - CITA PENDIENTE DE PAGO POR NÚMERO
+// =====================================================
+
+    /**
+     * Busca una cita específica únicamente cuando todavía
+     * se encuentra Pendiente de pago.
+     *
+     * Se cargan todas las relaciones necesarias para:
+     *
+     * - mostrar el resumen en Caja;
+     * - obtener el precio;
+     * - generar posteriormente el comprobante.
+     */
+    @Query("""
+    SELECT c
+    FROM Cita c
+
+    JOIN FETCH c.paciente
+    JOIN FETCH c.medico
+    JOIN FETCH c.sucursal
+    JOIN FETCH c.especialidad
+    JOIN FETCH c.estadoCita
+
+    WHERE c.id = :idCita
+
+      AND LOWER(c.estadoCita.nombre)
+          = 'pendiente de pago'
+    """)
+    Optional<Cita> buscarPendienteDePagoParaCajaPorNumero(
+            @Param("idCita")
+            Integer idCita
+    );
+
+
+// =====================================================
+// CU-06 - CITAS PENDIENTES POR PACIENTE
+// =====================================================
+
+    /**
+     * Busca únicamente citas Pendiente de pago del paciente.
+     *
+     * Prioridad:
+     *
+     * 1. Próxima cita futura.
+     * 2. Si no hay futuras, cita pasada más reciente
+     *    que todavía continúe Pendiente de pago.
+     */
+    @Query("""
+    SELECT c
+    FROM Cita c
+
+    JOIN FETCH c.paciente
+    JOIN FETCH c.medico
+    JOIN FETCH c.sucursal
+    JOIN FETCH c.especialidad
+    JOIN FETCH c.estadoCita
+
+    WHERE c.paciente.id = :idPaciente
+
+      AND LOWER(c.estadoCita.nombre)
+          = 'pendiente de pago'
+
+    ORDER BY
+
+        CASE
+            WHEN c.fechaHoraCita >= :ahora
+            THEN 0
+            ELSE 1
+        END ASC,
+
+        CASE
+            WHEN c.fechaHoraCita >= :ahora
+            THEN c.fechaHoraCita
+            ELSE NULL
+        END ASC,
+
+        CASE
+            WHEN c.fechaHoraCita < :ahora
+            THEN c.fechaHoraCita
+            ELSE NULL
+        END DESC,
+
+        c.id DESC
+    """)
+    List<Cita> buscarPendientesDePagoParaCajaPorPaciente(
+
+            @Param("idPaciente")
+            Integer idPaciente,
+
+            @Param("ahora")
+            OffsetDateTime ahora
+    );
+
+
+// =====================================================
+// CU-06 - BLOQUEAR CITA DURANTE EL COBRO
+// =====================================================
+
+    /**
+     * Se utilizará posteriormente en la sección crítica
+     * del registro del pago.
+     *
+     * Evita que dos Cajeros cobren simultáneamente
+     * la misma cita.
+     */
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("""
+    SELECT c
+    FROM Cita c
+
+    JOIN FETCH c.paciente
+    JOIN FETCH c.sucursal
+    JOIN FETCH c.especialidad
+    JOIN FETCH c.estadoCita
+
+    WHERE c.id = :idCita
+    """)
+    Optional<Cita> buscarParaCobroCajaConBloqueo(
             @Param("idCita")
             Integer idCita
     );

@@ -124,4 +124,47 @@ public interface PagoRepository
             @Param("idPago")
             Integer idPago
     );
+    // =====================================================
+// CU-06 - COMPROBANTE DE CAJA
+// =====================================================
+
+    /**
+     * Recupera un pago aprobado para mostrar o reimprimir
+     * el comprobante desde el módulo de Caja.
+     *
+     * A diferencia de buscarComprobante(), aquí no se filtra
+     * por paciente autenticado porque el actor es un Cajero.
+     *
+     * La seguridad de acceso se controla en:
+     *
+     * /interno/caja/**
+     *
+     * mediante Spring Security.
+     *
+     * RNF-033:
+     * El comprobante puede consultarse y reimprimirse
+     * tantas veces como sea necesario.
+     */
+    @Query("""
+    SELECT p
+    FROM Pago p
+
+    JOIN FETCH p.cita c
+    JOIN FETCH c.paciente
+    JOIN FETCH c.medico
+    JOIN FETCH c.sucursal
+    JOIN FETCH c.especialidad
+    JOIN FETCH c.estadoCita
+
+    JOIN FETCH p.formaPago
+
+    LEFT JOIN FETCH p.cajero
+
+    WHERE p.numeroTransaccion = :numeroTransaccion
+      AND p.estado = 'APROBADO'
+    """)
+    Optional<Pago> buscarComprobanteCaja(
+            @Param("numeroTransaccion")
+            String numeroTransaccion
+    );
 }

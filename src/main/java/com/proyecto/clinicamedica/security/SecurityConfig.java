@@ -106,121 +106,107 @@ public class SecurityConfig {
                 // AUTORIZACIÓN DE RUTAS
                 // =========================================
 
-                .authorizeHttpRequests(
-                        auth -> auth
+                .authorizeHttpRequests(auth -> auth
 
-                                // =========================
-                                // RUTAS PÚBLICAS
-                                // =========================
+                        // ================================================
+                        // RUTAS PÚBLICAS
+                        // ================================================
 
-                                .requestMatchers(
-                                        "/",
-                                        "/portal",
-                                        "/login",
-                                        "/login-interno",
-                                        "/registro",
-                                        "/error",
-
-                                        "/api/public/**",
-
-                                        /*
-                                         * Solamente el endpoint
-                                         * de LOGIN interno es público.
-                                         *
-                                         * No hacemos público todo:
-                                         *
-                                         * /api/interno/**
-                                         */
-                                        "/api/interno/login",
-
-                                        "/css/**",
-                                        "/js/**",
-                                        "/img/**",
-                                        "/favicon.ico"
-                                )
-                                .permitAll()
+                        .requestMatchers(
+                                "/",
+                                "/portal",
+                                "/login",
+                                "/login-interno",
+                                "/registro",
+                                "/error",
+                                "/css/**",
+                                "/js/**",
+                                "/img/**",
+                                "/favicon.ico",
+                                "/api/public/**",
+                                "/api/interno/login"
+                        )
+                        .permitAll()
 
 
-                                // =========================
-                                // CU-01
-                                // ADMINISTRACIÓN
-                                // =========================
-                                //
-                                // Solamente Administrador.
-                                // =========================
+                        // ================================================
+                        // ADMINISTRACIÓN
+                        // ================================================
 
-                                .requestMatchers(
-                                        "/admin/**"
-                                )
-                                .hasRole(
-                                        "ADMINISTRADOR"
-                                )
+                        .requestMatchers(
+                                "/admin/**"
+                        )
+                        .hasRole(
+                                "ADMINISTRADOR"
+                        )
 
 
-                                // =========================
-                                // PORTAL DEL PACIENTE
-                                // =========================
+                        // ================================================
+                        // CU-05 - RECEPCIÓN
+                        // SOLO RECEPCIONISTA
+                        // ================================================
 
-                                .requestMatchers(
-                                        "/paciente/**"
-                                )
-                                .hasRole(
-                                        "PACIENTE"
-                                )
-
-
-                                // =========================
-                                // CU-05
-                                // RECEPCIÓN
-                                // =========================
-                                //
-                                // Toda operación de recepción queda restringida
-                                // a Recepcionista y Administrador.
-                                //
-                                // Incluye:
-                                // - búsqueda de citas;
-                                // - registro de llegada;
-                                // - Walk-in;
-                                // - emergencia;
-                                // - reasignación de médico;
-                                // - consulta automática de estado.
-                                //
-                                // IMPORTANTE:
-                                // Este matcher debe estar ANTES de /interno/**
-                                // porque Spring Security evalúa las reglas en orden.
-                                // =========================
-
-                                .requestMatchers(
-                                        "/interno/recepcion/**"
-                                )
-                                .hasRole(
-                                        "RECEPCIONISTA"
-                                )
-
-                                // =========================
-                                // PORTAL INTERNO GENERAL
-                                // =========================
-
-                                .requestMatchers(
-                                        "/interno/**"
-                                )
-                                .hasAnyRole(
-                                        "MEDICO",
-                                        "ENFERMERO",
-                                        "RECEPCIONISTA",
-                                        "CAJERO",
-                                        "LABORATORISTA",
-                                        "FARMACEUTICO",
-                                        "ADMINISTRADOR"
-                                )
+                        .requestMatchers(
+                                "/interno/recepcion/**"
+                        )
+                        .hasRole(
+                                "RECEPCIONISTA"
+                        )
 
 
-                                // =========================
-                                // RESTO DEL SISTEMA
-                                // =========================
+                        // ================================================
+                        // CU-06 - CAJA
+                        // SOLO CAJERO
+                        // ================================================
 
-                                .anyRequest()
-                                .authenticated()
+                        .requestMatchers(
+                                "/interno/caja/**"
+                        )
+                        .hasRole(
+                                "CAJERO"
+                        )
+
+
+                        // ================================================
+                        // PACIENTE
+                        // ================================================
+
+                        .requestMatchers(
+                                "/paciente/**"
+                        )
+                        .hasRole(
+                                "PACIENTE"
+                        )
+
+
+                        // ================================================
+                        // RESTO DEL ÁREA INTERNA
+                        // ================================================
+                        //
+                        // ESTA REGLA TIENE QUE IR DESPUÉS DE
+                        // RECEPCIÓN Y CAJA.
+                        // ================================================
+
+                        .requestMatchers(
+                                "/interno/**"
+                        )
+                        .hasAnyRole(
+                                "MEDICO",
+                                "ENFERMERO",
+                                "RECEPCIONISTA",
+                                "CAJERO",
+                                "LABORATORISTA",
+                                "FARMACEUTICO",
+                                "ADMINISTRADOR"
+                        )
+
+
+                        // ================================================
+                        // CUALQUIER OTRA RUTA
+                        // ================================================
+
+                        .anyRequest()
+                        .authenticated()
                 )
 
 
