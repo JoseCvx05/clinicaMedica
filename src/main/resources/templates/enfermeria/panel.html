@@ -1,0 +1,724 @@
+<!DOCTYPE html>
+
+<html lang="es"
+      xmlns:th="http://www.thymeleaf.org">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>Enfermería | Signos Vitales</title>
+
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css"
+          rel="stylesheet">
+
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.css"
+          rel="stylesheet">
+
+
+    <style>
+
+        body {
+            background-color: #f5f7fa;
+        }
+
+
+        .contenedor-panel {
+            max-width: 1200px;
+        }
+
+
+        .tarjeta-paciente {
+            border: 0;
+            border-radius: 16px;
+        }
+
+
+        .encabezado-seccion {
+            border-bottom: 1px solid #dee2e6;
+            padding-bottom: 12px;
+        }
+
+
+        .estado-espera {
+            background-color: #fff3cd;
+            color: #664d03;
+        }
+
+
+        .estado-signos {
+            background-color: #cff4fc;
+            color: #055160;
+        }
+
+    </style>
+
+</head>
+
+
+<body>
+
+
+<main class="container contenedor-panel py-5">
+
+
+    <!-- =================================================
+         ENCABEZADO
+         ================================================= -->
+
+    <div class="d-flex flex-column
+                flex-md-row
+                justify-content-between
+                align-items-md-center
+                gap-3
+                mb-4">
+
+
+        <div>
+
+
+            <a th:href="@{/interno/dashboard}"
+               class="text-decoration-none d-inline-block mb-3">
+
+                <i class="bi bi-arrow-left me-1"></i>
+
+                Volver al panel interno
+
+            </a>
+
+
+            <h1 class="h3 fw-bold mb-1">
+
+                Enfermería - Signos Vitales
+
+            </h1>
+
+
+            <p class="text-secondary mb-0">
+
+                Pacientes pendientes y en proceso
+                de toma de signos vitales.
+
+            </p>
+
+
+        </div>
+
+
+    </div>
+
+
+    <!-- =================================================
+         MENSAJES
+         ================================================= -->
+
+    <div th:if="${mensajeExito != null}"
+         class="alert alert-success"
+         role="alert">
+
+        <i class="bi bi-check-circle-fill me-2"></i>
+
+        <span th:text="${mensajeExito}">
+            Operación realizada.
+        </span>
+
+    </div>
+
+
+    <div th:if="${mensajeError != null}"
+         class="alert alert-danger"
+         role="alert">
+
+        <i class="bi bi-exclamation-triangle-fill me-2"></i>
+
+        <span th:text="${mensajeError}">
+            Error.
+        </span>
+
+    </div>
+
+    <!-- =================================================
+     RN-GLOBAL-001
+     BÚSQUEDA POR DPI
+     ================================================= -->
+
+    <div class="card border-0 shadow-sm mb-4">
+
+        <div class="card-body p-4">
+
+
+            <div class="d-flex flex-column
+                    flex-md-row
+                    justify-content-between
+                    align-items-md-end
+                    gap-3">
+
+
+                <div class="flex-grow-1">
+
+                    <label for="dpiBusqueda"
+                           class="form-label fw-semibold">
+
+                        Buscar paciente por DPI
+
+                    </label>
+
+
+                    <form th:action="@{/interno/enfermeria/buscar-dpi}"
+                          method="post"
+                          class="d-flex flex-column flex-sm-row gap-2">
+
+
+                        <input type="text"
+                               id="dpiBusqueda"
+                               name="dpi"
+                               class="form-control"
+                               inputmode="numeric"
+                               maxlength="13"
+                               autocomplete="off"
+                               th:value="${dpiBusqueda}"
+                               placeholder="Ingrese DPI de 13 dígitos">
+
+
+                        <button type="submit"
+                                class="btn btn-primary">
+
+                            <i class="bi bi-search me-2"></i>
+
+                            Buscar
+
+                        </button>
+
+
+                    </form>
+
+                </div>
+
+
+                <div th:if="${filtroDpiActivo}">
+
+                    <a th:href="@{/interno/enfermeria}"
+                       class="btn btn-outline-secondary">
+
+                        <i class="bi bi-x-circle me-2"></i>
+
+                        Limpiar filtro
+
+                    </a>
+
+                </div>
+
+
+            </div>
+
+
+            <div class="form-text mt-2">
+
+                El DPI se utiliza únicamente para localizar
+                al paciente y no se muestra en el panel.
+
+            </div>
+
+
+        </div>
+
+    </div>
+
+
+    <!-- =================================================
+         RESULTADO DE BÚSQUEDA
+         ================================================= -->
+
+    <div th:if="${mensajeBusqueda != null}"
+         class="alert alert-info">
+
+        <i class="bi bi-info-circle-fill me-2"></i>
+
+        <span th:text="${mensajeBusqueda}">
+        Resultado de búsqueda
+    </span>
+
+    </div>
+
+
+    <!-- ALERTAS QUE QUEDARON REGISTRADAS -->
+
+    <div th:if="${alertasRegistradas != null
+                 and !alertasRegistradas.isEmpty()}"
+         class="alert alert-warning">
+
+        <div class="fw-bold mb-2">
+
+            <i class="bi bi-exclamation-triangle-fill me-2"></i>
+
+            Alertas clínicas registradas
+
+        </div>
+
+
+        <ul class="mb-0">
+
+            <li th:each="alerta : ${alertasRegistradas}"
+                th:text="${alerta}">
+                Alerta
+            </li>
+
+        </ul>
+
+    </div>
+
+
+    <!-- =================================================
+         PACIENTES PRESENTES
+         ================================================= -->
+
+    <section class="mb-5">
+
+
+        <div class="encabezado-seccion
+                    d-flex
+                    justify-content-between
+                    align-items-center
+                    mb-3">
+
+
+            <div>
+
+                <h2 class="h4 fw-bold mb-1">
+
+                    Pacientes por llamar
+
+                </h2>
+
+
+                <p class="text-secondary mb-0">
+
+                    Estado: Paciente Presente
+
+                </p>
+
+            </div>
+
+
+            <span class="badge text-bg-warning rounded-pill"
+                  th:text="${panel.pacientesPresentes.size()}">
+
+                0
+
+            </span>
+
+
+        </div>
+
+
+        <!-- SIN PACIENTES -->
+
+        <div th:if="${panel.pacientesPresentes.isEmpty()}"
+             class="alert alert-light border">
+
+            No hay pacientes pendientes de llamado.
+
+        </div>
+
+
+        <!-- LISTADO -->
+
+        <div class="row g-4"
+             th:if="${!panel.pacientesPresentes.isEmpty()}">
+
+
+            <div class="col-md-6 col-xl-4"
+                 th:each="paciente : ${panel.pacientesPresentes}">
+
+
+                <div class="card tarjeta-paciente shadow-sm h-100">
+
+
+                    <div class="card-body p-4">
+
+
+                        <div class="d-flex
+                                    justify-content-between
+                                    align-items-start
+                                    gap-2
+                                    mb-3">
+
+
+                            <div>
+
+                                <h3 class="h5 fw-bold mb-1"
+                                    th:text="${paciente.nombrePaciente}">
+
+                                    Paciente
+
+                                </h3>
+
+
+                                <small class="text-secondary">
+
+                                    Cita No.
+
+                                    <strong th:text="${paciente.numeroCita}">
+                                        0
+                                    </strong>
+
+                                </small>
+
+                            </div>
+
+
+                            <span th:if="${paciente.esEmergencia()}"
+                                  class="badge text-bg-danger">
+
+                                Emergencia
+
+                            </span>
+
+
+                            <span th:unless="${paciente.esEmergencia()}"
+                                  class="badge estado-espera">
+
+                                Paciente Presente
+
+                            </span>
+
+
+                        </div>
+
+
+                        <div class="mb-2">
+
+                            <small class="text-secondary d-block">
+                                Especialidad
+                            </small>
+
+                            <strong th:text="${paciente.especialidad}">
+                                Especialidad
+                            </strong>
+
+                        </div>
+
+
+                        <div class="mb-2">
+
+                            <small class="text-secondary d-block">
+                                Sucursal
+                            </small>
+
+                            <strong th:text="${paciente.sucursal}">
+                                Sucursal
+                            </strong>
+
+                        </div>
+
+
+                        <div class="mb-4">
+
+                            <small class="text-secondary d-block">
+                                Fecha y hora
+                            </small>
+
+                            <strong th:text="${#temporals.format(
+                                    paciente.fechaHoraCita,
+                                    'dd/MM/yyyy HH:mm'
+                            )}">
+                                Fecha
+                            </strong>
+
+                        </div>
+
+
+                        <form th:action="@{/interno/enfermeria/llamar/{id}(
+                                    id=${paciente.numeroCita}
+                                )}"
+                              method="post">
+
+
+                            <button type="submit"
+                                    class="btn btn-primary w-100">
+
+                                <i class="bi bi-megaphone-fill me-2"></i>
+
+                                Llamar y Tomar Signos
+
+                            </button>
+
+
+                        </form>
+
+
+                    </div>
+
+
+                </div>
+
+
+            </div>
+
+
+        </div>
+
+
+    </section>
+
+
+    <!-- =================================================
+         PACIENTES EN SIGNOS VITALES
+         ================================================= -->
+
+    <section>
+
+
+        <div class="encabezado-seccion
+                    d-flex
+                    justify-content-between
+                    align-items-center
+                    mb-3">
+
+
+            <div>
+
+                <h2 class="h4 fw-bold mb-1">
+
+                    En toma de signos
+
+                </h2>
+
+
+                <p class="text-secondary mb-0">
+
+                    Pacientes llamados pendientes
+                    de completar el registro.
+
+                </p>
+
+            </div>
+
+
+            <span class="badge text-bg-info rounded-pill"
+                  th:text="${panel.pacientesEnSignos.size()}">
+
+                0
+
+            </span>
+
+
+        </div>
+
+
+        <!-- SIN PACIENTES -->
+
+        <div th:if="${panel.pacientesEnSignos.isEmpty()}"
+             class="alert alert-light border">
+
+            No hay pacientes en proceso de toma de signos.
+
+        </div>
+
+
+        <!-- LISTADO -->
+
+        <div class="row g-4"
+             th:if="${!panel.pacientesEnSignos.isEmpty()}">
+
+
+            <div class="col-md-6 col-xl-4"
+                 th:each="paciente : ${panel.pacientesEnSignos}">
+
+
+                <div class="card tarjeta-paciente shadow-sm h-100">
+
+
+                    <div class="card-body p-4">
+
+
+                        <div class="d-flex
+                                    justify-content-between
+                                    align-items-start
+                                    mb-3">
+
+
+                            <div>
+
+                                <h3 class="h5 fw-bold mb-1"
+                                    th:text="${paciente.nombrePaciente}">
+
+                                    Paciente
+
+                                </h3>
+
+
+                                <small class="text-secondary">
+
+                                    Cita No.
+
+                                    <strong th:text="${paciente.numeroCita}">
+                                        0
+                                    </strong>
+
+                                </small>
+
+                            </div>
+
+
+                            <span class="badge estado-signos">
+
+                                Signos Vitales
+
+                            </span>
+
+
+                        </div>
+
+
+                        <div class="mb-2">
+
+                            <small class="text-secondary d-block">
+                                Especialidad
+                            </small>
+
+                            <strong th:text="${paciente.especialidad}">
+                                Especialidad
+                            </strong>
+
+                        </div>
+
+
+                        <div class="mb-4">
+
+                            <small class="text-secondary d-block">
+                                Sucursal
+                            </small>
+
+                            <strong th:text="${paciente.sucursal}">
+                                Sucursal
+                            </strong>
+
+                        </div>
+
+
+                        <a th:href="@{/interno/enfermeria/cita/{id}/signos(
+                                   id=${paciente.numeroCita}
+                               )}"
+                           class="btn btn-success w-100">
+
+                            <i class="bi bi-heart-pulse-fill me-2"></i>
+
+                            Registrar Signos Vitales
+
+                        </a>
+
+
+                    </div>
+
+
+                </div>
+
+
+            </div>
+
+
+        </div>
+
+
+    </section>
+
+
+    <!-- =================================================
+         TEXTO PARA TTS
+         ================================================= -->
+
+    <div th:if="${mensajeTts != null}"
+         id="mensajeTts"
+         class="d-none"
+         th:text="${mensajeTts}">
+    </div>
+
+
+</main>
+
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js">
+</script>
+
+
+<script>
+
+    document.addEventListener(
+        "DOMContentLoaded",
+        function () {
+
+
+            // =================================================
+            // CU-07 - TTS
+            // =================================================
+
+            const elementoTts =
+                document.getElementById(
+                    "mensajeTts"
+                );
+
+
+            if (!elementoTts) {
+                return;
+            }
+
+
+            const mensaje =
+                elementoTts.textContent.trim();
+
+
+            if (!mensaje) {
+                return;
+            }
+
+
+            if (
+                "speechSynthesis" in window
+                && "SpeechSynthesisUtterance" in window
+            ) {
+
+                /*
+                 * Cancelamos cualquier anuncio previo
+                 * para evitar superposición.
+                 */
+                window.speechSynthesis.cancel();
+
+
+                const anuncio =
+                    new SpeechSynthesisUtterance(
+                        mensaje
+                    );
+
+
+                anuncio.lang =
+                    "es-GT";
+
+
+                anuncio.rate =
+                    0.95;
+
+
+                anuncio.pitch =
+                    1.0;
+
+
+                window.speechSynthesis.speak(
+                    anuncio
+                );
+            }
+
+        }
+    );
+
+</script>
+
+
+</body>
+
+</html>

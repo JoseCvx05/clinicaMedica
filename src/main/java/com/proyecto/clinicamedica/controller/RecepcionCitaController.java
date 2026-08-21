@@ -521,16 +521,32 @@ public class RecepcionCitaController {
             )
             String dpi,
 
+            @RequestParam(
+                    value = "idCita",
+                    required = false
+            )
+            Integer idCita,
+
             RedirectAttributes redirectAttributes
     ) {
+
+        String rutaRetorno =
+                construirRutaRetornoEmergencia(
+                        idCita
+                );
+
 
         try {
 
             RegistroEmergenciaService.ResultadoEmergencia resultado =
                     registroEmergenciaService
                             .registrar(
+
                                     nombreCompleto,
-                                    dpi
+
+                                    dpi,
+
+                                    idCita
                             );
 
 
@@ -547,11 +563,6 @@ public class RecepcionCitaController {
                         );
 
 
-                /*
-                 * Conservamos el nombre para que el
-                 * recepcionista no tenga que escribirlo
-                 * nuevamente.
-                 */
                 redirectAttributes
                         .addFlashAttribute(
                                 "nombreEmergencia",
@@ -567,8 +578,7 @@ public class RecepcionCitaController {
 
 
                 /*
-                 * Indica a la vista que debe volver a abrir
-                 * automáticamente el modal.
+                 * El modal se abrirá nuevamente.
                  */
                 redirectAttributes
                         .addFlashAttribute(
@@ -577,7 +587,7 @@ public class RecepcionCitaController {
                         );
 
 
-                return "redirect:/interno/recepcion";
+                return rutaRetorno;
             }
 
 
@@ -613,7 +623,7 @@ public class RecepcionCitaController {
                     );
 
 
-            return "redirect:/interno/recepcion";
+            return rutaRetorno;
 
 
         } catch (RuntimeException ex) {
@@ -646,7 +656,27 @@ public class RecepcionCitaController {
                     );
 
 
-            return "redirect:/interno/recepcion";
+            return rutaRetorno;
         }
+    }
+
+
+// =====================================================
+// RUTA DE RETORNO PARA EMERGENCIA
+// =====================================================
+
+    private String construirRutaRetornoEmergencia(
+            Integer idCita
+    ) {
+
+        if (idCita != null
+                && idCita > 0) {
+
+            return "redirect:/interno/recepcion/cita/"
+                    + idCita;
+        }
+
+
+        return "redirect:/interno/recepcion";
     }
 }

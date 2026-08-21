@@ -182,7 +182,8 @@
     <section>
 
 
-        <div class="d-flex align-items-center
+        <div class="d-flex
+                    align-items-center
                     justify-content-between
                     mb-4">
 
@@ -230,7 +231,8 @@
 
                         <!-- ICONO -->
 
-                        <div class="d-flex align-items-center
+                        <div class="d-flex
+                                    align-items-center
                                     justify-content-center
                                     rounded-3
                                     bg-primary-subtle
@@ -291,7 +293,7 @@
                  CU-05
                  RECEPCIÓN Y VERIFICACIÓN DE CITA
 
-                 RECEPCIONISTA / ADMINISTRADOR
+                 SOLO RECEPCIONISTA
                  ========================================== -->
 
             <div class="col-md-6 col-xl-4"
@@ -306,7 +308,8 @@
 
                         <!-- ICONO -->
 
-                        <div class="d-flex align-items-center
+                        <div class="d-flex
+                                    align-items-center
                                     justify-content-center
                                     rounded-3
                                     bg-success-subtle
@@ -365,63 +368,11 @@
 
 
             <!-- ==========================================
-                 MENSAJE PARA ROLES QUE TODAVÍA
-                 NO TIENEN MÓDULO IMPLEMENTADO
+                 CU-06
+                 COBRO DE CONSULTA EN CAJA
+
+                 SOLO CAJERO
                  ========================================== -->
-
-            <div class="col-12"
-                 sec:authorize="hasRole('RECEPCIONISTA')">
-
-
-                <div class="alert alert-info
-                            border-0
-                            shadow-sm"
-                     role="alert">
-
-
-                    <div class="d-flex align-items-start">
-
-
-                        <i class="bi bi-info-circle-fill
-                                  fs-4
-                                  me-3">
-                        </i>
-
-
-                        <div>
-
-
-                            <h3 class="h6 fw-bold mb-1">
-
-                                Acceso interno
-
-                            </h3>
-
-
-                            <p class="mb-0">
-
-                                Los módulos disponibles para su
-                                rol aparecerán en este panel.
-
-                            </p>
-
-
-                        </div>
-
-
-                    </div>
-
-
-                </div>
-
-
-            </div>
-            <!-- ==========================================
-     CU-06
-     COBRO DE CONSULTA EN CAJA
-
-     SOLO CAJERO
-     ========================================== -->
 
             <div class="col-md-6 col-xl-4"
                  sec:authorize="hasRole('CAJERO')">
@@ -435,16 +386,17 @@
 
                         <!-- ICONO -->
 
-                        <div class="d-flex align-items-center
-                        justify-content-center
-                        rounded-3
-                        bg-warning-subtle
-                        text-warning-emphasis
-                        mb-4"
+                        <div class="d-flex
+                                    align-items-center
+                                    justify-content-center
+                                    rounded-3
+                                    bg-warning-subtle
+                                    text-warning-emphasis
+                                    mb-4"
                              style="
-                    width: 64px;
-                    height: 64px;
-                 ">
+                                width: 64px;
+                                height: 64px;
+                             ">
 
                             <i class="bi bi-cash-coin fs-2"></i>
 
@@ -492,6 +444,83 @@
             </div>
 
 
+            <!-- ==========================================
+                 CU-07
+                 TOMA DE SIGNOS VITALES
+
+                 SOLO ENFERMERO
+                 ========================================== -->
+
+            <div class="col-md-6 col-xl-4"
+                 sec:authorize="hasRole('ENFERMERO')">
+
+
+                <div class="card h-100 border-0 shadow-sm">
+
+
+                    <div class="card-body p-4">
+
+
+                        <!-- ICONO -->
+
+                        <div class="d-flex
+                                    align-items-center
+                                    justify-content-center
+                                    rounded-3
+                                    bg-danger-subtle
+                                    text-danger
+                                    mb-4"
+                             style="
+                                width: 64px;
+                                height: 64px;
+                             ">
+
+                            <i class="bi bi-heart-pulse-fill fs-2"></i>
+
+                        </div>
+
+
+                        <!-- TÍTULO -->
+
+                        <h3 class="h5 fw-bold">
+
+                            Enfermería
+
+                        </h3>
+
+
+                        <!-- DESCRIPCIÓN -->
+
+                        <p class="text-secondary">
+
+                            Llame pacientes, registre signos
+                            vitales, identifique alertas clínicas
+                            y gestione casos de emergencia
+                            antes de la consulta médica.
+
+                        </p>
+
+
+                        <!-- BOTÓN -->
+
+                        <a th:href="@{/interno/enfermeria}"
+                           class="btn btn-danger w-100">
+
+                            <i class="bi bi-heart-pulse me-2"></i>
+
+                            Ir a Enfermería
+
+                        </a>
+
+
+                    </div>
+
+
+                </div>
+
+
+            </div>
+
 
             <!-- ==========================================
                  MENSAJE PARA ROLES QUE TODAVÍA
@@ -500,24 +529,27 @@
 
             <div class="col-12"
                  sec:authorize="!hasAnyRole(
-        'ADMINISTRADOR',
-        'RECEPCIONISTA',
-        'CAJERO'
-     )">
+                    'ADMINISTRADOR',
+                    'RECEPCIONISTA',
+                    'CAJERO',
+                    'ENFERMERO'
+                 )">
 
 
-                <div class="alert alert-info
-                border-0
-                shadow-sm"
+                <div class="alert
+                            alert-info
+                            border-0
+                            shadow-sm"
                      role="alert">
 
 
                     <div class="d-flex align-items-start">
 
 
-                        <i class="bi bi-info-circle-fill
-                      fs-4
-                      me-3">
+                        <i class="bi
+                                  bi-info-circle-fill
+                                  fs-4
+                                  me-3">
                         </i>
 
 

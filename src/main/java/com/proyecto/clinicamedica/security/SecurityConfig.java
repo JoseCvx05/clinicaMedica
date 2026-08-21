@@ -1,15 +1,22 @@
 package com.proyecto.clinicamedica.security;
 
 import com.proyecto.clinicamedica.service.JwtCookieService;
+
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+
 import org.springframework.http.HttpHeaders;
+
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
+
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
+
 import org.springframework.security.web.SecurityFilterChain;
+
 
 /**
  * =========================================================
@@ -22,14 +29,23 @@ import org.springframework.security.web.SecurityFilterChain;
  * - Portal del paciente.
  * - Portal interno.
  * - Módulos administrativos.
+ * - CU-05 Recepción.
+ * - CU-06 Caja.
+ * - CU-07 Enfermería.
  * - JWT desde cookie HttpOnly.
  * - Autorización mediante roles.
  * - CSRF.
  * - Logout.
+ *
  * =========================================================
  */
 @Configuration
 public class SecurityConfig {
+
+
+    // =====================================================
+    // DEPENDENCIAS
+    // =====================================================
 
     private final JwtCookieBearerTokenResolver
             jwtCookieBearerTokenResolver;
@@ -38,7 +54,12 @@ public class SecurityConfig {
             jwtCookieService;
 
 
+    // =====================================================
+    // CONSTRUCTOR
+    // =====================================================
+
     public SecurityConfig(
+
             JwtCookieBearerTokenResolver
                     jwtCookieBearerTokenResolver,
 
@@ -71,6 +92,7 @@ public class SecurityConfig {
 
     @Bean
     public JwtAuthenticationConverter jwtAuthenticationConverter(
+
             JwtRolGrantedAuthoritiesConverter
                     jwtRolGrantedAuthoritiesConverter
     ) {
@@ -94,119 +116,248 @@ public class SecurityConfig {
 
     @Bean
     public SecurityFilterChain securityFilterChain(
+
             HttpSecurity http,
 
             JwtAuthenticationConverter
                     jwtAuthenticationConverter
+
     ) throws Exception {
 
+
         http
+
 
                 // =========================================
                 // AUTORIZACIÓN DE RUTAS
                 // =========================================
 
-                .authorizeHttpRequests(auth -> auth
+                .authorizeHttpRequests(
 
-                        // ================================================
-                        // RUTAS PÚBLICAS
-                        // ================================================
-
-                        .requestMatchers(
-                                "/",
-                                "/portal",
-                                "/login",
-                                "/login-interno",
-                                "/registro",
-                                "/error",
-                                "/css/**",
-                                "/js/**",
-                                "/img/**",
-                                "/favicon.ico",
-                                "/api/public/**",
-                                "/api/interno/login"
-                        )
-                        .permitAll()
+                        auth -> auth
 
 
-                        // ================================================
-                        // ADMINISTRACIÓN
-                        // ================================================
+                                // =========================
+                                // RUTAS PÚBLICAS
+                                // =========================
 
-                        .requestMatchers(
-                                "/admin/**"
-                        )
-                        .hasRole(
-                                "ADMINISTRADOR"
-                        )
+                                .requestMatchers(
 
+                                        "/",
+                                        "/portal",
 
-                        // ================================================
-                        // CU-05 - RECEPCIÓN
-                        // SOLO RECEPCIONISTA
-                        // ================================================
+                                        "/login",
+                                        "/login-interno",
 
-                        .requestMatchers(
-                                "/interno/recepcion/**"
-                        )
-                        .hasRole(
-                                "RECEPCIONISTA"
-                        )
+                                        "/registro",
 
+                                        "/error",
 
-                        // ================================================
-                        // CU-06 - CAJA
-                        // SOLO CAJERO
-                        // ================================================
+                                        "/api/public/**",
 
-                        .requestMatchers(
-                                "/interno/caja/**"
-                        )
-                        .hasRole(
-                                "CAJERO"
-                        )
+                                        /*
+                                         * Solamente el endpoint
+                                         * utilizado para iniciar
+                                         * sesión interna es público.
+                                         *
+                                         * NO hacemos público:
+                                         *
+                                         * /api/interno/**
+                                         */
+                                        "/api/interno/login",
 
+                                        "/css/**",
+                                        "/js/**",
+                                        "/img/**",
 
-                        // ================================================
-                        // PACIENTE
-                        // ================================================
+                                        "/favicon.ico"
+                                )
 
-                        .requestMatchers(
-                                "/paciente/**"
-                        )
-                        .hasRole(
-                                "PACIENTE"
-                        )
+                                .permitAll()
 
 
-                        // ================================================
-                        // RESTO DEL ÁREA INTERNA
-                        // ================================================
-                        //
-                        // ESTA REGLA TIENE QUE IR DESPUÉS DE
-                        // RECEPCIÓN Y CAJA.
-                        // ================================================
+                                // =========================
+                                // CU-01
+                                // ADMINISTRACIÓN
+                                // =========================
+                                //
+                                // Exclusivo:
+                                // ADMINISTRADOR
+                                // =========================
 
-                        .requestMatchers(
-                                "/interno/**"
-                        )
-                        .hasAnyRole(
-                                "MEDICO",
-                                "ENFERMERO",
-                                "RECEPCIONISTA",
-                                "CAJERO",
-                                "LABORATORISTA",
-                                "FARMACEUTICO",
-                                "ADMINISTRADOR"
-                        )
+                                .requestMatchers(
+                                        "/admin/**"
+                                )
+
+                                .hasRole(
+                                        "ADMINISTRADOR"
+                                )
 
 
-                        // ================================================
-                        // CUALQUIER OTRA RUTA
-                        // ================================================
+                                // =========================
+                                // PORTAL DEL PACIENTE
+                                // =========================
+                                //
+                                // Exclusivo:
+                                // PACIENTE
+                                // =========================
 
-                        .anyRequest()
-                        .authenticated()
+                                .requestMatchers(
+                                        "/paciente/**"
+                                )
+
+                                .hasRole(
+                                        "PACIENTE"
+                                )
+
+
+                                // =========================
+                                // CU-05
+                                // RECEPCIÓN
+                                // =========================
+                                //
+                                // Exclusivo:
+                                // RECEPCIONISTA
+                                //
+                                // Incluye:
+                                //
+                                // - Búsqueda de citas.
+                                // - Registro de llegada.
+                                // - Walk-in.
+                                // - Emergencias.
+                                // - Reasignación de médico.
+                                // - Consulta de estado.
+                                //
+                                // IMPORTANTE:
+                                //
+                                // Debe estar ANTES de:
+                                //
+                                // /interno/**
+                                //
+                                // porque Spring Security
+                                // evalúa las reglas en orden.
+                                // =========================
+
+                                .requestMatchers(
+                                        "/interno/recepcion/**"
+                                )
+
+                                .hasRole(
+                                        "RECEPCIONISTA"
+                                )
+
+
+                                // =========================
+                                // CU-06
+                                // CAJA
+                                // =========================
+                                //
+                                // Exclusivo:
+                                // CAJERO
+                                //
+                                // Incluye:
+                                //
+                                // - Búsqueda de citas.
+                                // - Cobro presencial.
+                                // - Efectivo.
+                                // - Tarjeta.
+                                // - POS.
+                                // - Recibos.
+                                // - Reimpresión.
+                                //
+                                // También debe estar ANTES
+                                // del matcher /interno/**.
+                                // =========================
+
+                                .requestMatchers(
+                                        "/interno/caja/**"
+                                )
+
+                                .hasRole(
+                                        "CAJERO"
+                                )
+
+
+                                // =========================
+                                // CU-07
+                                // ENFERMERÍA
+                                // =========================
+                                //
+                                // Exclusivo:
+                                // ENFERMERO
+                                //
+                                // Incluye:
+                                //
+                                // - Panel de Enfermería.
+                                // - Pacientes presentes.
+                                // - Llamado de pacientes.
+                                // - Toma de signos vitales.
+                                // - Registro de emergencia.
+                                // - Alertas clínicas.
+                                //
+                                // También debe estar ANTES
+                                // de /interno/**.
+                                // =========================
+
+                                .requestMatchers(
+                                        "/interno/enfermeria/**"
+                                )
+
+                                .hasRole(
+                                        "ENFERMERO"
+                                )
+
+
+                                // =========================
+                                // PORTAL INTERNO GENERAL
+                                // =========================
+                                //
+                                // Permite acceder únicamente
+                                // a las rutas internas que NO
+                                // tienen una regla específica
+                                // definida anteriormente.
+                                //
+                                // Ejemplo:
+                                //
+                                // /interno/dashboard
+                                //
+                                // Las rutas específicas:
+                                //
+                                // /interno/recepcion/**
+                                // /interno/caja/**
+                                // /interno/enfermeria/**
+                                //
+                                // ya fueron protegidas arriba.
+                                // =========================
+
+                                .requestMatchers(
+                                        "/interno/**"
+                                )
+
+                                .hasAnyRole(
+
+                                        "MEDICO",
+
+                                        "ENFERMERO",
+
+                                        "RECEPCIONISTA",
+
+                                        "CAJERO",
+
+                                        "LABORATORISTA",
+
+                                        "FARMACEUTICO",
+
+                                        "ADMINISTRADOR"
+                                )
+
+
+                                // =========================
+                                // RESTO DEL SISTEMA
+                                // =========================
+
+                                .anyRequest()
+                                .authenticated()
                 )
 
 
@@ -215,22 +366,26 @@ public class SecurityConfig {
                 // =========================================
 
                 .csrf(
+
                         csrf -> csrf
+
                                 .ignoringRequestMatchers(
 
                                         /*
-                                         * Endpoint REST público
-                                         * utilizado por CU-00.
+                                         * Endpoints REST
+                                         * públicos.
                                          */
                                         "/api/public/**",
 
+
                                         /*
                                          * Excluimos únicamente
-                                         * el POST de autenticación
-                                         * interna.
+                                         * el POST encargado del
+                                         * inicio de sesión interno.
                                          *
-                                         * NO excluimos todo
-                                         * /api/interno/**.
+                                         * NO excluimos:
+                                         *
+                                         * /api/interno/**
                                          */
                                         "/api/interno/login"
                                 )
@@ -242,14 +397,27 @@ public class SecurityConfig {
                 // =========================================
 
                 .oauth2ResourceServer(
+
                         oauth2 -> oauth2
+
+
+                                // =========================
+                                // JWT DESDE COOKIE
+                                // =========================
 
                                 .bearerTokenResolver(
                                         jwtCookieBearerTokenResolver
                                 )
 
+
+                                // =========================
+                                // CONVERSIÓN DE ROLES
+                                // =========================
+
                                 .jwt(
+
                                         jwt -> jwt
+
                                                 .jwtAuthenticationConverter(
                                                         jwtAuthenticationConverter
                                                 )
@@ -260,9 +428,17 @@ public class SecurityConfig {
                 // =========================================
                 // STATELESS
                 // =========================================
+                //
+                // No utilizamos HttpSession para mantener
+                // autenticación.
+                //
+                // La autenticación depende del JWT.
+                // =========================================
 
                 .sessionManagement(
+
                         session -> session
+
                                 .sessionCreationPolicy(
                                         SessionCreationPolicy.STATELESS
                                 )
@@ -274,43 +450,77 @@ public class SecurityConfig {
                 // =========================================
 
                 .logout(
+
                         logout -> logout
 
-                                // =========================================
-                                // ACEPTAR LOS DOS ENDPOINTS DE LOGOUT
-                                // =========================================
+
+                                // =========================
+                                // ENDPOINTS DE LOGOUT
+                                // =========================
+                                //
+                                // Paciente:
+                                //
+                                // POST /logout
+                                //
+                                // Interno:
+                                //
+                                // POST /logout-interno
+                                // =========================
 
                                 .logoutRequestMatcher(
+
                                         request -> {
 
-                                            if (!"POST".equalsIgnoreCase(
-                                                    request.getMethod()
-                                            )) {
+
+                                            // =================
+                                            // SOLO POST
+                                            // =================
+
+                                            if (!"POST"
+                                                    .equalsIgnoreCase(
+                                                            request.getMethod()
+                                                    )) {
 
                                                 return false;
                                             }
 
-                                            String ruta =
-                                                    request.getServletPath();
 
-                                            return "/logout".equals(ruta)
-                                                    || "/logout-interno".equals(ruta);
+                                            String ruta =
+                                                    request
+                                                            .getServletPath();
+
+
+                                            return "/logout"
+                                                    .equals(
+                                                            ruta
+                                                    )
+
+                                                    ||
+
+                                                    "/logout-interno"
+                                                            .equals(
+                                                                    ruta
+                                                            );
                                         }
                                 )
 
 
-                                // =========================================
+                                // =========================
                                 // ELIMINAR COOKIE JWT
-                                // =========================================
+                                // =========================
 
                                 .addLogoutHandler(
+
                                         (
                                                 request,
                                                 response,
                                                 authentication
+
                                         ) -> {
 
+
                                             response.addHeader(
+
                                                     HttpHeaders.SET_COOKIE,
 
                                                     jwtCookieService
@@ -321,23 +531,34 @@ public class SecurityConfig {
                                 )
 
 
-                                // =========================================
-                                // REDIRECCIÓN DESPUÉS DEL LOGOUT
-                                // =========================================
+                                // =========================
+                                // REDIRECCIÓN DESPUÉS
+                                // DEL LOGOUT
+                                // =========================
 
                                 .logoutSuccessHandler(
+
                                         (
                                                 request,
                                                 response,
                                                 authentication
+
                                         ) -> {
 
+
                                             String ruta =
-                                                    request.getServletPath();
+                                                    request
+                                                            .getServletPath();
 
 
+                                            // =================
                                             // LOGIN INTERNO
-                                            if ("/logout-interno".equals(ruta)) {
+                                            // =================
+
+                                            if ("/logout-interno"
+                                                    .equals(
+                                                            ruta
+                                                    )) {
 
                                                 response.sendRedirect(
                                                         "/login-interno"
@@ -347,7 +568,10 @@ public class SecurityConfig {
                                             }
 
 
+                                            // =================
                                             // LOGIN PACIENTE
+                                            // =================
+
                                             response.sendRedirect(
                                                     "/login"
                                             );
@@ -357,8 +581,12 @@ public class SecurityConfig {
                                 .permitAll()
                 )
 
+
                 // =========================================
                 // LOGIN TRADICIONAL DESACTIVADO
+                // =========================================
+                //
+                // El sistema utiliza JWT.
                 // =========================================
 
                 .formLogin(
@@ -374,6 +602,10 @@ public class SecurityConfig {
                         basic -> basic.disable()
                 );
 
+
+        // =================================================
+        // CONSTRUIR CONFIGURACIÓN
+        // =================================================
 
         return http.build();
     }

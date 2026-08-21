@@ -1,0 +1,1518 @@
+<!DOCTYPE html>
+
+<html lang="es"
+      xmlns:th="http://www.thymeleaf.org">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>Registrar Signos Vitales | Enfermería</title>
+
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css"
+          rel="stylesheet">
+
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.css"
+          rel="stylesheet">
+
+
+    <style>
+
+        body {
+            background-color: #f5f7fa;
+        }
+
+
+        .contenedor-formulario {
+            max-width: 1000px;
+        }
+
+
+        .card-principal {
+            border: 0;
+            border-radius: 18px;
+        }
+
+
+        .card-contexto {
+            border: 0;
+            border-radius: 14px;
+            background-color: #eef6ff;
+        }
+
+
+        .campo-signo {
+            min-height: 48px;
+        }
+
+
+        .alerta-clinica {
+            display: none;
+            border-left: 5px solid #ffc107;
+        }
+
+
+        .alerta-clinica.visible {
+            display: block;
+        }
+
+
+        .valor-actual {
+            font-weight: 700;
+        }
+
+
+        .rango-esperado {
+            font-size: 0.9rem;
+        }
+
+
+        .seccion-titulo {
+            border-bottom: 1px solid #dee2e6;
+            padding-bottom: 10px;
+            margin-bottom: 22px;
+        }
+
+
+        .emergencia-box {
+            border: 1px solid #f1aeb5;
+            background-color: #fff5f5;
+            border-radius: 14px;
+        }
+
+
+        .unidad {
+            min-width: 72px;
+            justify-content: center;
+        }
+
+    </style>
+
+</head>
+
+
+<body>
+
+
+<main class="container contenedor-formulario py-5">
+
+
+    <!-- =================================================
+         VOLVER
+         ================================================= -->
+
+    <a th:href="@{/interno/enfermeria}"
+       class="text-decoration-none d-inline-block mb-4">
+
+        <i class="bi bi-arrow-left me-1"></i>
+
+        Volver al panel de Enfermería
+
+    </a>
+
+
+    <!-- =================================================
+         MENSAJE DE ERROR
+         ================================================= -->
+
+    <div th:if="${mensajeError != null}"
+         class="alert alert-danger"
+         role="alert">
+
+        <i class="bi bi-exclamation-triangle-fill me-2"></i>
+
+        <span th:text="${mensajeError}">
+            Error
+        </span>
+
+    </div>
+
+
+    <!-- =================================================
+         CARD PRINCIPAL
+         ================================================= -->
+
+    <div class="card card-principal shadow-sm">
+
+
+        <div class="card-body p-4 p-md-5">
+
+
+            <!-- =========================================
+                 ENCABEZADO
+                 ========================================= -->
+
+            <div class="mb-4">
+
+                <h1 class="h3 fw-bold mb-2">
+
+                    Registrar Signos Vitales
+
+                </h1>
+
+
+                <p class="text-secondary mb-0">
+
+                    Complete los signos vitales del paciente
+                    antes de enviarlo a consulta médica.
+
+                </p>
+
+            </div>
+
+
+            <!-- =========================================
+                 CONTEXTO DE LA CITA
+                 ========================================= -->
+
+            <div class="card card-contexto mb-4">
+
+
+                <div class="card-body">
+
+
+                    <div class="row g-3">
+
+
+                        <div class="col-md-8">
+
+                            <small class="text-secondary d-block mb-1">
+
+                                Paciente
+
+                            </small>
+
+
+                            <div class="fw-bold fs-5"
+                                 th:text="${contexto.nombrePaciente}">
+
+                                Nombre del paciente
+
+                            </div>
+
+                        </div>
+
+
+                        <div class="col-md-4">
+
+                            <small class="text-secondary d-block mb-1">
+
+                                Número de cita
+
+                            </small>
+
+
+                            <div class="fw-bold fs-5">
+
+                                #
+
+                                <span th:text="${contexto.numeroCita}">
+                                    0
+                                </span>
+
+                            </div>
+
+                        </div>
+
+
+                    </div>
+
+
+                </div>
+
+
+            </div>
+
+
+            <!-- =========================================
+                 EMERGENCIA PREVIA
+                 ========================================= -->
+
+            <div th:if="${contexto.emergenciaPrevia}"
+                 class="alert alert-danger mb-4">
+
+                <div class="fw-bold">
+
+                    <i class="bi bi-exclamation-octagon-fill me-2"></i>
+
+                    Paciente marcado previamente como emergencia
+
+                </div>
+
+
+                <div class="small mt-1">
+
+                    La condición de emergencia fue indicada
+                    previamente y se conservará al registrar
+                    los signos vitales.
+
+                </div>
+
+            </div>
+
+
+            <!-- =========================================
+                 FORMULARIO
+                 ========================================= -->
+
+            <form th:action="@{/interno/enfermeria/signos}"
+                  th:object="${formulario}"
+                  method="post"
+                  id="formSignosVitales"
+                  novalidate>
+
+
+                <!-- =====================================
+                     CAMPOS OCULTOS
+                     ===================================== -->
+
+                <input type="hidden"
+                       th:field="*{idCita}">
+
+
+                <input type="hidden"
+                       th:field="*{idEnfermero}">
+
+
+                <!-- =====================================
+                     PRESIÓN ARTERIAL
+                     ===================================== -->
+
+                <section class="mb-4">
+
+
+                    <div class="seccion-titulo">
+
+                        <h2 class="h5 fw-bold mb-1">
+
+                            Presión arterial
+
+                        </h2>
+
+
+                        <small class="text-secondary">
+
+                            Rango de captura:
+                            sistólica 60–250 mmHg /
+                            diastólica 40–150 mmHg.
+
+                        </small>
+
+                    </div>
+
+
+                    <div class="row g-3">
+
+
+                        <!-- SISTÓLICA -->
+
+                        <div class="col-md-6">
+
+
+                            <label for="presionSistolica"
+                                   class="form-label fw-semibold">
+
+                                Presión sistólica
+
+                            </label>
+
+
+                            <div class="input-group">
+
+
+                                <input type="number"
+                                       class="form-control campo-signo"
+                                       id="presionSistolica"
+                                       th:field="*{presionSistolica}"
+                                       min="60"
+                                       max="250"
+                                       step="1"
+                                       inputmode="numeric"
+                                       required
+                                       autocomplete="off"
+                                       placeholder="Ej. 120">
+
+
+                                <span class="input-group-text unidad">
+
+                                    mmHg
+
+                                </span>
+
+
+                            </div>
+
+
+                        </div>
+
+
+                        <!-- DIASTÓLICA -->
+
+                        <div class="col-md-6">
+
+
+                            <label for="presionDiastolica"
+                                   class="form-label fw-semibold">
+
+                                Presión diastólica
+
+                            </label>
+
+
+                            <div class="input-group">
+
+
+                                <input type="number"
+                                       class="form-control campo-signo"
+                                       id="presionDiastolica"
+                                       th:field="*{presionDiastolica}"
+                                       min="40"
+                                       max="150"
+                                       step="1"
+                                       inputmode="numeric"
+                                       required
+                                       autocomplete="off"
+                                       placeholder="Ej. 80">
+
+
+                                <span class="input-group-text unidad">
+
+                                    mmHg
+
+                                </span>
+
+
+                            </div>
+
+
+                        </div>
+
+
+                    </div>
+
+
+                    <!-- ALERTA PRESIÓN -->
+
+                    <div id="alertaPresion"
+                         class="alert alert-warning alerta-clinica mt-3 mb-0"
+                         role="alert">
+
+
+                        <div class="fw-bold">
+
+                            <i class="bi bi-exclamation-triangle-fill me-2"></i>
+
+                            Presión arterial fuera de rango normal.
+
+                        </div>
+
+
+                        <div class="mt-2">
+
+                            Valor actual:
+
+                            <span id="valorPresionActual"
+                                  class="valor-actual">
+                                -
+                            </span>
+
+                        </div>
+
+
+                        <div class="rango-esperado text-secondary">
+
+                            Rango esperado:
+                            90/60 a 140/90 mmHg.
+
+                        </div>
+
+
+                    </div>
+
+
+                </section>
+
+
+                <!-- =====================================
+                     TEMPERATURA
+                     ===================================== -->
+
+                <section class="mb-4">
+
+
+                    <div class="seccion-titulo">
+
+                        <h2 class="h5 fw-bold mb-1">
+
+                            Temperatura
+
+                        </h2>
+
+
+                        <small class="text-secondary">
+
+                            Rango de captura:
+                            34.0–42.0 °C con un decimal.
+
+                        </small>
+
+                    </div>
+
+
+                    <label for="temperatura"
+                           class="form-label fw-semibold">
+
+                        Temperatura corporal
+
+                    </label>
+
+
+                    <div class="input-group">
+
+
+                        <input type="number"
+                               class="form-control campo-signo"
+                               id="temperatura"
+                               th:field="*{temperatura}"
+                               min="34.0"
+                               max="42.0"
+                               step="0.1"
+                               inputmode="decimal"
+                               required
+                               autocomplete="off"
+                               placeholder="Ej. 36.5">
+
+
+                        <span class="input-group-text unidad">
+
+                            °C
+
+                        </span>
+
+
+                    </div>
+
+
+                    <!-- ALERTA TEMPERATURA -->
+
+                    <div id="alertaTemperatura"
+                         class="alert alert-warning alerta-clinica mt-3 mb-0"
+                         role="alert">
+
+
+                        <div class="fw-bold">
+
+                            <i class="bi bi-exclamation-triangle-fill me-2"></i>
+
+                            Temperatura fuera de rango normal.
+
+                        </div>
+
+
+                        <div class="mt-2">
+
+                            Valor actual:
+
+                            <span id="valorTemperaturaActual"
+                                  class="valor-actual">
+                                -
+                            </span>
+
+                            °C
+
+                        </div>
+
+
+                        <div class="rango-esperado text-secondary">
+
+                            Rango esperado:
+                            36.0–37.5 °C.
+
+                        </div>
+
+
+                    </div>
+
+
+                </section>
+
+
+                <!-- =====================================
+                     PESO Y TALLA
+                     ===================================== -->
+
+                <section class="mb-4">
+
+
+                    <div class="seccion-titulo">
+
+                        <h2 class="h5 fw-bold mb-1">
+
+                            Medidas corporales
+
+                        </h2>
+
+                    </div>
+
+
+                    <div class="row g-3">
+
+
+                        <!-- PESO -->
+
+                        <div class="col-md-6">
+
+
+                            <label for="peso"
+                                   class="form-label fw-semibold">
+
+                                Peso
+
+                            </label>
+
+
+                            <div class="input-group">
+
+
+                                <input type="number"
+                                       class="form-control campo-signo"
+                                       id="peso"
+                                       th:field="*{peso}"
+                                       min="0.50"
+                                       max="300.00"
+                                       step="0.01"
+                                       inputmode="decimal"
+                                       required
+                                       autocomplete="off"
+                                       placeholder="Ej. 70.50">
+
+
+                                <span class="input-group-text unidad">
+
+                                    kg
+
+                                </span>
+
+
+                            </div>
+
+
+                            <div class="form-text">
+
+                                Rango: 0.50–300.00 kg,
+                                con dos decimales.
+
+                            </div>
+
+
+                        </div>
+
+
+                        <!-- TALLA -->
+
+                        <div class="col-md-6">
+
+
+                            <label for="talla"
+                                   class="form-label fw-semibold">
+
+                                Talla
+
+                            </label>
+
+
+                            <div class="input-group">
+
+
+                                <input type="number"
+                                       class="form-control campo-signo"
+                                       id="talla"
+                                       th:field="*{talla}"
+                                       min="30.00"
+                                       max="250.00"
+                                       step="0.01"
+                                       inputmode="decimal"
+                                       required
+                                       autocomplete="off"
+                                       placeholder="Ej. 170.00">
+
+
+                                <span class="input-group-text unidad">
+
+                                    cm
+
+                                </span>
+
+
+                            </div>
+
+
+                            <div class="form-text">
+
+                                Rango: 30.00–250.00 cm,
+                                con dos decimales.
+
+                            </div>
+
+
+                        </div>
+
+
+                    </div>
+
+
+                </section>
+
+
+                <!-- =====================================
+                     FRECUENCIA CARDÍACA
+                     ===================================== -->
+
+                <section class="mb-4">
+
+
+                    <div class="seccion-titulo">
+
+                        <h2 class="h5 fw-bold mb-1">
+
+                            Frecuencia cardíaca
+
+                        </h2>
+
+
+                        <small class="text-secondary">
+
+                            Rango de captura:
+                            30–220 latidos por minuto.
+
+                        </small>
+
+                    </div>
+
+
+                    <label for="frecuenciaCardiaca"
+                           class="form-label fw-semibold">
+
+                        Frecuencia cardíaca
+
+                    </label>
+
+
+                    <div class="input-group">
+
+
+                        <input type="number"
+                               class="form-control campo-signo"
+                               id="frecuenciaCardiaca"
+                               th:field="*{frecuenciaCardiaca}"
+                               min="30"
+                               max="220"
+                               step="1"
+                               inputmode="numeric"
+                               required
+                               autocomplete="off"
+                               placeholder="Ej. 80">
+
+
+                        <span class="input-group-text unidad">
+
+                            lpm
+
+                        </span>
+
+
+                    </div>
+
+
+                    <!-- ALERTA FRECUENCIA -->
+
+                    <div id="alertaFrecuencia"
+                         class="alert alert-warning alerta-clinica mt-3 mb-0"
+                         role="alert">
+
+
+                        <div class="fw-bold">
+
+                            <i class="bi bi-exclamation-triangle-fill me-2"></i>
+
+                            Frecuencia cardíaca fuera de rango normal.
+
+                        </div>
+
+
+                        <div class="mt-2">
+
+                            Valor actual:
+
+                            <span id="valorFrecuenciaActual"
+                                  class="valor-actual">
+                                -
+                            </span>
+
+                            lpm
+
+                        </div>
+
+
+                        <div class="rango-esperado text-secondary">
+
+                            Rango esperado:
+                            60–100 lpm.
+
+                        </div>
+
+
+                    </div>
+
+
+                </section>
+
+
+                <!-- =====================================
+                     EMERGENCIA
+                     ===================================== -->
+
+                <section class="emergencia-box p-4 mb-4">
+
+
+                    <div class="d-flex
+                                flex-column
+                                flex-sm-row
+                                justify-content-between
+                                align-items-sm-center
+                                gap-3">
+
+
+                        <div>
+
+
+                            <h2 class="h5 fw-bold text-danger mb-1">
+
+                                ¿Emergencia?
+
+                            </h2>
+
+
+                            <p class="text-secondary mb-0">
+
+                                Marque esta opción si el paciente
+                                debe pasar directamente a consulta médica.
+
+                            </p>
+
+
+                        </div>
+
+
+                        <div class="form-check form-switch fs-5">
+
+
+                            <input class="form-check-input"
+                                   type="checkbox"
+                                   role="switch"
+                                   id="esEmergencia"
+                                   th:field="*{esEmergencia}">
+
+
+                            <label class="form-check-label fw-semibold"
+                                   for="esEmergencia">
+
+                                Sí
+
+                            </label>
+
+
+                        </div>
+
+
+                    </div>
+
+
+                </section>
+
+
+                <!-- =====================================
+                     RESUMEN DE ALERTAS
+                     ===================================== -->
+
+                <div id="contenedorResumenAlertas"
+                     class="alert alert-warning d-none mb-4">
+
+
+                    <div class="fw-bold mb-2">
+
+                        <i class="bi bi-heart-pulse-fill me-2"></i>
+
+                        Alertas clínicas detectadas
+
+                    </div>
+
+
+                    <p class="mb-2">
+
+                        Los valores pueden registrarse,
+                        pero estas alertas deberán ser comunicadas
+                        al médico.
+
+                    </p>
+
+
+                    <ul id="listaResumenAlertas"
+                        class="mb-0">
+                    </ul>
+
+
+                </div>
+
+
+                <!-- =====================================
+                     BOTONES
+                     ===================================== -->
+
+                <div class="d-flex
+                            flex-column-reverse
+                            flex-sm-row
+                            justify-content-end
+                            gap-2">
+
+
+                    <a th:href="@{/interno/enfermeria}"
+                       class="btn btn-outline-secondary">
+
+                        Cancelar
+
+                    </a>
+
+
+                    <button type="submit"
+                            class="btn btn-success"
+                            id="btnRegistrar">
+
+
+                        <i class="bi bi-check-circle-fill me-2"></i>
+
+                        Registrar Signos Vitales
+
+                    </button>
+
+
+                </div>
+
+
+            </form>
+
+
+        </div>
+
+
+    </div>
+
+
+</main>
+
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js">
+</script>
+
+
+<script>
+
+    document.addEventListener(
+        "DOMContentLoaded",
+        function () {
+
+
+            // =================================================
+            // ELEMENTOS
+            // =================================================
+
+            const sistolica =
+                document.getElementById(
+                    "presionSistolica"
+                );
+
+
+            const diastolica =
+                document.getElementById(
+                    "presionDiastolica"
+                );
+
+
+            const temperatura =
+                document.getElementById(
+                    "temperatura"
+                );
+
+
+            const frecuencia =
+                document.getElementById(
+                    "frecuenciaCardiaca"
+                );
+
+
+            const alertaPresion =
+                document.getElementById(
+                    "alertaPresion"
+                );
+
+
+            const alertaTemperatura =
+                document.getElementById(
+                    "alertaTemperatura"
+                );
+
+
+            const alertaFrecuencia =
+                document.getElementById(
+                    "alertaFrecuencia"
+                );
+
+
+            const valorPresionActual =
+                document.getElementById(
+                    "valorPresionActual"
+                );
+
+
+            const valorTemperaturaActual =
+                document.getElementById(
+                    "valorTemperaturaActual"
+                );
+
+
+            const valorFrecuenciaActual =
+                document.getElementById(
+                    "valorFrecuenciaActual"
+                );
+
+
+            const contenedorResumen =
+                document.getElementById(
+                    "contenedorResumenAlertas"
+                );
+
+
+            const listaResumen =
+                document.getElementById(
+                    "listaResumenAlertas"
+                );
+
+
+            // =================================================
+            // ALERTAS ACTIVAS
+            // =================================================
+
+            let alertaPresionActiva =
+                false;
+
+
+            let alertaTemperaturaActiva =
+                false;
+
+
+            let alertaFrecuenciaActiva =
+                false;
+
+
+            // =================================================
+            // PRESIÓN ARTERIAL
+            // =================================================
+            //
+            // Captura válida:
+            //
+            // Sistólica 60-250
+            // Diastólica 40-150
+            //
+            // Normal:
+            //
+            // Sistólica 90-140
+            // Diastólica 60-90
+            //
+            // =================================================
+
+            function evaluarPresion() {
+
+
+                const valorSistolica =
+                    Number(
+                        sistolica.value
+                    );
+
+
+                const valorDiastolica =
+                    Number(
+                        diastolica.value
+                    );
+
+
+                const ambosCompletos =
+                    sistolica.value !== ""
+                    &&
+                    diastolica.value !== "";
+
+
+                if (!ambosCompletos) {
+
+                    ocultarAlerta(
+                        alertaPresion
+                    );
+
+
+                    alertaPresionActiva =
+                        false;
+
+
+                    actualizarResumen();
+
+
+                    return;
+                }
+
+
+                const capturaValida =
+                    valorSistolica >= 60
+                    &&
+                    valorSistolica <= 250
+                    &&
+                    valorDiastolica >= 40
+                    &&
+                    valorDiastolica <= 150;
+
+
+                /*
+                 * FA03 solamente aplica cuando el valor
+                 * se encuentra dentro del rango permitido
+                 * de captura.
+                 */
+                if (!capturaValida) {
+
+                    ocultarAlerta(
+                        alertaPresion
+                    );
+
+
+                    alertaPresionActiva =
+                        false;
+
+
+                    actualizarResumen();
+
+
+                    return;
+                }
+
+
+                const fueraNormal =
+                    valorSistolica < 90
+                    ||
+                    valorSistolica > 140
+                    ||
+                    valorDiastolica < 60
+                    ||
+                    valorDiastolica > 90;
+
+
+                if (fueraNormal) {
+
+
+                    valorPresionActual.textContent =
+                        valorSistolica
+                        + "/"
+                        + valorDiastolica;
+
+
+                    mostrarAlerta(
+                        alertaPresion
+                    );
+
+
+                    alertaPresionActiva =
+                        true;
+
+
+                } else {
+
+
+                    ocultarAlerta(
+                        alertaPresion
+                    );
+
+
+                    alertaPresionActiva =
+                        false;
+                }
+
+
+                actualizarResumen();
+            }
+
+
+            // =================================================
+            // TEMPERATURA
+            // =================================================
+            //
+            // Captura:
+            // 34.0 - 42.0
+            //
+            // Normal:
+            // 36.0 - 37.5
+            //
+            // =================================================
+
+            function evaluarTemperatura() {
+
+
+                if (temperatura.value === "") {
+
+
+                    ocultarAlerta(
+                        alertaTemperatura
+                    );
+
+
+                    alertaTemperaturaActiva =
+                        false;
+
+
+                    actualizarResumen();
+
+
+                    return;
+                }
+
+
+                const valor =
+                    Number(
+                        temperatura.value
+                    );
+
+
+                const capturaValida =
+                    valor >= 34.0
+                    &&
+                    valor <= 42.0;
+
+
+                if (!capturaValida) {
+
+
+                    ocultarAlerta(
+                        alertaTemperatura
+                    );
+
+
+                    alertaTemperaturaActiva =
+                        false;
+
+
+                    actualizarResumen();
+
+
+                    return;
+                }
+
+
+                const fueraNormal =
+                    valor < 36.0
+                    ||
+                    valor > 37.5;
+
+
+                if (fueraNormal) {
+
+
+                    valorTemperaturaActual.textContent =
+                        temperatura.value;
+
+
+                    mostrarAlerta(
+                        alertaTemperatura
+                    );
+
+
+                    alertaTemperaturaActiva =
+                        true;
+
+
+                } else {
+
+
+                    ocultarAlerta(
+                        alertaTemperatura
+                    );
+
+
+                    alertaTemperaturaActiva =
+                        false;
+                }
+
+
+                actualizarResumen();
+            }
+
+
+            // =================================================
+            // FRECUENCIA CARDÍACA
+            // =================================================
+            //
+            // Captura:
+            // 30 - 220
+            //
+            // Normal:
+            // 60 - 100
+            //
+            // =================================================
+
+            function evaluarFrecuencia() {
+
+
+                if (frecuencia.value === "") {
+
+
+                    ocultarAlerta(
+                        alertaFrecuencia
+                    );
+
+
+                    alertaFrecuenciaActiva =
+                        false;
+
+
+                    actualizarResumen();
+
+
+                    return;
+                }
+
+
+                const valor =
+                    Number(
+                        frecuencia.value
+                    );
+
+
+                const capturaValida =
+                    valor >= 30
+                    &&
+                    valor <= 220;
+
+
+                if (!capturaValida) {
+
+
+                    ocultarAlerta(
+                        alertaFrecuencia
+                    );
+
+
+                    alertaFrecuenciaActiva =
+                        false;
+
+
+                    actualizarResumen();
+
+
+                    return;
+                }
+
+
+                const fueraNormal =
+                    valor < 60
+                    ||
+                    valor > 100;
+
+
+                if (fueraNormal) {
+
+
+                    valorFrecuenciaActual.textContent =
+                        valor;
+
+
+                    mostrarAlerta(
+                        alertaFrecuencia
+                    );
+
+
+                    alertaFrecuenciaActiva =
+                        true;
+
+
+                } else {
+
+
+                    ocultarAlerta(
+                        alertaFrecuencia
+                    );
+
+
+                    alertaFrecuenciaActiva =
+                        false;
+                }
+
+
+                actualizarResumen();
+            }
+
+
+            // =================================================
+            // MOSTRAR / OCULTAR
+            // =================================================
+
+            function mostrarAlerta(
+                elemento
+            ) {
+
+                elemento.classList.add(
+                    "visible"
+                );
+            }
+
+
+            function ocultarAlerta(
+                elemento
+            ) {
+
+                elemento.classList.remove(
+                    "visible"
+                );
+            }
+
+
+            // =================================================
+            // RESUMEN DE ALERTAS
+            // =================================================
+
+            function actualizarResumen() {
+
+
+                const alertas =
+                    [];
+
+
+                if (alertaPresionActiva) {
+
+                    alertas.push(
+                        "Presión arterial fuera de rango normal."
+                    );
+                }
+
+
+                if (alertaTemperaturaActiva) {
+
+                    alertas.push(
+                        "Temperatura fuera de rango normal."
+                    );
+                }
+
+
+                if (alertaFrecuenciaActiva) {
+
+                    alertas.push(
+                        "Frecuencia cardíaca fuera de rango normal."
+                    );
+                }
+
+
+                listaResumen.innerHTML =
+                    "";
+
+
+                if (alertas.length === 0) {
+
+
+                    contenedorResumen
+                        .classList
+                        .add(
+                            "d-none"
+                        );
+
+
+                    return;
+                }
+
+
+                for (const mensaje of alertas) {
+
+
+                    const item =
+                        document.createElement(
+                            "li"
+                        );
+
+
+                    item.textContent =
+                        mensaje;
+
+
+                    listaResumen.appendChild(
+                        item
+                    );
+                }
+
+
+                contenedorResumen
+                    .classList
+                    .remove(
+                        "d-none"
+                    );
+            }
+
+
+            // =================================================
+            // EVENTOS EN TIEMPO REAL
+            // =================================================
+
+            sistolica.addEventListener(
+                "input",
+                evaluarPresion
+            );
+
+
+            diastolica.addEventListener(
+                "input",
+                evaluarPresion
+            );
+
+
+            temperatura.addEventListener(
+                "input",
+                evaluarTemperatura
+            );
+
+
+            frecuencia.addEventListener(
+                "input",
+                evaluarFrecuencia
+            );
+
+
+            // =================================================
+            // REEVALUAR DATOS TRAS ERROR DEL BACKEND
+            // =================================================
+            //
+            // Si el Service rechazó otro campo y Thymeleaf
+            // vuelve a presentar el formulario conservando
+            // los valores, las alertas se reconstruyen.
+            // =================================================
+
+            evaluarPresion();
+
+            evaluarTemperatura();
+
+            evaluarFrecuencia();
+
+        }
+    );
+
+</script>
+
+
+</body>
+
+</html>

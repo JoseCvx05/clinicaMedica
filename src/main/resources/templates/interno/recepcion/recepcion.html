@@ -751,6 +751,10 @@
                id="estadoCitaActual"
                th:value="${resultado.cita.estado}">
 
+        <input type="hidden"
+               id="prioridadCitaActual"
+               th:value="${resultado.cita.prioridad}">
+
 
     </section>
     <!-- =================================================
@@ -804,6 +808,15 @@
                 <form th:action="@{/interno/recepcion/emergencia}"
                       method="post">
 
+                    <!-- =============================================
+     CITA ACTUAL - OPCIONAL
+     ============================================= -->
+
+                    <input type="hidden"
+                           name="idCita"
+                           th:if="${resultado != null and resultado.cita != null}"
+                           th:value="${resultado.cita.numeroCita}">
+
 
                     <div class="modal-body p-4">
 
@@ -845,9 +858,12 @@
                                    class="form-control"
                                    maxlength="100"
                                    autocomplete="off"
-                                   th:value="${nombreEmergencia}"
+                                   th:value="${nombreEmergencia != null
+                                    ? nombreEmergencia
+                                    : (resultado != null and resultado.cita != null
+                                        ? resultado.cita.nombrePaciente
+                                        : '')}"
                                    required>
-
                         </div>
 
 
@@ -933,55 +949,43 @@
         "DOMContentLoaded",
         function () {
 
-            document.addEventListener(
-                "DOMContentLoaded",
-                function () {
+
+            // =================================================
+            // FA01 - REABRIR MODAL SI EXISTIÓ ERROR
+            // =================================================
+
+            const abrirModalEmergencia =
+                document.getElementById(
+                    "abrirModalEmergencia"
+                );
 
 
-                    // =================================================
-                    // FA01 - REABRIR MODAL SI EXISTIÓ ERROR
-                    // =================================================
+            if (
+                abrirModalEmergencia
+                && abrirModalEmergencia.value === "true"
+            ) {
 
-                    const abrirModalEmergencia =
-                        document.getElementById(
-                            "abrirModalEmergencia"
+                const elementoModal =
+                    document.getElementById(
+                        "modalEmergencia"
+                    );
+
+
+                if (elementoModal) {
+
+                    const modal =
+                        new bootstrap.Modal(
+                            elementoModal
                         );
 
 
-                    if (abrirModalEmergencia
-                        && abrirModalEmergencia.value === "true") {
-
-                        const elementoModal =
-                            document.getElementById(
-                                "modalEmergencia"
-                            );
-
-
-                        if (elementoModal) {
-
-                            const modal =
-                                new bootstrap.Modal(
-                                    elementoModal
-                                );
-
-
-                            modal.show();
-                        }
-                    }
-
-
-                    // =================================================
-                    // PLACEHOLDER
-                    // =================================================
-
-                    const radioCita =
-                        document.getElementById(
-                            "buscarCita"
-                        );
+                    modal.show();
+                }
+            }
 
 
             // =================================================
-            // PLACEHOLDER
+            // PLACEHOLDER DEL BUSCADOR
             // =================================================
 
             const radioCita =
@@ -1005,15 +1009,19 @@
             function actualizarPlaceholder() {
 
                 if (!campo) {
+
                     return;
                 }
 
 
-                if (radioDpi
-                    && radioDpi.checked) {
+                if (
+                    radioDpi
+                    && radioDpi.checked
+                ) {
 
                     campo.placeholder =
                         "Ingrese DPI de 13 dígitos";
+
 
                     campo.maxLength =
                         13;
@@ -1022,6 +1030,7 @@
 
                     campo.placeholder =
                         "Ingrese número de cita";
+
 
                     campo.removeAttribute(
                         "maxlength"
@@ -1052,7 +1061,7 @@
 
 
             // =================================================
-            // RNF-021
+            // RNF-021 - ACTUALIZACIÓN DE ESTADO
             // =================================================
 
             const idCita =
@@ -1067,6 +1076,12 @@
                 );
 
 
+            /*
+             * Si no estamos visualizando una cita,
+             * simplemente no iniciamos el polling.
+             *
+             * El resto del JavaScript ya fue ejecutado.
+             */
             if (!idCita
                 || !estadoActual) {
 
@@ -1088,15 +1103,19 @@
 
                     const respuesta =
                         await fetch(
+
                             "/interno/recepcion/cita/"
                             + encodeURIComponent(
                                 numeroCita
                             )
                             + "/estado",
+
                             {
+
                                 method: "GET",
 
                                 headers: {
+
                                     "Accept":
                                         "application/json"
                                 }
@@ -1106,6 +1125,8 @@
 
                     if (!respuesta.ok) {
 
+                        programarSiguienteConsulta();
+
                         return;
                     }
 
@@ -1114,15 +1135,48 @@
                         await respuesta.json();
 
 
-                    if (datos.estado
-                        && datos.estado
-                        !== ultimoEstado) {
+                    if (
+                        datos.estado
+                        && datos.estado !== ultimoEstado
+                    ) {
 
                         window.location.href =
                             "/interno/recepcion/cita/"
                             + encodeURIComponent(
                                 numeroCita
                             );
+
+
+                        return;
+                    }
+
+
+                    /*
+                     * También recargamos si cambia
+                     * la prioridad.
+                     *
+                     * Esto será útil al marcar una
+                     * cita como Emergencia.
+                     */
+                    const prioridadMostrada =
+                        document.getElementById(
+                            "prioridadCitaActual"
+                        );
+
+
+                    if (
+                        prioridadMostrada
+                        && datos.prioridad
+                        && datos.prioridad
+                        !== prioridadMostrada.value
+                    ) {
+
+                        window.location.href =
+                            "/interno/recepcion/cita/"
+                            + encodeURIComponent(
+                                numeroCita
+                            );
+
 
                         return;
                     }
@@ -1131,10 +1185,17 @@
                 } catch (error) {
 
                     /*
-                     * El polling no debe romper la vista.
+                     * El polling nunca debe impedir
+                     * utilizar Recepción.
                      */
                 }
 
+
+                programarSiguienteConsulta();
+            }
+
+
+            function programarSiguienteConsulta() {
 
                 setTimeout(
                     verificarEstado,
@@ -1143,10 +1204,7 @@
             }
 
 
-            setTimeout(
-                verificarEstado,
-                5000
-            );
+            programarSiguienteConsulta();
 
         }
     );

@@ -472,4 +472,115 @@ public interface CitaRepository
             @Param("idCita")
             Integer idCita
     );
+    // =====================================================
+// CU-07 - PANEL DE ENFERMERÍA POR ESTADO
+// =====================================================
+
+    /**
+     * Obtiene las citas que deben mostrarse en una sección
+     * específica del panel de Enfermería.
+     *
+     * CU-07 utiliza:
+     *
+     * - Paciente Presente
+     * - Signos Vitales
+     *
+     * Las emergencias indicadas previamente por Recepción
+     * aparecen primero.
+     */
+    @Query("""
+    SELECT c
+    FROM Cita c
+
+    JOIN FETCH c.paciente
+    JOIN FETCH c.medico
+    JOIN FETCH c.sucursal
+    JOIN FETCH c.especialidad
+    JOIN FETCH c.estadoCita
+
+    WHERE LOWER(c.estadoCita.nombre)
+          = LOWER(:estado)
+
+      AND NOT EXISTS (
+            SELECT sv.id
+            FROM SignosVitales sv
+            WHERE sv.cita = c
+      )
+
+    ORDER BY
+
+        CASE
+            WHEN LOWER(COALESCE(c.prioridad, ''))
+                 = 'emergencia'
+            THEN 0
+            ELSE 1
+        END ASC,
+
+        c.fechaHoraCita ASC,
+        c.id ASC
+    """)
+    List<Cita> buscarParaPanelEnfermeriaPorEstado(
+            @Param("estado")
+            String estado
+    );
+
+
+// =====================================================
+// CU-07 - BLOQUEO AL LLAMAR PACIENTE
+// =====================================================
+
+    /**
+     * Bloquea la cita durante la transición:
+     *
+     * Paciente Presente -> Signos Vitales
+     *
+     * Evita que dos enfermeros llamen simultáneamente
+     * al mismo paciente.
+     */
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("""
+    SELECT c
+    FROM Cita c
+
+    JOIN FETCH c.paciente
+    JOIN FETCH c.estadoCita
+    JOIN FETCH c.sucursal
+    JOIN FETCH c.especialidad
+
+    WHERE c.id = :idCita
+    """)
+    Optional<Cita> buscarParaLlamarEnfermeriaConBloqueo(
+            @Param("idCita")
+            Integer idCita
+    );
+    // =====================================================
+// CU-07 - BLOQUEO AL REGISTRAR SIGNOS VITALES
+// =====================================================
+
+    /**
+     * Bloquea la cita durante el registro definitivo
+     * de signos vitales.
+     *
+     * La cita debe ser revalidada posteriormente por
+     * SignosVitalesService.
+     *
+     * Evita que dos enfermeros registren simultáneamente
+     * los signos de una misma cita.
+     */
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("""
+    SELECT c
+    FROM Cita c
+
+    JOIN FETCH c.paciente
+    JOIN FETCH c.estadoCita
+    JOIN FETCH c.sucursal
+    JOIN FETCH c.especialidad
+
+    WHERE c.id = :idCita
+    """)
+    Optional<Cita> buscarParaRegistrarSignosVitalesConBloqueo(
+            @Param("idCita")
+            Integer idCita
+    );
 }

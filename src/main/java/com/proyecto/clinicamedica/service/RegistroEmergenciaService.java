@@ -1,8 +1,11 @@
 package com.proyecto.clinicamedica.service;
 
 import com.proyecto.clinicamedica.entity.AtencionEmergencia;
+import com.proyecto.clinicamedica.entity.Cita;
 import com.proyecto.clinicamedica.entity.Usuario;
+
 import com.proyecto.clinicamedica.repository.AtencionEmergenciaRepository;
+import com.proyecto.clinicamedica.repository.CitaRepository;
 import com.proyecto.clinicamedica.repository.UsuarioRepository;
 
 import org.springframework.beans.factory.annotation.Value;
@@ -20,14 +23,19 @@ import java.time.ZoneId;
  *
  * CU-05 - FA01.
  *
- * Registra el ingreso de una persona por emergencia.
+ * Permite registrar:
  *
- * Puede:
- * - Reutilizar un paciente existente.
- * - Registrar una atención sin crear una cuenta falsa.
- * - Proteger el DPI.
- * - Asociar la sede del recepcionista.
- * - Dejar la atención pendiente de signos vitales.
+ * 1. Emergencia independiente, sin cita.
+ * 2. Emergencia asociada a una cita existente.
+ *
+ * Cuando existe una cita:
+ *
+ * - Debe estar en "Paciente Presente".
+ * - El DPI debe pertenecer al paciente de esa cita.
+ * - La prioridad de la cita cambia a "Emergencia".
+ *
+ * De esta forma CU-07 puede reconocer automáticamente
+ * la emergencia al recibir al paciente en Enfermería.
  *
  * =========================================================
  */
@@ -35,29 +43,52 @@ import java.time.ZoneId;
 public class RegistroEmergenciaService {
 
 
+    // =====================================================
+    // CONSTANTES
+    // =====================================================
+
     private static final String PRIORIDAD_EMERGENCIA =
             "Emergencia";
 
+
     private static final String ESTADO_PENDIENTE_SIGNOS =
             "Pendiente de signos vitales";
+
+
+    private static final String ESTADO_PACIENTE_PRESENTE =
+            "Paciente Presente";
 
 
     // =====================================================
     // DEPENDENCIAS
     // =====================================================
 
-    private final UsuarioRepository usuarioRepository;
+    private final UsuarioRepository
+            usuarioRepository;
+
 
     private final AtencionEmergenciaRepository
             atencionEmergenciaRepository;
 
-    private final HashService hashService;
 
-    private final CifradoService cifradoService;
+    private final CitaRepository
+            citaRepository;
 
-    private final UsuarioActualService usuarioActualService;
 
-    private final ZoneId zonaHoraria;
+    private final HashService
+            hashService;
+
+
+    private final CifradoService
+            cifradoService;
+
+
+    private final UsuarioActualService
+            usuarioActualService;
+
+
+    private final ZoneId
+            zonaHoraria;
 
 
     // =====================================================
@@ -68,7 +99,10 @@ public class RegistroEmergenciaService {
 
             UsuarioRepository usuarioRepository,
 
-            AtencionEmergenciaRepository atencionEmergenciaRepository,
+            AtencionEmergenciaRepository
+                    atencionEmergenciaRepository,
+
+            CitaRepository citaRepository,
 
             HashService hashService,
 
@@ -83,17 +117,26 @@ public class RegistroEmergenciaService {
         this.usuarioRepository =
                 usuarioRepository;
 
+
         this.atencionEmergenciaRepository =
                 atencionEmergenciaRepository;
+
+
+        this.citaRepository =
+                citaRepository;
+
 
         this.hashService =
                 hashService;
 
+
         this.cifradoService =
                 cifradoService;
 
+
         this.usuarioActualService =
                 usuarioActualService;
+
 
         this.zonaHoraria =
                 ZoneId.of(
@@ -103,14 +146,48 @@ public class RegistroEmergenciaService {
 
 
     // =====================================================
+    // COMPATIBILIDAD - EMERGENCIA SIN CITA
+    // =====================================================
+
+    /**
+     * Mantiene disponible el flujo original de CU-05:
+     *
+     * Registrar una emergencia sin seleccionar previamente
+     * una cita.
+     */
+    @Transactional
+    public ResultadoEmergencia registrar(
+
+            String nombreCompleto,
+
+            String dpi
+    ) {
+
+        return registrar(
+                nombreCompleto,
+                dpi,
+                null
+        );
+    }
+
+
+    // =====================================================
     // REGISTRAR EMERGENCIA
     // =====================================================
 
     @Transactional
     public ResultadoEmergencia registrar(
+
             String nombreCompleto,
-            String dpi
+
+            String dpi,
+
+            Integer idCita
     ) {
+
+        // =================================================
+        // LIMPIAR ENTRADAS
+        // =================================================
 
         String nombre =
                 limpiar(
@@ -125,7 +202,7 @@ public class RegistroEmergenciaService {
 
 
         // =================================================
-        // NOMBRE
+        // VALIDAR NOMBRE
         // =================================================
 
         if (nombre.isBlank()) {
@@ -171,7 +248,7 @@ public class RegistroEmergenciaService {
 
 
         // =================================================
-        // DPI 13 DÍGITOS
+        // DPI EXACTAMENTE 13 DÍGITOS
         // =================================================
 
         if (dpiLimpio.length() != 13) {
@@ -236,18 +313,23 @@ public class RegistroEmergenciaService {
 
 
         // =================================================
-        // SI EXISTE, DEBE SER PACIENTE
+        // SI EXISTE DEBE SER PACIENTE
         // =================================================
 
         if (paciente != null) {
 
             if (paciente.getRol() == null
-                    || paciente.getRol().getNombre() == null
-                    || !"Paciente".equalsIgnoreCase(
-                    paciente.getRol()
-                            .getNombre()
-                            .trim()
-            )) {
+
+                    || paciente.getRol()
+                    .getNombre() == null
+
+                    || !"Paciente"
+                    .equalsIgnoreCase(
+                            paciente
+                                    .getRol()
+                                    .getNombre()
+                                    .trim()
+                    )) {
 
                 return ResultadoEmergencia.error(
                         "El DPI ingresado pertenece a un usuario "
@@ -257,7 +339,8 @@ public class RegistroEmergenciaService {
 
 
             /*
-             * Utilizamos el nombre ya registrado.
+             * Si el paciente existe utilizamos el nombre
+             * oficial almacenado en el sistema.
              */
             nombre =
                     paciente.getNombreCompleto();
@@ -265,7 +348,7 @@ public class RegistroEmergenciaService {
 
 
         // =================================================
-        // FECHA/HORA
+        // FECHA / HORA
         // =================================================
 
         OffsetDateTime ahora =
@@ -275,7 +358,38 @@ public class RegistroEmergenciaService {
 
 
         // =================================================
-        // CREAR ATENCIÓN
+        // EMERGENCIA ASOCIADA A UNA CITA
+        // =================================================
+        //
+        // Si idCita es null, este bloque se omite y
+        // conservamos el flujo original de emergencia
+        // independiente.
+        // =================================================
+
+        if (idCita != null) {
+
+            ResultadoEmergencia errorCita =
+                    asociarEmergenciaACita(
+
+                            idCita,
+
+                            paciente,
+
+                            recepcionista,
+
+                            ahora
+                    );
+
+
+            if (errorCita != null) {
+
+                return errorCita;
+            }
+        }
+
+
+        // =================================================
+        // CREAR ATENCIÓN DE EMERGENCIA
         // =================================================
 
         AtencionEmergencia emergencia =
@@ -366,6 +480,169 @@ public class RegistroEmergenciaService {
 
 
     // =====================================================
+    // ASOCIAR EMERGENCIA A CITA
+    // =====================================================
+
+    /**
+     * Cuando Recepción está trabajando sobre una cita
+     * específica, la marca como Emergencia.
+     *
+     * Esto permite la integración:
+     *
+     * CU-05 -> CU-07
+     */
+    private ResultadoEmergencia asociarEmergenciaACita(
+
+            Integer idCita,
+
+            Usuario paciente,
+
+            Usuario recepcionista,
+
+            OffsetDateTime ahora
+    ) {
+
+        // =================================================
+        // ID CITA
+        // =================================================
+
+        if (idCita <= 0) {
+
+            return ResultadoEmergencia.error(
+                    "La cita seleccionada no es válida."
+            );
+        }
+
+
+        // =================================================
+        // PARA UNA CITA DEBE EXISTIR PACIENTE
+        // =================================================
+
+        if (paciente == null
+                || paciente.getId() == null) {
+
+            return ResultadoEmergencia.error(
+                    "El DPI ingresado no corresponde "
+                            + "al paciente de la cita seleccionada."
+            );
+        }
+
+
+        // =================================================
+        // BUSCAR CITA
+        // =================================================
+
+        Cita cita =
+                citaRepository
+                        .findById(
+                                idCita
+                        )
+                        .orElse(
+                                null
+                        );
+
+
+        if (cita == null) {
+
+            return ResultadoEmergencia.error(
+                    "La cita seleccionada no existe."
+            );
+        }
+
+
+        // =================================================
+        // VALIDAR PACIENTE DE LA CITA
+        // =================================================
+
+        if (cita.getPaciente() == null
+
+                || cita.getPaciente()
+                .getId() == null
+
+                || !paciente.getId()
+                .equals(
+                        cita.getPaciente()
+                                .getId()
+                )) {
+
+            return ResultadoEmergencia.error(
+                    "El DPI ingresado no corresponde "
+                            + "al paciente de la cita seleccionada."
+            );
+        }
+
+
+        // =================================================
+        // VALIDAR ESTADO
+        // =================================================
+
+        if (cita.getEstadoCita() == null
+                || cita.getEstadoCita()
+                .getNombre() == null
+
+                || !ESTADO_PACIENTE_PRESENTE
+                .equalsIgnoreCase(
+                        cita.getEstadoCita()
+                                .getNombre()
+                                .trim()
+                )) {
+
+            return ResultadoEmergencia.error(
+                    "La cita debe encontrarse en estado "
+                            + "'Paciente Presente' antes de marcarla "
+                            + "como emergencia."
+            );
+        }
+
+
+        // =================================================
+        // EVITAR DOBLE MARCADO
+        // =================================================
+
+        if (PRIORIDAD_EMERGENCIA
+                .equalsIgnoreCase(
+                        limpiar(
+                                cita.getPrioridad()
+                        )
+                )) {
+
+            return ResultadoEmergencia.error(
+                    "La cita ya se encuentra marcada "
+                            + "con prioridad de EMERGENCIA."
+            );
+        }
+
+
+        // =================================================
+        // CAMBIAR PRIORIDAD
+        // =================================================
+
+        cita.setPrioridad(
+                PRIORIDAD_EMERGENCIA
+        );
+
+
+        cita.setFechaModificacion(
+                ahora
+        );
+
+
+        cita.setModificadoPor(
+                recepcionista
+        );
+
+
+        citaRepository
+                .saveAndFlush(
+                        cita
+                );
+
+
+        return null;
+    }
+
+
+    // =====================================================
     // LIMPIAR
     // =====================================================
 
@@ -410,10 +687,15 @@ public class RegistroEmergenciaService {
         ) {
 
             return new ResultadoEmergencia(
+
                     true,
+
                     idAtencionEmergencia,
+
                     idPaciente,
+
                     nombrePaciente,
+
                     mensaje
             );
         }
@@ -424,10 +706,15 @@ public class RegistroEmergenciaService {
         ) {
 
             return new ResultadoEmergencia(
+
                     false,
+
                     null,
+
                     null,
+
                     null,
+
                     mensaje
             );
         }
