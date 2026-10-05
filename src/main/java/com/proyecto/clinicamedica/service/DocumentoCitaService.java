@@ -165,7 +165,7 @@ public class DocumentoCitaService {
 
 
             // =================================================
-            // PROTECCIÓN CONTRA PATH TRAVERSAL
+            // PROTECCIÓN CONTRA PATH TRAVERSAL// evita que no  se puedan guardar archivos fuera del directorio base
             // =================================================
 
             if (!rutaDestino.startsWith(
@@ -179,7 +179,7 @@ public class DocumentoCitaService {
 
 
             // =================================================
-            // GUARDAR ARCHIVO FÍSICO
+            // guarda el archivo pero no registra en la base de datos todavía
             // =================================================
 
             Files.copy(
@@ -247,7 +247,7 @@ public class DocumentoCitaService {
 
 
             // =================================================
-            // GUARDAR METADATA
+            // GUARDAR METADATA "bd"
             // =================================================
 
             return documentoRepository

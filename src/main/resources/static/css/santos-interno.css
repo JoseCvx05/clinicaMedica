@@ -1,0 +1,113 @@
+/* ============================================================
+   SANTOS · Tema para vistas internas (sobre Bootstrap 5.3)
+   Reutilizable en todas las vistas internas que usen Bootstrap.
+   ============================================================ */
+:root {
+    --santos-900: #0a3d3a;
+    --santos-700: #0d5c57;
+    --santos-500: #14837b;
+    --santos-100: #dcefed;
+    --santos-fondo: #f2f7f6;
+    --santos-linea: #d5e2e1;
+    --santos-ambar: #f0b04a;
+
+    /* Sobrescribe el color primario de Bootstrap */
+    --bs-primary: #0d5c57;
+    --bs-primary-rgb: 13, 92, 87;
+    --bs-primary-text-emphasis: #0a3d3a;
+    --bs-primary-bg-subtle: #dcefed;
+    --bs-primary-border-subtle: #a9d3cf;
+    --bs-link-color: #0d5c57;
+    --bs-link-hover-color: #0a3d3a;
+    --bs-body-font-family: "Figtree", "Segoe UI", system-ui, sans-serif;
+    --bs-body-color: #14272a;
+    --bs-body-bg: #f2f7f6;
+    --bs-focus-ring-color: rgba(240, 176, 74, .45);
+}
+
+h1, h2, h3, h4, h5, h6, .navbar-brand {
+    font-family: "Bricolage Grotesque", "Segoe UI", system-ui, sans-serif;
+    letter-spacing: -0.01em;
+}
+
+/* Botón primario con el verde SANTOS */
+.btn-primary {
+    --bs-btn-bg: #0d5c57;
+    --bs-btn-border-color: #0d5c57;
+    --bs-btn-hover-bg: #0a3d3a;
+    --bs-btn-hover-border-color: #0a3d3a;
+    --bs-btn-active-bg: #0a3d3a;
+    --bs-btn-active-border-color: #0a3d3a;
+    --bs-btn-disabled-bg: #0d5c57;
+    --bs-btn-disabled-border-color: #0d5c57;
+}
+.btn { border-radius: 999px; font-weight: 600; padding-block: .6rem; }
+.btn:focus-visible { outline: 3px solid var(--santos-ambar); outline-offset: 2px; box-shadow: none; }
+
+/* ---------- Barra superior ---------- */
+.santos-navbar {
+    background: #fff;
+    border-bottom: 1px solid var(--santos-linea);
+    padding-block: .6rem;
+}
+.santos-marca { display: flex; align-items: center; gap: .6rem; font-weight: 700; font-size: 1.3rem; letter-spacing: .05em; color: var(--santos-900); }
+.santos-marca:hover { color: var(--santos-700); }
+.santos-simbolo {
+    display: grid; place-items: center; width: 38px; height: 38px;
+    background: var(--santos-700); color: #fff; border-radius: 11px; font-size: 1.15rem;
+}
+.santos-avatar {
+    display: grid; place-items: center; width: 38px; height: 38px;
+    border-radius: 50%; background: var(--santos-100); color: var(--santos-700); font-size: 1.2rem;
+}
+
+/* ---------- Bienvenida ---------- */
+.santos-bienvenida {
+    background: var(--santos-900);
+    color: #fff;
+    padding: clamp(2rem, 5vw, 3.2rem) 0;
+    position: relative; overflow: hidden;
+}
+.santos-bienvenida::after {
+    content: ""; position: absolute; right: -70px; bottom: -90px;
+    width: 300px; height: 300px; background: #fff; opacity: .06;
+    clip-path: polygon(35% 0,65% 0,65% 35%,100% 35%,100% 65%,65% 65%,65% 100%,35% 100%,35% 65%,0 65%,0 35%,35% 35%);
+    pointer-events: none;
+}
+.santos-bienvenida .container { position: relative; z-index: 1; }
+.santos-bienvenida h1 { font-size: clamp(1.8rem, 4vw, 2.6rem); font-weight: 700; margin: .8rem 0 .5rem; }
+.santos-bienvenida p { margin: 0; color: #cde3e1; max-width: 55ch; }
+.santos-etiqueta {
+    display: inline-block; padding: .2rem .8rem; border-radius: 999px;
+    background: rgba(255,255,255,.14); font-size: .85rem; font-weight: 600;
+}
+
+/* ---------- Tarjetas de módulo ---------- */
+.santos-modulo {
+    border: 1px solid var(--santos-linea);
+    border-radius: 16px;
+    box-shadow: none;
+    transition: border-color .15s, transform .15s;
+}
+.santos-modulo:hover { border-color: var(--santos-500); transform: translateY(-2px); }
+.santos-modulo-icono {
+    display: grid; place-items: center;
+    width: 60px; height: 60px; border-radius: 16px;
+    font-size: 1.7rem; margin-bottom: 1.2rem;
+}
+
+/* ---------- Aviso ---------- */
+.santos-aviso {
+    display: flex; gap: 1rem; align-items: flex-start;
+    background: #fff; border: 1px dashed var(--santos-500);
+    border-radius: 14px; color: var(--santos-900);
+}
+
+/* ---------- Pie ---------- */
+.santos-pie { background: #14272a; color: #c3d2d3; margin-top: 3rem; }
+.santos-pie strong { color: #fff; letter-spacing: .05em; }
+
+@media (prefers-reduced-motion: reduce) {
+    .santos-modulo { transition: none; }
+    .santos-modulo:hover { transform: none; }
+}

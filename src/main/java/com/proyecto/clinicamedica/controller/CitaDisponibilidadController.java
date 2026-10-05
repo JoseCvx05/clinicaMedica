@@ -57,7 +57,8 @@ public class CitaDisponibilidadController {
 
     @GetMapping({
             "/paciente/citas/disponibilidad",
-            "/interno/recepcion/citas/disponibilidad"
+            "/interno/recepcion/citas/disponibilidad",
+            "/interno/medico/citas/disponibilidad"
     })
     @ResponseBody
     public ResponseEntity<List<HorarioDisponibleDTO>>

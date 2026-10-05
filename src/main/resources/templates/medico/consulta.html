@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Consulta médica | SANTOS</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700&family=Figtree:wght@400;500;600&display=swap"
+          rel="stylesheet">
+
+    <!-- Base compartida con el panel médico + estilos propios de la consulta -->
+    <link rel="stylesheet" th:href="@{/css/panel-medico.css}" href="/css/panel-medico.css">
+    <link rel="stylesheet" th:href="@{/css/consulta-medica.css}" href="/css/consulta-medica.css">
+</head>
+
+<body>
+
+<!-- ENCABEZADO -->
+<header class="encabezado">
+    <div class="barra">
+
+        <a class="marca" th:href="@{/interno/medico}">
+            <span class="logo" aria-hidden="true">
+                <svg viewBox="0 0 24 24"><path d="M9 3h6v6h6v6h-6v6H9v-6H3V9h6z"/></svg>
+            </span>
+            <span class="marca-texto">
+                <strong>SANTOS</strong>
+                <span>Consulta médica</span>
+            </span>
+        </a>
+
+        <div class="acciones-cabecera">
+            <a class="boton-salir" th:href="@{/interno/medico}">Volver al panel</a>
+
+            <form th:action="@{/logout-interno}" method="post">
+                <input th:if="${_csrf != null}" type="hidden"
+                       th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+                <button type="submit" class="boton-salir">Cerrar sesión</button>
+            </form>
+        </div>
+
+    </div>
+</header>
+
+
+<main class="pagina pagina-consulta">
+
+    <section class="titulo-principal">
+        <h1>Consulta médica</h1>
+        <p>Registro clínico y evaluación del paciente.</p>
+    </section>
+
+
+    <!-- MENSAJES -->
+    <div th:if="${mensajeExito != null}" class="mensaje mensaje-exito" role="status"
+         th:text="${mensajeExito}">Operación realizada.</div>
+
+    <div th:if="${mensajeError != null}" class="mensaje mensaje-error" role="alert"
+         th:text="${mensajeError}">Error.</div>
+
+    <!-- Mensaje para TTS -->
+    <div id="datos-tts" th:if="${mensajeTts != null}"
+         th:attr="data-mensaje=${mensajeTts}" style="display:none;"></div>
+
+
+    <!-- DATOS DE LA CITA Y SIGNOS VITALES -->
+    <div class="grid-superior" th:if="${expediente != null}">
+
+        <section class="panel-tarjeta" aria-labelledby="t-cita">
+            <h2 id="t-cita">Datos de la cita</h2>
+
+            <dl class="datos">
+                <div class="dato">
+                    <dt>Cita</dt>
+                    <dd th:text="${'#' + expediente.numeroCita()}">#0</dd>
+                </div>
+                <div class="dato">
+                    <dt>Paciente</dt>
+                    <dd class="dato-fuerte" th:text="${expediente.nombrePaciente()}">Paciente</dd>
+                </div>
+                <div class="dato">
+                    <dt>Médico</dt>
+                    <dd th:text="${expediente.nombreMedico()}">Médico</dd>
+                </div>
+                <div class="dato">
+                    <dt>Especialidad</dt>
+                    <dd th:text="${expediente.especialidad()}">Especialidad</dd>
+                </div>
+                <div class="dato">
+                    <dt>Sucursal</dt>
+                    <dd th:text="${expediente.sucursal()}">Sucursal</dd>
+                </div>
+                <div class="dato">
+                    <dt>Fecha</dt>
+                    <dd id="fecha-cita" th:attr="data-fecha=${expediente.fechaHoraCita()}"
+                        th:text="${expediente.fechaHoraCita()}">Fecha</dd>
+                </div>
+                <div class="dato">
+                    <dt>Prioridad</dt>
+                    <dd>
+                        <span th:if="${expediente.prioridad() != null and expediente.prioridad().equalsIgnoreCase('Emergencia')}"
+                              class="etiqueta-emergencia">Emergencia</span>
+                        <span th:unless="${expediente.prioridad() != null and expediente.prioridad().equalsIgnoreCase('Emergencia')}"
+                              th:text="${expediente.prioridad()}">Normal</span>
+                    </dd>
+                </div>
+                <div class="dato">
+                    <dt>Estado</dt>
+                    <dd class="estado-consulta">
+                        <span th:if="${expediente.estadoConsulta().name() == 'EN_CURSO'}"
+                              class="estado estado-curso">En curso</span>
+                        <span th:if="${expediente.estadoConsulta().name() == 'FINALIZADA'}"
+                              class="estado estado-finalizada">Finalizada</span>
+                        <span class="version">Versión <strong th:text="${expediente.version()}">1</strong></span>
+                    </dd>
+                </div>
+            </dl>
+
+            <!-- Repetir TTS -->
+            <button id="boton-repetir-tts" th:if="${mensajeTts != null}" type="button" class="boton boton-secundario boton-tts">
+                🔊 Repetir llamado
+            </button>
+        </section>
+
+
+        <section class="panel-tarjeta" aria-labelledby="t-signos">
+            <h2 id="t-signos">Signos vitales</h2>
+
+            <div class="signos-grid" th:if="${expediente.signosVitales() != null}">
+
+                <div class="signo" th:classappend="${expediente.signosVitales().alertaPresion()} ? ' alerta' : ''">
+                    <span>Presión arterial</span>
+                    <strong>
+                        <span th:text="${expediente.signosVitales().presionSistolica()}">120</span>/<span
+                            th:text="${expediente.signosVitales().presionDiastolica()}">80</span>
+                        <small>mmHg</small>
+                    </strong>
+                </div>
+
+                <div class="signo" th:classappend="${expediente.signosVitales().alertaTemperatura()} ? ' alerta' : ''">
+                    <span>Temperatura</span>
+                    <strong><span th:text="${expediente.signosVitales().temperatura()}">36.5</span> <small>°C</small></strong>
+                </div>
+
+                <div class="signo">
+                    <span>Peso</span>
+                    <strong><span th:text="${expediente.signosVitales().peso()}">70</span> <small>kg</small></strong>
+                </div>
+
+                <div class="signo">
+                    <span>Talla</span>
+                    <strong><span th:text="${expediente.signosVitales().talla()}">1.70</span> <small>m</small></strong>
+                </div>
+
+                <div class="signo" th:classappend="${expediente.signosVitales().alertaFrecuenciaCardiaca()} ? ' alerta' : ''">
+                    <span>Frecuencia cardíaca</span>
+                    <strong><span th:text="${expediente.signosVitales().frecuenciaCardiaca()}">80</span> <small>lpm</small></strong>
+                </div>
+
+                <div class="signo" th:classappend="${expediente.signosVitales().emergencia()} ? ' alerta' : ''">
+                    <span>Clasificación</span>
+                    <strong th:text="${expediente.signosVitales().emergencia() ? 'Emergencia' : 'Normal'}">Normal</strong>
+                </div>
+
+            </div>
+        </section>
+
+    </div>
+
+
+    <!-- FORMULARIO -->
+    <form th:if="${expediente != null}"
+          th:object="${formulario}"
+          th:action="@{/interno/medico/consulta/guardar}"
+          method="post" class="formulario">
+
+        <input th:if="${_csrf != null}" type="hidden"
+               th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+        <input type="hidden" th:field="*{idCita}">
+        <!-- ID real del CIE-10 -->
+        <input type="hidden" id="idCie10" th:field="*{idCie10}">
+
+        <section class="panel-tarjeta seccion-formulario" aria-labelledby="t-eval">
+            <h2 id="t-eval">Evaluación clínica</h2>
+
+            <div class="campo">
+                <label for="motivoVisita">Motivo de visita <span class="obligatorio">*</span></label>
+                <textarea id="motivoVisita"
+                          th:field="*{motivoVisita}" rows="4"
+                          maxlength="2000"
+                          th:disabled="${expediente.estadoConsulta().name() == 'FINALIZADA'}">
+                </textarea>
+                <div class="ayuda">Máximo 2000 caracteres.</div>
+                <div class="error-campo" th:if="${#fields.hasErrors('motivoVisita')}" th:errors="*{motivoVisita}"></div>
+            </div>
+
+            <div class="campo">
+                <label for="hallazgosClinicos">Hallazgos clínicos <span class="obligatorio">*</span></label>
+                <textarea id="hallazgosClinicos" th:field="*{hallazgosClinicos}" rows="4"
+                          th:disabled="${expediente.estadoConsulta().name() == 'FINALIZADA'}"></textarea>
+                <div class="ayuda">Obligatorio para finalizar la consulta.</div>
+            </div>
+
+            <div class="campo">
+                <label for="busquedaCie10">Código CIE-10</label>
+
+                <div class="contenedor-cie">
+                    <input id="busquedaCie10" type="text" autocomplete="off"
+                           th:disabled="${expediente.estadoConsulta().name() == 'FINALIZADA'}"
+                           th:value="${expediente.codigoCie10() != null ? expediente.codigoCie10() + ' - ' + expediente.descripcionCie10() : ''}"
+                           placeholder="Escriba código o descripción...">
+                    <div id="resultadosCie10" class="resultados-cie"></div>
+                </div>
+
+                <div class="ayuda">Opcional. Escriba al menos 2 caracteres.</div>
+            </div>
+
+            <div class="campo">
+                <label for="diagnostico">Diagnóstico <span class="obligatorio">*</span></label>
+                <textarea id="diagnostico" th:field="*{diagnostico}" rows="4" minlength="10" maxlength="5000"
+                          th:disabled="${expediente.estadoConsulta().name() == 'FINALIZADA'}"></textarea>
+                <div class="ayuda">Obligatorio para finalizar. Entre 10 y 5000 caracteres.</div>
+                <div class="error-campo" th:if="${#fields.hasErrors('diagnostico')}" th:errors="*{diagnostico}"></div>
+            </div>
+
+            <div class="campo">
+                <label for="planTratamiento">Plan de tratamiento <span class="obligatorio">*</span></label>
+                <textarea id="planTratamiento" th:field="*{planTratamiento}" rows="4"
+                          th:disabled="${expediente.estadoConsulta().name() == 'FINALIZADA'}"></textarea>
+                <div class="ayuda">Obligatorio para finalizar la consulta.</div>
+            </div>
+
+            <div class="campo">
+                <label for="notasAdicionales">Notas adicionales</label>
+                <textarea id="notasAdicionales" th:field="*{notasAdicionales}" rows="3"
+                          th:disabled="${expediente.estadoConsulta().name() == 'FINALIZADA'}"></textarea>
+                <div class="ayuda">Opcional.</div>
+            </div>
+        </section>
+
+
+        <div class="acciones-formulario">
+
+            <a th:href="@{/interno/medico}" class="boton boton-secundario">Volver al panel</a>
+
+            <!-- Solo en curso -->
+            <button th:if="${expediente.estadoConsulta().name() == 'EN_CURSO'}"
+                    type="submit" class="boton boton-secundario">
+                Guardar en curso
+            </button>
+
+            <button th:if="${expediente.estadoConsulta().name() == 'EN_CURSO'}"
+                    type="submit" th:formaction="@{/interno/medico/consulta/finalizar}"
+                    class="boton boton-principal" onclick="return confirmarFinalizacion();">
+                Finalizar consulta
+            </button>
+
+        </div>
+
+    </form>
+
+</main>
+
+
+<script>
+
+    // ---------------------------------------------------
+    // FECHA
+    // ---------------------------------------------------
+    const elementoFecha = document.getElementById("fecha-cita");
+
+    if (elementoFecha) {
+        const valor = elementoFecha.dataset.fecha;
+
+        if (valor) {
+            const fecha = new Date(valor);
+
+            if (!Number.isNaN(fecha.getTime())) {
+                elementoFecha.textContent = fecha.toLocaleString("es-GT", {
+                    dateStyle: "medium",
+                    timeStyle: "short"
+                });
+            }
+        }
+    }
+
+
+    // ---------------------------------------------------
+    // TTS - LLAMADO DEL PACIENTE
+    // ---------------------------------------------------
+    const datosTts = document.getElementById("datos-tts");
+
+    function reproducirTts(mensaje) {
+        if (!mensaje) return;
+
+        if (!("speechSynthesis" in window)) {
+            console.warn("El navegador no soporta síntesis de voz.");
+            return;
+        }
+
+        window.speechSynthesis.cancel();
+
+        const voz = new SpeechSynthesisUtterance(mensaje);
+        voz.lang = "es-GT";
+        voz.rate = 0.95;
+        voz.pitch = 1;
+
+        window.speechSynthesis.speak(voz);
+    }
+
+    if (datosTts) {
+        const mensaje = datosTts.dataset.mensaje;
+
+        // Se reproduce automáticamente después de Iniciar Consulta
+        window.addEventListener("load", function () {
+            reproducirTts(mensaje);
+        });
+
+        const botonRepetir = document.getElementById("boton-repetir-tts");
+
+        if (botonRepetir) {
+            botonRepetir.addEventListener("click", function () {
+                reproducirTts(mensaje);
+            });
+        }
+    }
+
+
+    // ---------------------------------------------------
+    // CIE-10 AUTOCOMPLETE
+    // ---------------------------------------------------
+    const campoCie = document.getElementById("busquedaCie10");
+    const idCie = document.getElementById("idCie10");
+    const resultados = document.getElementById("resultadosCie10");
+
+    let temporizadorCie = null;
+
+    function cerrarResultadosCie() {
+        if (!resultados) return;
+
+        resultados.style.display = "none";
+        resultados.innerHTML = "";
+    }
+
+    if (campoCie && idCie && resultados && !campoCie.disabled) {
+
+        campoCie.addEventListener("input", function () {
+
+            // Al editar el texto se elimina el ID anterior;
+            // solo se vuelve a asignar al elegir una sugerencia válida.
+            idCie.value = "";
+
+            const texto = campoCie.value.trim();
+
+            if (texto.length < 2) {
+                cerrarResultadosCie();
+                return;
+            }
+
+            if (temporizadorCie) {
+                clearTimeout(temporizadorCie);
+            }
+
+            // Debounce para no enviar una petición por cada tecla
+            temporizadorCie = setTimeout(function () {
+                buscarCie10(texto);
+            }, 250);
+        });
+    }
+
+    async function buscarCie10(texto) {
+        try {
+            const respuesta = await fetch(
+                "/interno/medico/cie10?texto=" + encodeURIComponent(texto),
+                {
+                    method: "GET",
+                    headers: { "Accept": "application/json" }
+                }
+            );
+
+            if (!respuesta.ok) {
+                cerrarResultadosCie();
+                return;
+            }
+
+            const datos = await respuesta.json();
+            mostrarResultadosCie(datos);
+
+        } catch (error) {
+            console.error("Error buscando CIE-10:", error);
+            cerrarResultadosCie();
+        }
+    }
+
+    function mostrarResultadosCie(datos) {
+        resultados.innerHTML = "";
+
+        if (!Array.isArray(datos) || datos.length === 0) {
+            cerrarResultadosCie();
+            return;
+        }
+
+        datos.forEach(function (cie) {
+            const boton = document.createElement("button");
+            boton.type = "button";
+            boton.className = "resultado-cie";
+
+            const codigo = document.createElement("strong");
+            codigo.textContent = cie.codigo;
+
+            const descripcion = document.createElement("span");
+            descripcion.textContent = cie.descripcion;
+
+            boton.appendChild(codigo);
+            boton.appendChild(descripcion);
+
+            boton.addEventListener("click", function () {
+                idCie.value = cie.id;
+                campoCie.value = cie.codigo + " - " + cie.descripcion;
+                cerrarResultadosCie();
+            });
+
+            resultados.appendChild(boton);
+        });
+
+        resultados.style.display = "block";
+    }
+
+    document.addEventListener("click", function (evento) {
+        if (!resultados || !campoCie) return;
+
+        if (!resultados.contains(evento.target) && evento.target !== campoCie) {
+            cerrarResultadosCie();
+        }
+    });
+
+
+    // ---------------------------------------------------
+    // FINALIZAR
+    // ---------------------------------------------------
+    function confirmarFinalizacion() {
+        return window.confirm("¿Confirma que desea finalizar la consulta médica?");
+    }
+
+</script>
+
+</body>
+</html>

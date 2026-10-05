@@ -110,4 +110,4 @@ public class RegistroExternoPersistenciaService {
 
         return usuarioGuardado;
     }
-}
+}   

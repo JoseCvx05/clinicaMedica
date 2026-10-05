@@ -1,101 +1,84 @@
 <!DOCTYPE html>
-
 <html lang="es"
       xmlns:th="http://www.thymeleaf.org"
       xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 
 <head>
-
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel interno | SANTOS</title>
 
-    <meta name="viewport"
-          content="width=device-width, initial-scale=1.0">
+    <!-- Bootstrap 5 e íconos -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
 
-    <title>Panel Interno | Clínica Médica</title>
+    <!-- Fuentes SANTOS -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700&family=Figtree:wght@400;500;600&display=swap"
+          rel="stylesheet">
 
-
-    <!-- ==================================================
-         BOOTSTRAP 5
-         ================================================== -->
-
-    <link
-            href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
-            rel="stylesheet">
-
-
-    <!-- ==================================================
-         BOOTSTRAP ICONS
-         ================================================== -->
-
-    <link
-            href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"
-            rel="stylesheet">
-
+    <!-- Tema SANTOS -->
+    <link rel="stylesheet"
+          th:href="@{/css/santos-interno.css}"
+          href="/css/santos-interno.css">
 </head>
 
+<body>
 
-<body class="bg-light">
-
-
-<!-- ======================================================
+<!-- =====================================================
      BARRA SUPERIOR
-     ====================================================== -->
-
-<nav class="navbar navbar-expand-lg bg-white border-bottom shadow-sm">
+     ===================================================== -->
+<nav class="navbar santos-navbar sticky-top">
 
     <div class="container">
 
-
-        <!-- =================================================
-             MARCA
-             ================================================= -->
-
-        <a class="navbar-brand fw-bold text-primary"
+        <a class="navbar-brand santos-marca"
            th:href="@{/interno/dashboard}">
 
-            <i class="bi bi-hospital me-2"></i>
+            <span class="santos-simbolo"
+                  aria-hidden="true">
 
-            Clínica Médica
+                <i class="bi bi-plus-lg"></i>
+
+            </span>
+
+            <span>SANTOS</span>
 
         </a>
 
 
         <div class="d-flex align-items-center gap-3">
 
+            <div class="d-flex align-items-center gap-2">
 
-            <!-- =============================================
-                 USUARIO AUTENTICADO
-                 ============================================= -->
+                <span class="santos-avatar"
+                      aria-hidden="true">
 
-            <div class="text-end d-none d-sm-block">
+                    <i class="bi bi-person-fill"></i>
 
-                <div class="small text-secondary">
-
-                    Usuario
-
-                </div>
+                </span>
 
 
-                <div class="fw-semibold"
-                     th:text="${nombreUsuario}">
+                <div class="d-none d-sm-block lh-sm">
 
-                    usuario
+                    <div class="small text-secondary">
+                        Usuario
+                    </div>
+
+                    <div class="fw-semibold"
+                         th:text="${nombreUsuario}">
+                        usuario
+                    </div>
 
                 </div>
 
             </div>
 
 
-            <!-- =============================================
-                 CERRAR SESIÓN
-                 ============================================= -->
-
             <form th:action="@{/logout-interno}"
                   method="post"
                   class="m-0">
-
-
-                <!-- CSRF -->
 
                 <input type="hidden"
                        th:if="${_csrf != null}"
@@ -104,16 +87,21 @@
 
 
                 <button type="submit"
-                        class="btn btn-outline-danger">
+                        class="btn btn-outline-secondary rounded-pill px-3">
 
                     <i class="bi bi-box-arrow-right me-1"></i>
 
-                    Cerrar sesión
+                    <span class="d-none d-sm-inline">
+                        Cerrar sesión
+                    </span>
+
+                    <span class="visually-hidden d-sm-none">
+                        Cerrar sesión
+                    </span>
 
                 </button>
 
             </form>
-
 
         </div>
 
@@ -122,89 +110,56 @@
 </nav>
 
 
-<!-- ======================================================
-     CONTENIDO PRINCIPAL
-     ====================================================== -->
+<!-- =====================================================
+     BIENVENIDA
+     ===================================================== -->
+<header class="santos-bienvenida">
 
+    <div class="container">
+
+        <span class="santos-etiqueta">
+            Panel interno
+        </span>
+
+        <h1>
+
+            Bienvenido,
+
+            <span th:text="${nombreUsuario}">
+                usuario
+            </span>
+
+        </h1>
+
+        <p>
+            Seleccione uno de los módulos disponibles
+            según los permisos de su cuenta.
+        </p>
+
+    </div>
+
+</header>
+
+
+<!-- =====================================================
+     CONTENIDO
+     ===================================================== -->
 <main class="container py-5">
 
+    <section aria-labelledby="titulo-modulos">
 
-    <!-- ==================================================
-         ENCABEZADO
-         ================================================== -->
+        <div class="mb-4">
 
-    <section class="mb-5">
+            <h2 id="titulo-modulos"
+                class="h4 fw-bold mb-1">
 
-        <div class="row align-items-center">
+                Módulos disponibles
 
-            <div class="col-lg-8">
+            </h2>
 
-
-                <span class="badge text-bg-primary mb-3">
-
-                    Panel interno
-
-                </span>
-
-
-                <h1 class="display-6 fw-bold mb-3">
-
-                    Bienvenido,
-
-                    <span th:text="${nombreUsuario}">
-
-                        usuario
-
-                    </span>
-
-                </h1>
-
-
-                <p class="lead text-secondary mb-0">
-
-                    Seleccione uno de los módulos disponibles
-                    según los permisos asignados a su cuenta.
-
-                </p>
-
-
-            </div>
-
-        </div>
-
-    </section>
-
-
-    <!-- ==================================================
-         MÓDULOS DISPONIBLES
-         ================================================== -->
-
-    <section>
-
-
-        <div class="d-flex
-                    align-items-center
-                    justify-content-between
-                    mb-4">
-
-
-            <div>
-
-                <h2 class="h4 fw-bold mb-1">
-
-                    Módulos disponibles
-
-                </h2>
-
-
-                <p class="text-secondary mb-0">
-
-                    Opciones habilitadas para su usuario.
-
-                </p>
-
-            </div>
-
+            <p class="text-secondary mb-0">
+                Opciones habilitadas para su usuario.
+            </p>
 
         </div>
 
@@ -212,52 +167,30 @@
         <div class="row g-4">
 
 
-            <!-- ==========================================
+            <!-- =================================================
                  CU-01
-                 MANTENIMIENTO DE USUARIOS
-
-                 SOLO ADMINISTRADOR
-                 ========================================== -->
-
+                 ADMINISTRADOR
+                 ================================================= -->
             <div class="col-md-6 col-xl-4"
                  sec:authorize="hasRole('ADMINISTRADOR')">
 
+                <div class="card santos-modulo h-100">
 
-                <div class="card h-100 border-0 shadow-sm">
+                    <div class="card-body p-4 d-flex flex-column">
 
-
-                    <div class="card-body p-4">
-
-
-                        <!-- ICONO -->
-
-                        <div class="d-flex
-                                    align-items-center
-                                    justify-content-center
-                                    rounded-3
+                        <div class="santos-modulo-icono
                                     bg-primary-subtle
-                                    text-primary
-                                    mb-4"
-                             style="
-                                width: 64px;
-                                height: 64px;
-                             ">
+                                    text-primary">
 
-                            <i class="bi bi-people-fill fs-2"></i>
+                            <i class="bi bi-people-fill"></i>
 
                         </div>
 
 
-                        <!-- TÍTULO -->
-
                         <h3 class="h5 fw-bold">
-
                             Mantenimiento de usuarios
-
                         </h3>
 
-
-                        <!-- DESCRIPCIÓN -->
 
                         <p class="text-secondary">
 
@@ -268,10 +201,8 @@
                         </p>
 
 
-                        <!-- BOTÓN -->
-
                         <a th:href="@{/admin/usuarios}"
-                           class="btn btn-primary w-100">
+                           class="btn btn-primary mt-auto">
 
                             <i class="bi bi-person-gear me-2"></i>
 
@@ -279,62 +210,37 @@
 
                         </a>
 
-
                     </div>
 
-
                 </div>
-
 
             </div>
 
 
-            <!-- ==========================================
+            <!-- =================================================
                  CU-05
-                 RECEPCIÓN Y VERIFICACIÓN DE CITA
-
-                 SOLO RECEPCIONISTA
-                 ========================================== -->
-
+                 RECEPCIONISTA
+                 ================================================= -->
             <div class="col-md-6 col-xl-4"
                  sec:authorize="hasRole('RECEPCIONISTA')">
 
+                <div class="card santos-modulo h-100">
 
-                <div class="card h-100 border-0 shadow-sm">
+                    <div class="card-body p-4 d-flex flex-column">
 
-
-                    <div class="card-body p-4">
-
-
-                        <!-- ICONO -->
-
-                        <div class="d-flex
-                                    align-items-center
-                                    justify-content-center
-                                    rounded-3
+                        <div class="santos-modulo-icono
                                     bg-success-subtle
-                                    text-success
-                                    mb-4"
-                             style="
-                                width: 64px;
-                                height: 64px;
-                             ">
+                                    text-success">
 
-                            <i class="bi bi-person-check-fill fs-2"></i>
+                            <i class="bi bi-person-check-fill"></i>
 
                         </div>
 
 
-                        <!-- TÍTULO -->
-
                         <h3 class="h5 fw-bold">
-
                             Recepción de pacientes
-
                         </h3>
 
-
-                        <!-- DESCRIPCIÓN -->
 
                         <p class="text-secondary">
 
@@ -346,10 +252,8 @@
                         </p>
 
 
-                        <!-- BOTÓN -->
-
                         <a th:href="@{/interno/recepcion}"
-                           class="btn btn-success w-100">
+                           class="btn btn-success mt-auto">
 
                             <i class="bi bi-clipboard2-pulse me-2"></i>
 
@@ -357,62 +261,37 @@
 
                         </a>
 
-
                     </div>
 
-
                 </div>
-
 
             </div>
 
 
-            <!-- ==========================================
+            <!-- =================================================
                  CU-06
-                 COBRO DE CONSULTA EN CAJA
-
-                 SOLO CAJERO
-                 ========================================== -->
-
+                 CAJERO
+                 ================================================= -->
             <div class="col-md-6 col-xl-4"
                  sec:authorize="hasRole('CAJERO')">
 
+                <div class="card santos-modulo h-100">
 
-                <div class="card h-100 border-0 shadow-sm">
+                    <div class="card-body p-4 d-flex flex-column">
 
-
-                    <div class="card-body p-4">
-
-
-                        <!-- ICONO -->
-
-                        <div class="d-flex
-                                    align-items-center
-                                    justify-content-center
-                                    rounded-3
+                        <div class="santos-modulo-icono
                                     bg-warning-subtle
-                                    text-warning-emphasis
-                                    mb-4"
-                             style="
-                                width: 64px;
-                                height: 64px;
-                             ">
+                                    text-warning-emphasis">
 
-                            <i class="bi bi-cash-coin fs-2"></i>
+                            <i class="bi bi-cash-coin"></i>
 
                         </div>
 
 
-                        <!-- TÍTULO -->
-
                         <h3 class="h5 fw-bold">
-
                             Caja
-
                         </h3>
 
-
-                        <!-- DESCRIPCIÓN -->
 
                         <p class="text-secondary">
 
@@ -423,88 +302,59 @@
                         </p>
 
 
-                        <!-- BOTÓN -->
-
                         <a th:href="@{/interno/caja}"
-                           class="btn btn-warning w-100">
+                           class="btn btn-warning mt-auto">
 
-                            <i class="bi bi-cash-coin me-2"></i>
+                            <i class="bi bi-receipt me-2"></i>
 
                             Ir a Caja
 
                         </a>
 
-
                     </div>
 
-
                 </div>
-
 
             </div>
 
 
-            <!-- ==========================================
+            <!-- =================================================
                  CU-07
-                 TOMA DE SIGNOS VITALES
-
-                 SOLO ENFERMERO
-                 ========================================== -->
-
+                 ENFERMERO
+                 ================================================= -->
             <div class="col-md-6 col-xl-4"
                  sec:authorize="hasRole('ENFERMERO')">
 
+                <div class="card santos-modulo h-100">
 
-                <div class="card h-100 border-0 shadow-sm">
+                    <div class="card-body p-4 d-flex flex-column">
 
-
-                    <div class="card-body p-4">
-
-
-                        <!-- ICONO -->
-
-                        <div class="d-flex
-                                    align-items-center
-                                    justify-content-center
-                                    rounded-3
+                        <div class="santos-modulo-icono
                                     bg-danger-subtle
-                                    text-danger
-                                    mb-4"
-                             style="
-                                width: 64px;
-                                height: 64px;
-                             ">
+                                    text-danger">
 
-                            <i class="bi bi-heart-pulse-fill fs-2"></i>
+                            <i class="bi bi-heart-pulse-fill"></i>
 
                         </div>
 
 
-                        <!-- TÍTULO -->
-
                         <h3 class="h5 fw-bold">
-
                             Enfermería
-
                         </h3>
 
 
-                        <!-- DESCRIPCIÓN -->
-
                         <p class="text-secondary">
 
-                            Llame pacientes, registre signos
-                            vitales, identifique alertas clínicas
-                            y gestione casos de emergencia
-                            antes de la consulta médica.
+                            Llame pacientes, registre signos vitales,
+                            identifique alertas clínicas y gestione
+                            casos de emergencia antes de la consulta
+                            médica.
 
                         </p>
 
 
-                        <!-- BOTÓN -->
-
                         <a th:href="@{/interno/enfermeria}"
-                           class="btn btn-danger w-100">
+                           class="btn btn-danger mt-auto">
 
                             <i class="bi bi-heart-pulse me-2"></i>
 
@@ -512,73 +362,100 @@
 
                         </a>
 
-
                     </div>
 
-
                 </div>
-
 
             </div>
 
 
-            <!-- ==========================================
-                 MENSAJE PARA ROLES QUE TODAVÍA
-                 NO TIENEN MÓDULO IMPLEMENTADO
-                 ========================================== -->
+            <!-- =================================================
+                 CU-08
+                 MÉDICO
+                 ================================================= -->
+            <div class="col-md-6 col-xl-4"
+                 sec:authorize="hasRole('MEDICO')">
 
+                <div class="card santos-modulo h-100">
+
+                    <div class="card-body p-4 d-flex flex-column">
+
+                        <div class="santos-modulo-icono
+                                    bg-info-subtle
+                                    text-info-emphasis">
+
+                            <i class="bi bi-stethoscope"></i>
+
+                        </div>
+
+
+                        <h3 class="h5 fw-bold">
+                            Consulta Médica
+                        </h3>
+
+
+                        <p class="text-secondary">
+
+                            Atienda pacientes en espera,
+                            consulte signos vitales, registre
+                            diagnósticos, genere órdenes de
+                            laboratorio, recetas médicas y
+                            citas de seguimiento.
+
+                        </p>
+
+
+                        <a th:href="@{/interno/medico}"
+                           class="btn btn-info mt-auto">
+
+                            <i class="bi bi-stethoscope me-2"></i>
+
+                            Ir a Consulta Médica
+
+                        </a>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- =================================================
+                 ROLES SIN MÓDULO IMPLEMENTADO
+                 ================================================= -->
             <div class="col-12"
                  sec:authorize="!hasAnyRole(
                     'ADMINISTRADOR',
                     'RECEPCIONISTA',
                     'CAJERO',
-                    'ENFERMERO'
+                    'ENFERMERO',
+                    'MEDICO'
                  )">
 
-
-                <div class="alert
-                            alert-info
-                            border-0
-                            shadow-sm"
+                <div class="alert santos-aviso"
                      role="alert">
 
-
-                    <div class="d-flex align-items-start">
-
-
-                        <i class="bi
-                                  bi-info-circle-fill
-                                  fs-4
-                                  me-3">
-                        </i>
+                    <i class="bi bi-info-circle-fill fs-4"></i>
 
 
-                        <div>
+                    <div>
+
+                        <h3 class="h6 fw-bold mb-1">
+                            Sin módulos por ahora
+                        </h3>
 
 
-                            <h3 class="h6 fw-bold mb-1">
+                        <p class="mb-0">
 
-                                Acceso interno
+                            Los módulos de su rol aparecerán
+                            en este panel cuando estén disponibles.
 
-                            </h3>
-
-
-                            <p class="mb-0">
-
-                                Los módulos disponibles para su
-                                rol aparecerán en este panel.
-
-                            </p>
-
-
-                        </div>
-
+                        </p>
 
                     </div>
 
-
                 </div>
-
 
             </div>
 
@@ -587,45 +464,25 @@
 
     </section>
 
-
 </main>
 
 
-<!-- ======================================================
+<!-- =====================================================
      PIE DE PÁGINA
-     ====================================================== -->
+     ===================================================== -->
+<footer class="santos-pie">
 
-<footer class="border-top bg-white mt-5">
+    <div class="container py-4 text-center small">
 
-
-    <div class="container py-4">
-
-
-        <p class="text-center
-                  text-secondary
-                  small
-                  mb-0">
-
-            Sistema de Clínica Médica
-
-        </p>
-
+        <strong>SANTOS</strong>
+        · Sistema de clínica médica
 
     </div>
-
 
 </footer>
 
 
-<!-- ======================================================
-     BOOTSTRAP JS
-     ====================================================== -->
-
-<script
-        src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js">
-</script>
-
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 
 </body>
-
 </html>

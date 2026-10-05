@@ -22,6 +22,8 @@ import com.proyecto.clinicamedica.service.RecepcionCitaService;
 import com.proyecto.clinicamedica.service.ReservaTemporalCitaService;
 import com.proyecto.clinicamedica.service.UsuarioActualService;
 import com.proyecto.clinicamedica.service.ValidacionCitaWizardService;
+import com.proyecto.clinicamedica.service.SeguimientoCitaService;
+import com.proyecto.clinicamedica.service.NotificacionSeguimientoService;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
@@ -79,6 +81,9 @@ public class CitaWizardController {
     private static final String RUTA_RECEPCION =
             "/interno/recepcion/citas";
 
+    private static final String RUTA_MEDICO =
+            "/interno/medico/citas";
+
     private static final String SESION_PACIENTE_WALKIN =
             "recepcionPacienteWalkInId";
 
@@ -108,7 +113,11 @@ public class CitaWizardController {
     private final RecepcionCitaService
             recepcionCitaService;
 
+    private final SeguimientoCitaService
+            seguimientoCitaService;
 
+    private final NotificacionSeguimientoService
+            notificacionSeguimientoService;
     // =====================================================
     // CONSTRUCTOR
     // =====================================================
@@ -133,7 +142,13 @@ public class CitaWizardController {
                     finalizacionCitaService,
 
             RecepcionCitaService
-                    recepcionCitaService
+                    recepcionCitaService,
+
+            SeguimientoCitaService
+                    seguimientoCitaService,
+
+            NotificacionSeguimientoService
+                    notificacionSeguimientoService
     ) {
 
         this.catalogoCitaService =
@@ -156,6 +171,12 @@ public class CitaWizardController {
 
         this.recepcionCitaService =
                 recepcionCitaService;
+
+        this.seguimientoCitaService =
+                seguimientoCitaService;
+
+        this.notificacionSeguimientoService =
+                notificacionSeguimientoService;
     }
 
 
@@ -188,11 +209,19 @@ public class CitaWizardController {
             HttpServletRequest request
     ) {
 
-        return esFlujoRecepcion(
-                request
-        )
-                ? RUTA_RECEPCION
-                : RUTA_PACIENTE;
+        if (esFlujoRecepcion(request)) {
+
+            return RUTA_RECEPCION;
+        }
+
+
+        if (esFlujoMedico(request)) {
+
+            return RUTA_MEDICO;
+        }
+
+
+        return RUTA_PACIENTE;
     }
 
 
@@ -303,6 +332,73 @@ public class CitaWizardController {
     }
 
     // =====================================================
+// CU-08 FA02 - INICIAR CITA DE SEGUIMIENTO
+// =====================================================
+
+    @GetMapping(
+            "/interno/medico/citas/agendar/seguimiento/{idConsulta}"
+    )
+    public String iniciarSeguimiento(
+
+            @PathVariable("idConsulta")
+            Integer idConsulta,
+
+            @ModelAttribute("citaWizard")
+            CitaWizardDTO wizard,
+
+            HttpSession session,
+
+            RedirectAttributes redirectAttributes
+    ) {
+
+        try {
+
+            /*
+             * Eliminamos cualquier contexto Walk-in
+             * que pudiera permanecer en la sesión.
+             */
+            session.removeAttribute(
+                    SESION_PACIENTE_WALKIN
+            );
+
+
+            /*
+             * El Service recupera desde PostgreSQL:
+             *
+             * - paciente;
+             * - médico;
+             * - sucursal;
+             * - especialidad;
+             * - consulta de origen.
+             *
+             * Y deja el wizard directamente en FECHA_HORA.
+             */
+            seguimientoCitaService
+                    .prepararWizardSeguimiento(
+                            idConsulta,
+                            wizard
+                    );
+
+
+            return "redirect:/interno/medico/citas/agendar/paso";
+
+
+        } catch (
+                IllegalArgumentException
+                | IllegalStateException ex
+        ) {
+
+            redirectAttributes.addFlashAttribute(
+                    "mensajeError",
+                    ex.getMessage()
+            );
+
+
+            return "redirect:/interno/medico";
+        }
+    }
+
+    // =====================================================
 // MOSTRAR PASO ACTUAL DEL WIZARD
 // =====================================================
 //
@@ -322,7 +418,8 @@ public class CitaWizardController {
 
     @GetMapping({
             "/paciente/citas/agendar/paso",
-            "/interno/recepcion/citas/agendar/paso"
+            "/interno/recepcion/citas/agendar/paso",
+            "/interno/medico/citas/agendar/paso"
     })
     public String mostrarPasoActual(
 
@@ -352,6 +449,18 @@ public class CitaWizardController {
 
                 return "redirect:/interno/recepcion";
             }
+        }
+
+        // =================================================
+// VALIDAR CONTEXTO DE SEGUIMIENTO
+// =================================================
+
+        if (esFlujoMedico(request)
+                && !Boolean.TRUE.equals(
+                wizard.getEsSeguimiento()
+        )) {
+
+            return "redirect:/interno/medico";
         }
 
 
@@ -668,7 +777,8 @@ public class CitaWizardController {
 
     @PostMapping({
             "/paciente/citas/agendar/volver",
-            "/interno/recepcion/citas/agendar/volver"
+            "/interno/recepcion/citas/agendar/volver",
+            "/interno/medico/citas/agendar/volver"
     })
     public String volver(
 
@@ -685,6 +795,14 @@ public class CitaWizardController {
                 obtenerPaso(
                         numeroPaso
                 );
+
+        if (esFlujoMedico(request)
+                && destino.getNumero()
+                < PasoCita.FECHA_HORA.getNumero()) {
+
+            destino =
+                    PasoCita.FECHA_HORA;
+        }
 
 
         navegacionService.regresarA(
@@ -705,7 +823,8 @@ public class CitaWizardController {
 
     @PostMapping({
             "/paciente/citas/agendar/horario",
-            "/interno/recepcion/citas/agendar/horario"
+            "/interno/recepcion/citas/agendar/horario",
+            "/interno/medico/citas/agendar/horario"
     })
     public String seleccionarHorario(
 
@@ -746,14 +865,38 @@ public class CitaWizardController {
         }
 
 
-        Usuario paciente =
-                obtenerPacienteObjetivo(
-                        request,
-                        session
-                );
-
-
         try {
+
+            // =============================================
+            // CU-08 FA02
+            // VALIDAR TIPO ANTES DE RESERVAR
+            // =============================================
+
+            if (esFlujoMedico(
+                    request
+            )) {
+
+                seguimientoCitaService
+                        .validarTipoParaReserva(
+                                wizard
+                        );
+            }
+
+
+            // =============================================
+            // OBTENER PACIENTE OBJETIVO
+            // =============================================
+
+            Usuario paciente =
+                    obtenerPacienteObjetivo(
+                            request,
+                            session
+                    );
+
+
+            // =============================================
+            // CREAR RESERVA TEMPORAL
+            // =============================================
 
             ReservaTemporalCita reserva =
                     reservaTemporalCitaService
@@ -806,6 +949,27 @@ public class CitaWizardController {
             return redirigirAlPasoActual(
                     request
             );
+
+
+        } catch (
+                IllegalArgumentException
+                | IllegalStateException ex
+        ) {
+
+            wizard.setPasoActual(
+                    PasoCita.FECHA_HORA
+            );
+
+
+            redirectAttributes.addFlashAttribute(
+                    "mensajeError",
+                    ex.getMessage()
+            );
+
+
+            return redirigirAlPasoActual(
+                    request
+            );
         }
     }
 
@@ -816,7 +980,8 @@ public class CitaWizardController {
 
     @GetMapping({
             "/paciente/citas/agendar/reserva-expirada",
-            "/interno/recepcion/citas/agendar/reserva-expirada"
+            "/interno/recepcion/citas/agendar/reserva-expirada",
+            "/interno/medico/citas/agendar/reserva-expirada"
     })
     public String procesarReservaExpirada(
 
@@ -894,7 +1059,8 @@ public class CitaWizardController {
     // =====================================================
     @PostMapping({
             "/paciente/citas/agendar/confirmar",
-            "/interno/recepcion/citas/agendar/confirmar"
+            "/interno/recepcion/citas/agendar/confirmar",
+            "/interno/medico/citas/agendar/confirmar"
     })
     public String confirmarCita(
 
@@ -946,19 +1112,25 @@ public class CitaWizardController {
             );
         }
 
-
         // =================================================
         // PACIENTE OBJETIVO
         // =================================================
-
-        Usuario paciente =
-                obtenerPacienteObjetivo(
-                        request,
-                        session
-                );
-
-
+        //
+        // CU-08 FA02:
+        // También realiza validaciones defensivas sobre
+        // Médico, sucursal y especialidad del seguimiento.
+        //
+        // Debe estar dentro del try para que cualquier
+        // manipulación se maneje de forma controlada.
+        // ===============================================
         try {
+
+            Usuario paciente =
+                    obtenerPacienteObjetivo(
+                            request,
+                            session
+                    );
+
 
             Cita cita;
 
@@ -970,6 +1142,10 @@ public class CitaWizardController {
             if (esFlujoRecepcion(
                     request
             )) {
+
+                // =============================================
+                // CU-05 WALK-IN
+                // =============================================
 
                 Usuario recepcionista =
                         usuarioActualService
@@ -987,11 +1163,57 @@ public class CitaWizardController {
                                         "Normal"
                                 );
 
+
+            } else if (esFlujoMedico(
+                    request
+            )) {
+
+                // =============================================
+                // CU-08 FA02
+                // CITA DE SEGUIMIENTO
+                // =============================================
+
+                Usuario medico =
+                        usuarioActualService
+                                .obtenerUsuarioActual();
+
+
+                cita =
+                        finalizacionCitaService
+                                .finalizar(
+                                        paciente,
+                                        medico,
+                                        wizard,
+                                        documento,
+
+                                        /*
+                                         * Conservamos el flujo normal
+                                         * PENDIENTE DE PAGO de CU-03.
+                                         */
+                                        "Portal Web",
+
+                                        /*
+                                         * La prioridad ya fue validada
+                                         * en SeguimientoCitaService.
+                                         */
+                                        wizard.getPrioridad()
+                                );
+                // =============================================
+// CU-08 FA02
+// NOTIFICAR AL PACIENTE
+// =============================================
+
+                notificacionSeguimientoService
+                        .enviarConfirmacion(
+                                cita.getId()
+                        );
+
+
             } else {
 
-                // =========================================
+                // =============================================
                 // CU-03 NORMAL
-                // =========================================
+                // =============================================
 
                 cita =
                         finalizacionCitaService
@@ -1002,12 +1224,63 @@ public class CitaWizardController {
                                 );
             }
 
-
             // =================================================
             // FINALIZAR WIZARD
             // =================================================
 
             sessionStatus.setComplete();
+
+            // =================================================
+// CU-08 FA02
+// SEGUIMIENTO CREADO
+// =================================================
+
+            if (esFlujoMedico(
+                    request
+            )) {
+
+                java.time.ZonedDateTime fechaHoraGuatemala =
+                        cita.getFechaHoraCita()
+                                .atZoneSameInstant(
+                                        java.time.ZoneId.of(
+                                                "America/Guatemala"
+                                        )
+                                );
+
+
+                String fecha =
+                        fechaHoraGuatemala
+                                .format(
+                                        java.time.format.DateTimeFormatter
+                                                .ofPattern(
+                                                        "dd/MM/yyyy"
+                                                )
+                                );
+
+
+                String hora =
+                        fechaHoraGuatemala
+                                .format(
+                                        java.time.format.DateTimeFormatter
+                                                .ofPattern(
+                                                        "HH:mm"
+                                                )
+                                );
+
+
+                redirectAttributes.addFlashAttribute(
+                        "mensajeExito",
+
+                        "Cita de seguimiento agendada para el "
+                                + fecha
+                                + " a las "
+                                + hora
+                                + ". Se enviará notificación al paciente."
+                );
+
+
+                return "redirect:/interno/medico";
+            }
 
 
             // =================================================
@@ -1085,6 +1358,31 @@ public class CitaWizardController {
                     request
             );
         }
+        catch (
+                IllegalArgumentException
+                | IllegalStateException ex
+        ) {
+
+            // =================================================
+            // CU-08 FA02
+            // ERROR DE VALIDACIÓN DE SEGUIMIENTO
+            // =================================================
+
+            wizard.setPasoActual(
+                    PasoCita.CONFIRMACION
+            );
+
+
+            redirectAttributes.addFlashAttribute(
+                    "mensajeError",
+                    ex.getMessage()
+            );
+
+
+            return redirigirAlPasoActual(
+                    request
+            );
+        }
     }
 
 
@@ -1136,6 +1434,18 @@ public class CitaWizardController {
                 );
     }
 
+    private boolean esFlujoMedico(
+            HttpServletRequest request
+    ) {
+
+        return request != null
+                && request
+                .getRequestURI()
+                .startsWith(
+                        "/interno/medico/"
+                );
+    }
+
 
     // =====================================================
     // OBTENER PACIENTE OBJETIVO
@@ -1147,6 +1457,22 @@ public class CitaWizardController {
 
             HttpSession session
     ) {
+
+        // =================================================
+// CU-08 FA02
+// PACIENTE DE LA CONSULTA ORIGINAL
+// =================================================
+
+        if (esFlujoMedico(request)) {
+
+            return seguimientoCitaService
+                    .obtenerPacienteParaReserva(
+                            (CitaWizardDTO)
+                                    session.getAttribute(
+                                            "citaWizard"
+                                    )
+                    );
+        }
 
         // =================================================
         // CU-03 NORMAL
@@ -1228,6 +1554,22 @@ public class CitaWizardController {
         );
 
         wizard.setMotivoConsulta(
+                null
+        );
+
+        wizard.setEsSeguimiento(
+                false
+        );
+
+        wizard.setIdConsultaOrigen(
+                null
+        );
+
+        wizard.setTipoSeguimiento(
+                null
+        );
+
+        wizard.setPrioridad(
                 null
         );
     }
@@ -1463,11 +1805,15 @@ public class CitaWizardController {
             HttpServletRequest request
     ) {
 
-        if (esFlujoRecepcion(
-                request
-        )) {
+        if (esFlujoRecepcion(request)) {
 
             return "redirect:/interno/recepcion/citas/agendar/paso";
+        }
+
+
+        if (esFlujoMedico(request)) {
+
+            return "redirect:/interno/medico/citas/agendar/paso";
         }
 
 

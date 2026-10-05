@@ -166,6 +166,7 @@ public class UsuarioActualizacionService {
             return resultado;
         }
 
+        // validar que el usuario exista en la base de datos
 
         Usuario usuario =
                 usuarioRepository

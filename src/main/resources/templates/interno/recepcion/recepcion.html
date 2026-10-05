@@ -1,1217 +1,474 @@
 <!DOCTYPE html>
-
-<html lang="es"
-      xmlns:th="http://www.thymeleaf.org">
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
 
 <head>
-
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Recepción de pacientes | SANTOS</title>
 
-    <meta name="viewport"
-          content="width=device-width, initial-scale=1.0">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.css" rel="stylesheet">
 
-    <title>Recepción de Pacientes</title>
-
-
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css"
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700&family=Figtree:wght@400;500;600&display=swap"
           rel="stylesheet">
 
-
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.css"
-          rel="stylesheet">
-
-
-    <style>
-
-        body {
-            background-color: #f5f7fa;
-        }
-
-        .contenedor-recepcion {
-            max-width: 1100px;
-        }
-
-        .card-principal {
-            border: 0;
-            border-radius: 16px;
-        }
-
-        .dato-cita {
-            padding: 12px 0;
-            border-bottom: 1px solid #e9ecef;
-        }
-
-        .dato-cita:last-child {
-            border-bottom: none;
-        }
-
-        .badge-estado {
-            font-size: 0.9rem;
-            padding: 0.65rem 0.9rem;
-        }
-
-        .emergencia {
-            animation: emergencia-pulso 1.2s infinite;
-        }
-
-        @keyframes emergencia-pulso {
-
-            50% {
-                opacity: 0.65;
-            }
-        }
-
-    </style>
-
+    <!-- Tema SANTOS (después de Bootstrap) -->
+    <link rel="stylesheet" th:href="@{/css/santos-interno.css}" href="/css/santos-interno.css">
 </head>
 
-
 <body>
+
+<!-- NAVBAR -->
+<nav class="navbar santos-navbar sticky-top">
+    <div class="container contenedor-recepcion">
+
+        <a class="navbar-brand santos-marca" th:href="@{/interno/dashboard}">
+            <span class="santos-simbolo" aria-hidden="true"><i class="bi bi-plus-lg"></i></span>
+            <span>SANTOS</span>
+        </a>
+
+        <div class="d-flex align-items-center gap-2">
+            <a th:href="@{/interno/dashboard}" class="btn btn-outline-secondary rounded-pill px-3">
+                <i class="bi bi-arrow-left me-1"></i>Volver
+            </a>
+
+            <form th:action="@{/logout-interno}" method="post" class="m-0">
+                <input type="hidden" th:if="${_csrf != null}"
+                       th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+                <button type="submit" class="btn btn-outline-secondary rounded-pill px-3">
+                    <i class="bi bi-box-arrow-right me-1"></i>
+                    <span class="d-none d-sm-inline">Cerrar sesión</span>
+                    <span class="visually-hidden d-sm-none">Cerrar sesión</span>
+                </button>
+            </form>
+        </div>
+
+    </div>
+</nav>
 
 
 <main class="container contenedor-recepcion py-5">
 
-
-    <!-- =================================================
-     ENCABEZADO
-     ================================================= -->
-
-    <div class="d-flex flex-column flex-md-row
-            justify-content-between
-            align-items-md-center
-            gap-3 mb-4">
-
-
+    <!-- ENCABEZADO -->
+    <div class="santos-encabezado-pagina mb-4">
         <div>
-
-            <h1 class="h3 fw-bold mb-1">
-
-                Recepción y Verificación de Cita
-
-            </h1>
-
-
+            <h1 class="h3 fw-bold mb-1 santos-titulo">Recepción y verificación de cita</h1>
             <p class="text-secondary mb-0">
-
-                Busque al paciente por número de cita o DPI
-                para verificar su ingreso.
-
+                Busque al paciente por número de cita o DPI para verificar su ingreso.
             </p>
-
         </div>
 
-
-        <!-- =============================================
-             FA01 - EMERGENCIA
-             ============================================= -->
-
-        <button type="button"
-                class="btn btn-danger"
-                data-bs-toggle="modal"
-                data-bs-target="#modalEmergencia">
-
-            <i class="bi bi-exclamation-triangle-fill me-2"></i>
-
-            Registrar Emergencia
-
+        <!-- FA01: emergencia -->
+        <button type="button" class="btn btn-danger px-4"
+                data-bs-toggle="modal" data-bs-target="#modalEmergencia">
+            <i class="bi bi-exclamation-triangle-fill me-2"></i>Registrar emergencia
         </button>
-
-
     </div>
 
 
-    <!-- =================================================
-         MENSAJE ÉXITO
-         ================================================= -->
-
-    <div th:if="${mensajeExito != null}"
-         class="alert alert-success"
-         role="alert">
-
+    <!-- MENSAJE ÉXITO -->
+    <div th:if="${mensajeExito != null}" class="alert alert-success" role="alert">
         <i class="bi bi-check-circle-fill me-2"></i>
+        <span th:text="${mensajeExito}">Operación realizada.</span>
 
-        <span th:text="${mensajeExito}">
-            Operación realizada.
-        </span>
-
-
-        <div th:if="${indicadorLlegada != null}"
-             class="fw-semibold mt-2"
-             th:text="${indicadorLlegada}">
-        </div>
-
+        <div th:if="${indicadorLlegada != null}" class="fw-semibold mt-2"
+             th:text="${indicadorLlegada}"></div>
     </div>
 
-
-    <!-- =================================================
-         MENSAJE ERROR
-         ================================================= -->
-
-    <div th:if="${mensajeError != null}"
-         class="alert alert-danger"
-         role="alert">
-
+    <!-- MENSAJE ERROR -->
+    <div th:if="${mensajeError != null}" class="alert alert-danger" role="alert">
         <i class="bi bi-exclamation-triangle-fill me-2"></i>
-
-        <span th:text="${mensajeError}">
-            Error.
-        </span>
-
+        <span th:text="${mensajeError}">Error.</span>
     </div>
 
-    <!-- =================================================
-     FA01 - EMERGENCIA REGISTRADA
-     ================================================= -->
 
-    <div th:if="${atencionEmergenciaRegistrada}"
-         class="card border-danger shadow-sm mb-4">
-
-
+    <!-- FA01: EMERGENCIA REGISTRADA -->
+    <div th:if="${atencionEmergenciaRegistrada}" class="card santos-emergencia mb-4">
         <div class="card-body p-4">
-
-
-            <div class="d-flex flex-column flex-md-row
-                    justify-content-between
-                    align-items-md-center
-                    gap-3">
-
+            <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
 
                 <div>
+                    <span class="badge text-bg-danger mb-2">EMERGENCIA</span>
 
-
-                <span class="badge text-bg-danger mb-2">
-
-                    EMERGENCIA
-
-                </span>
-
-
-                    <h2 class="h5 fw-bold mb-1"
-                        th:text="${nombrePacienteEmergencia}">
-
-                        Paciente
-
-                    </h2>
-
+                    <h2 class="h5 fw-bold mb-1" th:text="${nombrePacienteEmergencia}">Paciente</h2>
 
                     <div class="text-secondary">
-
                         Atención de emergencia No.
-
-                        <strong th:text="${idAtencionEmergencia}">
-                            0
-                        </strong>
-
+                        <strong th:text="${idAtencionEmergencia}">0</strong>
                     </div>
 
-
-                    <div class="fw-semibold text-danger mt-2">
-
-                        Pendiente de signos vitales
-
-                    </div>
-
-
+                    <div class="fw-semibold text-danger mt-2">Pendiente de signos vitales</div>
                 </div>
 
-
-                <!-- =========================================
-                     CU-07
-                     ========================================= -->
-
-                <button type="button"
-                        class="btn btn-danger"
-                        disabled>
-
-                    <i class="bi bi-heart-pulse me-2"></i>
-
-                    Signos Vitales (Urgente)
-
+                <!-- CU-07 -->
+                <button type="button" class="btn btn-danger" disabled>
+                    <i class="bi bi-heart-pulse me-2"></i>Signos vitales (urgente)
                 </button>
 
-
             </div>
-
-
         </div>
-
-
     </div>
 
 
-    <!-- =================================================
-         BUSCADOR
-         ================================================= -->
-
-    <div class="card card-principal shadow-sm mb-4">
-
+    <!-- BUSCADOR -->
+    <section class="card santos-panel mb-4" aria-labelledby="t-buscar">
         <div class="card-body p-4">
 
+            <h2 id="t-buscar" class="h5 fw-bold mb-3">Buscar cita</h2>
 
-            <h2 class="h5 fw-bold mb-3">
-                Buscar cita
-            </h2>
+            <form th:action="@{/interno/recepcion/buscar}" th:object="${busqueda}" method="post">
 
+                <div class="btn-group mb-3" role="group" aria-label="Tipo de búsqueda">
 
-            <form th:action="@{/interno/recepcion/buscar}"
-                  th:object="${busqueda}"
-                  method="post">
-
-
-                <div class="btn-group mb-3"
-                     role="group">
-
-
-                    <input type="radio"
-                           class="btn-check"
-                           th:field="*{tipoBusqueda}"
-                           value="CITA"
-                           id="buscarCita"
-                           autocomplete="off">
-
-
-                    <label class="btn btn-outline-primary"
-                           for="buscarCita">
-
-                        <i class="bi bi-calendar-check me-1"></i>
-                        Por No. Cita
-
+                    <input type="radio" class="btn-check" th:field="*{tipoBusqueda}"
+                           value="CITA" id="buscarCita" autocomplete="off">
+                    <label class="btn btn-outline-primary" for="buscarCita">
+                        <i class="bi bi-calendar-check me-1"></i>Por No. cita
                     </label>
 
-
-                    <input type="radio"
-                           class="btn-check"
-                           th:field="*{tipoBusqueda}"
-                           value="DPI"
-                           id="buscarDpi"
-                           autocomplete="off">
-
-
-                    <label class="btn btn-outline-primary"
-                           for="buscarDpi">
-
-                        <i class="bi bi-person-vcard me-1"></i>
-                        Por DPI
-
+                    <input type="radio" class="btn-check" th:field="*{tipoBusqueda}"
+                           value="DPI" id="buscarDpi" autocomplete="off">
+                    <label class="btn btn-outline-primary" for="buscarDpi">
+                        <i class="bi bi-person-vcard me-1"></i>Por DPI
                     </label>
 
                 </div>
 
-
                 <div class="input-group input-group-lg">
-
-                    <input type="text"
-                           th:field="*{valorBusqueda}"
-                           id="valorBusqueda"
-                           class="form-control"
-                           autocomplete="off"
-                           inputmode="numeric"
+                    <input type="text" th:field="*{valorBusqueda}" id="valorBusqueda"
+                           class="form-control" autocomplete="off" inputmode="numeric"
                            placeholder="Ingrese número de cita">
 
-
-                    <button type="submit"
-                            class="btn btn-primary">
-
-                        <i class="bi bi-search me-2"></i>
-                        Buscar
-
+                    <button type="submit" class="btn btn-primary px-4">
+                        <i class="bi bi-search me-2"></i>Buscar
                     </button>
-
                 </div>
 
             </form>
 
         </div>
+    </section>
 
-    </div>
 
-
-    <!-- =================================================
-         RESULTADO SIN CITA
-         ================================================= -->
-
-    <div th:if="${resultado != null
-                and resultado.cita == null
-                and resultado.mensaje != null}"
+    <!-- RESULTADO SIN CITA -->
+    <div th:if="${resultado != null and resultado.cita == null and resultado.mensaje != null}"
          class="alert"
+         th:classappend="${resultado.tipo.name() == 'PACIENTE_NO_EXISTE'} ? ' alert-warning' : (${resultado.tipo.name() == 'PACIENTE_SIN_CITAS'} ? ' alert-info' : ' alert-danger')">
 
-         th:classappend="${resultado.tipo.name() == 'PACIENTE_NO_EXISTE'}
-                ? ' alert-warning'
-                : (${resultado.tipo.name() == 'PACIENTE_SIN_CITAS'}
-                ? ' alert-info'
-                : ' alert-danger')">
+        <strong th:text="${resultado.mensaje}">Mensaje</strong>
 
-
-        <strong th:text="${resultado.mensaje}">
-            Mensaje
-        </strong>
-
-
-        <div th:if="${resultado.subtexto != null}"
-             class="mt-1"
-             th:text="${resultado.subtexto}">
-        </div>
-
+        <div th:if="${resultado.subtexto != null}" class="mt-1" th:text="${resultado.subtexto}"></div>
 
         <!-- FA03 -->
-
-        <div th:if="${resultado.tipo.name() == 'PACIENTE_NO_EXISTE'}"
-             class="mt-3">
-
-            <a th:href="@{/registro(origen='recepcion')}"
-               class="btn btn-primary">
-
-                <i class="bi bi-person-plus me-2"></i>
-                Registrar Paciente
-
+        <div th:if="${resultado.tipo.name() == 'PACIENTE_NO_EXISTE'}" class="mt-3">
+            <a th:href="@{/registro(origen='recepcion')}" class="btn btn-primary">
+                <i class="bi bi-person-plus me-2"></i>Registrar paciente
             </a>
-
         </div>
 
-
         <!-- FA04 -->
-
-        <div th:if="${resultado.tipo.name() == 'PACIENTE_SIN_CITAS'}"
-             class="mt-3">
-
-            <a th:href="@{|/interno/recepcion/citas/agendar/walk-in/${resultado.idPaciente}|}"
-               class="btn btn-primary">
-
-                <i class="bi bi-calendar-plus me-2"></i>
-                Nueva Cita (Walk-in)
-
+        <div th:if="${resultado.tipo.name() == 'PACIENTE_SIN_CITAS'}" class="mt-3">
+            <a th:href="@{|/interno/recepcion/citas/agendar/walk-in/${resultado.idPaciente}|}" class="btn btn-primary">
+                <i class="bi bi-calendar-plus me-2"></i>Nueva cita (walk-in)
             </a>
-
         </div>
 
     </div>
 
 
-    <!-- =================================================
-         CITA ENCONTRADA
-         ================================================= -->
+    <!-- CITA ENCONTRADA -->
+    <section th:if="${resultado != null and resultado.cita != null}" aria-label="Cita encontrada">
 
-    <section th:if="${resultado != null
-                    and resultado.cita != null}">
-
-
-        <div class="card card-principal shadow-sm">
-
+        <div class="card santos-panel">
             <div class="card-body p-4 p-lg-5">
 
-
-                <!-- =====================================
-                     ENCABEZADO
-                     ===================================== -->
-
-                <div class="d-flex flex-column flex-md-row
-                            justify-content-between
-                            gap-3 mb-4">
-
+                <!-- Encabezado -->
+                <div class="d-flex flex-column flex-md-row justify-content-between gap-3 mb-4">
 
                     <div>
+                        <div class="d-flex align-items-center flex-wrap gap-2 mb-2">
+                            <h2 class="h4 fw-bold mb-0 santos-titulo" th:text="${resultado.cita.nombrePaciente}">Paciente</h2>
 
-                        <div class="d-flex align-items-center
-                                    flex-wrap gap-2 mb-2">
-
-
-                            <h2 class="h4 fw-bold mb-0"
-                                th:text="${resultado.cita.nombrePaciente}">
-                                Paciente
-                            </h2>
-
-
-                            <span th:if="${resultado.cita.emergencia}"
-                                  class="badge text-bg-danger emergencia">
-
-                                EMERGENCIA
-
-                            </span>
-
+                            <span th:if="${resultado.cita.emergencia}" class="badge text-bg-danger emergencia">EMERGENCIA</span>
                         </div>
-
 
                         <span class="text-secondary">
-
-                            Número de cita:
-
-                            <strong th:text="${resultado.cita.numeroCita}">
-                                0
-                            </strong>
-
+                            Número de cita: <strong th:text="${resultado.cita.numeroCita}">0</strong>
                         </span>
-
                     </div>
 
-
-                    <!-- ESTADO -->
-
+                    <!-- Estado -->
                     <div>
-
-                        <span id="badgeEstado"
-                              class="badge badge-estado rounded-pill"
-
-                              th:classappend="
-                                ${#strings.equalsIgnoreCase(
-                                    resultado.cita.estado,
-                                    'Pagada'
-                                )}
-                                ? ' text-bg-success'
-                                :
-                                (${#strings.equalsIgnoreCase(
-                                    resultado.cita.estado,
-                                    'Confirmada'
-                                )}
-                                ? ' text-bg-success'
-                                :
-                                (${#strings.equalsIgnoreCase(
-                                    resultado.cita.estado,
-                                    'Pendiente de pago'
-                                )}
-                                ? ' text-bg-warning'
-                                :
-                                (${#strings.equalsIgnoreCase(
-                                    resultado.cita.estado,
-                                    'Cancelada'
-                                )}
-                                ? ' text-bg-danger'
-                                :
-                                (${#strings.equalsIgnoreCase(
-                                    resultado.cita.estado,
-                                    'Paciente Presente'
-                                )}
-                                ? ' text-bg-primary'
-                                : ' text-bg-secondary'))))"
-
-                              th:text="${resultado.cita.estado}">
-
-                            Estado
-
-                        </span>
-
+                        <span id="badgeEstado" class="badge badge-estado rounded-pill"
+                              th:classappend="${#strings.equalsIgnoreCase(resultado.cita.estado, 'Pagada')} ? ' text-bg-success' : (${#strings.equalsIgnoreCase(resultado.cita.estado, 'Confirmada')} ? ' text-bg-success' : (${#strings.equalsIgnoreCase(resultado.cita.estado, 'Pendiente de pago')} ? ' text-bg-warning' : (${#strings.equalsIgnoreCase(resultado.cita.estado, 'Cancelada')} ? ' text-bg-danger' : (${#strings.equalsIgnoreCase(resultado.cita.estado, 'Paciente Presente')} ? ' text-bg-primary' : ' text-bg-secondary'))))"
+                              th:text="${resultado.cita.estado}">Estado</span>
                     </div>
 
                 </div>
 
 
-                <!-- =====================================
-                     MENSAJE DEL ESTADO
-                     ===================================== -->
-
-                <div th:if="${resultado.mensaje != null}"
-                     class="alert mb-4"
-
-                     th:classappend="
-                        ${#strings.equalsIgnoreCase(
-                            resultado.cita.estado,
-                            'Pendiente de pago'
-                        )}
-                        ? ' alert-warning'
-                        :
-                        (${#strings.equalsIgnoreCase(
-                            resultado.cita.estado,
-                            'Cancelada'
-                        )}
-                        ? ' alert-danger'
-                        : ' alert-info')">
-
-                    <span th:text="${resultado.mensaje}">
-                        Estado de la cita
-                    </span>
-
+                <!-- Mensaje del estado -->
+                <div th:if="${resultado.mensaje != null}" class="alert mb-4"
+                     th:classappend="${#strings.equalsIgnoreCase(resultado.cita.estado, 'Pendiente de pago')} ? ' alert-warning' : (${#strings.equalsIgnoreCase(resultado.cita.estado, 'Cancelada')} ? ' alert-danger' : ' alert-info')">
+                    <span th:text="${resultado.mensaje}">Estado de la cita</span>
                 </div>
 
 
-                <!-- =====================================
-                     DATOS
-                     ===================================== -->
-
+                <!-- Datos -->
                 <div class="row">
 
-
                     <div class="col-md-6">
-
-
                         <div class="dato-cita">
-
-                            <small class="text-secondary d-block">
-                                Especialidad
-                            </small>
-
-                            <strong th:text="${resultado.cita.especialidad}">
-                                Especialidad
-                            </strong>
-
+                            <small class="text-secondary d-block">Especialidad</small>
+                            <strong th:text="${resultado.cita.especialidad}">Especialidad</strong>
                         </div>
-
-
                         <div class="dato-cita">
-
-                            <small class="text-secondary d-block">
-                                Médico
-                            </small>
-
-                            <strong th:text="${resultado.cita.medico}">
-                                Médico
-                            </strong>
-
+                            <small class="text-secondary d-block">Médico</small>
+                            <strong th:text="${resultado.cita.medico}">Médico</strong>
                         </div>
-
-
                         <div class="dato-cita">
-
-                            <small class="text-secondary d-block">
-                                Sede
-                            </small>
-
-                            <strong th:text="${resultado.cita.sucursal}">
-                                Sucursal
-                            </strong>
-
+                            <small class="text-secondary d-block">Sede</small>
+                            <strong th:text="${resultado.cita.sucursal}">Sucursal</strong>
                         </div>
-
                     </div>
 
-
                     <div class="col-md-6">
-
-
                         <div class="dato-cita">
-
-                            <small class="text-secondary d-block">
-                                Fecha y hora
-                            </small>
-
-                            <strong th:text="${#temporals.format(
-                                    resultado.cita.fechaHoraCita,
-                                    'dd/MM/yyyy HH:mm'
-                            )}">
-                                Fecha
-                            </strong>
-
+                            <small class="text-secondary d-block">Fecha y hora</small>
+                            <strong th:text="${#temporals.format(resultado.cita.fechaHoraCita, 'dd/MM/yyyy HH:mm')}">Fecha</strong>
                         </div>
-
-
                         <div class="dato-cita">
-
-                            <small class="text-secondary d-block">
-                                Prioridad
-                            </small>
-
-                            <strong th:text="${resultado.cita.prioridad}">
-                                Normal
-                            </strong>
-
+                            <small class="text-secondary d-block">Prioridad</small>
+                            <strong th:text="${resultado.cita.prioridad}">Normal</strong>
                         </div>
-
-
                         <div class="dato-cita">
-
-                            <small class="text-secondary d-block">
-                                Hora de llegada
-                            </small>
-
-
+                            <small class="text-secondary d-block">Hora de llegada</small>
                             <strong id="horaLlegada"
-                                    th:text="${resultado.cita.horaLlegada != null
-                                        ? #temporals.format(
-                                            resultado.cita.horaLlegada,
-                                            'dd/MM/yyyy HH:mm:ss'
-                                          )
-                                        : 'No registrada'}">
-
-                                No registrada
-
-                            </strong>
-
+                                    th:text="${resultado.cita.horaLlegada != null ? #temporals.format(resultado.cita.horaLlegada, 'dd/MM/yyyy HH:mm:ss') : 'No registrada'}">No registrada</strong>
                         </div>
-
                     </div>
 
                 </div>
 
 
-                <!-- =====================================
-                     MOTIVO
-                     ===================================== -->
-
+                <!-- Motivo -->
                 <div class="mt-4">
-
-                    <small class="text-secondary d-block mb-1">
-                        Motivo de consulta
-                    </small>
-
-                    <div class="bg-light rounded-3 p-3"
-                         th:text="${resultado.cita.motivoConsulta}">
-                        Motivo
-                    </div>
-
+                    <small class="text-secondary d-block mb-1">Motivo de consulta</small>
+                    <div class="santos-motivo" th:text="${resultado.cita.motivoConsulta}">Motivo</div>
                 </div>
 
 
-                <!-- =====================================
-                     ACCIONES
-                     ===================================== -->
-
+                <!-- Acciones -->
                 <div class="d-flex flex-wrap gap-2 mt-4">
 
-
-                    <!-- REGISTRAR LLEGADA -->
-
+                    <!-- Registrar llegada -->
                     <form th:if="${resultado.puedeRegistrarLlegada}"
-                          th:action="@{/interno/recepcion/cita/{id}/llegada(
-                              id=${resultado.cita.numeroCita}
-                          )}"
+                          th:action="@{/interno/recepcion/cita/{id}/llegada(id=${resultado.cita.numeroCita})}"
                           method="post">
-
-
-                        <button type="submit"
-                                class="btn btn-success">
-
-                            <i class="bi bi-person-check me-2"></i>
-                            Registrar llegada
-
+                        <!-- CSRF: Thymeleaf lo agrega automáticamente con th:action -->
+                        <button type="submit" class="btn btn-success px-4">
+                            <i class="bi bi-person-check me-2"></i>Registrar llegada
                         </button>
-
                     </form>
 
-
-                    <!-- FA06 NUEVA CITA -->
-
+                    <!-- FA06: nueva cita -->
                     <a th:if="${resultado.mostrarNuevaCita}"
                        th:href="@{|/interno/recepcion/citas/agendar/walk-in/${resultado.cita.idPaciente}|}"
                        class="btn btn-primary">
-
-                        <i class="bi bi-calendar-plus me-2"></i>
-                        Nueva Cita
-
+                        <i class="bi bi-calendar-plus me-2"></i>Nueva cita
                     </a>
 
-
-                    <!-- =================================
-                         FA07 REASIGNAR MÉDICO
-                         SOLO:
-                         CONFIRMADA / PACIENTE PRESENTE
-                         ================================= -->
-
-                    <a th:if="${
-                            #strings.equalsIgnoreCase(
-                                resultado.cita.estado,
-                                'Confirmada'
-                            )
-                            or
-                            #strings.equalsIgnoreCase(
-                                resultado.cita.estado,
-                                'Paciente Presente'
-                            )
-                        }"
-
-                       th:href="@{/interno/recepcion/cita/{id}/reasignar-medico(
-                            id=${resultado.cita.numeroCita}
-                       )}"
-
+                    <!-- FA07: reasignar médico (solo Confirmada / Paciente Presente) -->
+                    <a th:if="${#strings.equalsIgnoreCase(resultado.cita.estado, 'Confirmada') or #strings.equalsIgnoreCase(resultado.cita.estado, 'Paciente Presente')}"
+                       th:href="@{/interno/recepcion/cita/{id}/reasignar-medico(id=${resultado.cita.numeroCita})}"
                        class="btn btn-outline-primary">
-
-                        <i class="bi bi-person-gear me-2"></i>
-                        Reasignar Médico
-
+                        <i class="bi bi-person-gear me-2"></i>Reasignar médico
                     </a>
-
 
                     <!-- FA08 -->
-
-                    <button th:if="${resultado.mostrarAccionUrgente}"
-                            type="button"
-                            class="btn btn-danger"
-                            disabled>
-
-                        <i class="bi bi-heart-pulse me-2"></i>
-                        Signos Vitales (Urgente)
-
+                    <button th:if="${resultado.mostrarAccionUrgente}" type="button" class="btn btn-danger" disabled>
+                        <i class="bi bi-heart-pulse me-2"></i>Signos vitales (urgente)
                     </button>
 
                 </div>
-
 
             </div>
-
         </div>
 
-
-        <!-- =================================================
-             RNF-021
-             ================================================= -->
-
-        <input type="hidden"
-               id="idCitaActual"
-               th:value="${resultado.cita.numeroCita}">
-
-
-        <input type="hidden"
-               id="estadoCitaActual"
-               th:value="${resultado.cita.estado}">
-
-        <input type="hidden"
-               id="prioridadCitaActual"
-               th:value="${resultado.cita.prioridad}">
-
+        <!-- RNF-021 -->
+        <input type="hidden" id="idCitaActual" th:value="${resultado.cita.numeroCita}">
+        <input type="hidden" id="estadoCitaActual" th:value="${resultado.cita.estado}">
+        <input type="hidden" id="prioridadCitaActual" th:value="${resultado.cita.prioridad}">
 
     </section>
-    <!-- =================================================
-     FA01 - CONTROL PARA REABRIR MODAL
-     ================================================= -->
-
-    <input th:if="${abrirModalEmergencia != null}"
-           type="hidden"
-           id="abrirModalEmergencia"
-           th:value="${abrirModalEmergencia}">
 
 
-    <!-- =================================================
-         FA01 - MODAL REGISTRO DE EMERGENCIA
-         ================================================= -->
+    <!-- FA01: control para reabrir el modal -->
+    <input th:if="${abrirModalEmergencia != null}" type="hidden"
+           id="abrirModalEmergencia" th:value="${abrirModalEmergencia}">
 
-    <div class="modal fade"
-         id="modalEmergencia"
-         tabindex="-1"
-         aria-labelledby="tituloModalEmergencia"
-         aria-hidden="true">
 
+    <!-- FA01: MODAL REGISTRO DE EMERGENCIA -->
+    <div class="modal fade" id="modalEmergencia" tabindex="-1"
+         aria-labelledby="tituloModalEmergencia" aria-hidden="true">
 
         <div class="modal-dialog modal-dialog-centered">
-
-
-            <div class="modal-content border-0 shadow">
-
+            <div class="modal-content santos-modal">
 
                 <div class="modal-header bg-danger text-white">
-
-                    <h2 class="modal-title fs-5 fw-bold"
-                        id="tituloModalEmergencia">
-
-                        <i class="bi bi-heart-pulse-fill me-2"></i>
-
-                        Registrar Emergencia
-
+                    <h2 class="modal-title fs-5 fw-bold" id="tituloModalEmergencia">
+                        <i class="bi bi-heart-pulse-fill me-2"></i>Registrar emergencia
                     </h2>
-
-
-                    <button type="button"
-                            class="btn-close btn-close-white"
-                            data-bs-dismiss="modal"
-                            aria-label="Cerrar">
-                    </button>
-
+                    <button type="button" class="btn-close btn-close-white"
+                            data-bs-dismiss="modal" aria-label="Cerrar"></button>
                 </div>
 
+                <form th:action="@{/interno/recepcion/emergencia}" method="post">
 
-                <form th:action="@{/interno/recepcion/emergencia}"
-                      method="post">
-
-                    <!-- =============================================
-     CITA ACTUAL - OPCIONAL
-     ============================================= -->
-
-                    <input type="hidden"
-                           name="idCita"
+                    <!-- Cita actual (opcional) -->
+                    <input type="hidden" name="idCita"
                            th:if="${resultado != null and resultado.cita != null}"
                            th:value="${resultado.cita.numeroCita}">
 
-
                     <div class="modal-body p-4">
 
-
                         <div class="alert alert-danger">
-
                             <i class="bi bi-exclamation-triangle-fill me-2"></i>
-
-                            <strong>
-                                Prioridad de EMERGENCIA
-                            </strong>
-
-
+                            <strong>Prioridad de EMERGENCIA</strong>
                             <div class="small mt-1">
-
-                                Este paciente pasará directamente
-                                a toma de signos vitales.
-
+                                Este paciente pasará directamente a toma de signos vitales.
                             </div>
-
                         </div>
-
-
-                        <!-- NOMBRE -->
 
                         <div class="mb-3">
-
-                            <label for="nombreCompletoEmergencia"
-                                   class="form-label fw-semibold">
-
-                                Nombre completo
-
-                            </label>
-
-
-                            <input type="text"
-                                   id="nombreCompletoEmergencia"
-                                   name="nombreCompleto"
-                                   class="form-control"
-                                   maxlength="100"
-                                   autocomplete="off"
-                                   th:value="${nombreEmergencia != null
-                                    ? nombreEmergencia
-                                    : (resultado != null and resultado.cita != null
-                                        ? resultado.cita.nombrePaciente
-                                        : '')}"
+                            <label for="nombreCompletoEmergencia" class="form-label fw-semibold">Nombre completo</label>
+                            <input type="text" id="nombreCompletoEmergencia" name="nombreCompleto"
+                                   class="form-control" maxlength="100" autocomplete="off"
+                                   th:value="${nombreEmergencia != null ? nombreEmergencia : (resultado != null and resultado.cita != null ? resultado.cita.nombrePaciente : '')}"
                                    required>
                         </div>
-
-
-                        <!-- DPI -->
 
                         <div class="mb-2">
-
-                            <label for="dpiEmergencia"
-                                   class="form-label fw-semibold">
-
-                                DPI
-
-                            </label>
-
-
-                            <input type="text"
-                                   id="dpiEmergencia"
-                                   name="dpi"
-                                   class="form-control"
-                                   inputmode="numeric"
-                                   maxlength="13"
-                                   autocomplete="off"
-                                   th:value="${dpiEmergencia}"
-                                   placeholder="13 dígitos"
-                                   required>
-
-
-                            <div class="form-text">
-
-                                El DPI será almacenado de forma
-                                protegida.
-
-                            </div>
-
+                            <label for="dpiEmergencia" class="form-label fw-semibold">DPI</label>
+                            <input type="text" id="dpiEmergencia" name="dpi" class="form-control"
+                                   inputmode="numeric" maxlength="13" autocomplete="off"
+                                   th:value="${dpiEmergencia}" placeholder="13 dígitos" required>
+                            <div class="form-text">El DPI será almacenado de forma protegida.</div>
                         </div>
 
-
                     </div>
-
 
                     <div class="modal-footer">
-
-                        <button type="button"
-                                class="btn btn-outline-secondary"
-                                data-bs-dismiss="modal">
-
-                            Cancelar
-
+                        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
+                        <button type="submit" class="btn btn-danger">
+                            <i class="bi bi-heart-pulse me-2"></i>Registrar emergencia
                         </button>
-
-
-                        <button type="submit"
-                                class="btn btn-danger">
-
-                            <i class="bi bi-heart-pulse me-2"></i>
-
-                            Registrar Emergencia
-
-                        </button>
-
                     </div>
-
 
                 </form>
 
-
             </div>
-
-
         </div>
-
-
     </div>
-
 
 </main>
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js">
-</script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
+
 <script>
+    document.addEventListener("DOMContentLoaded", function () {
 
-    document.addEventListener(
-        "DOMContentLoaded",
-        function () {
+        // FA01: reabrir el modal si hubo error
+        const abrirModalEmergencia = document.getElementById("abrirModalEmergencia");
 
+        if (abrirModalEmergencia && abrirModalEmergencia.value === "true") {
+            const elementoModal = document.getElementById("modalEmergencia");
 
-            // =================================================
-            // FA01 - REABRIR MODAL SI EXISTIÓ ERROR
-            // =================================================
-
-            const abrirModalEmergencia =
-                document.getElementById(
-                    "abrirModalEmergencia"
-                );
-
-
-            if (
-                abrirModalEmergencia
-                && abrirModalEmergencia.value === "true"
-            ) {
-
-                const elementoModal =
-                    document.getElementById(
-                        "modalEmergencia"
-                    );
-
-
-                if (elementoModal) {
-
-                    const modal =
-                        new bootstrap.Modal(
-                            elementoModal
-                        );
-
-
-                    modal.show();
-                }
+            if (elementoModal) {
+                new bootstrap.Modal(elementoModal).show();
             }
+        }
 
 
-            // =================================================
-            // PLACEHOLDER DEL BUSCADOR
-            // =================================================
+        // Placeholder del buscador
+        const radioCita = document.getElementById("buscarCita");
+        const radioDpi = document.getElementById("buscarDpi");
+        const campo = document.getElementById("valorBusqueda");
 
-            const radioCita =
-                document.getElementById(
-                    "buscarCita"
-                );
+        function actualizarPlaceholder() {
+            if (!campo) return;
+
+            if (radioDpi && radioDpi.checked) {
+                campo.placeholder = "Ingrese DPI de 13 dígitos";
+                campo.maxLength = 13;
+            } else {
+                campo.placeholder = "Ingrese número de cita";
+                campo.removeAttribute("maxlength");
+            }
+        }
+
+        if (radioCita) radioCita.addEventListener("change", actualizarPlaceholder);
+        if (radioDpi) radioDpi.addEventListener("change", actualizarPlaceholder);
+
+        actualizarPlaceholder();
 
 
-            const radioDpi =
-                document.getElementById(
-                    "buscarDpi"
-                );
+        // RNF-021: actualización de estado.
+        // Si no hay una cita en pantalla, no se inicia el polling.
+        const idCita = document.getElementById("idCitaActual");
+        const estadoActual = document.getElementById("estadoCitaActual");
 
+        if (!idCita || !estadoActual) {
+            return;
+        }
 
-            const campo =
-                document.getElementById(
-                    "valorBusqueda"
-                );
+        const numeroCita = idCita.value;
+        const ultimoEstado = estadoActual.value;
+        const urlCita = "/interno/recepcion/cita/" + encodeURIComponent(numeroCita);
 
+        async function verificarEstado() {
+            try {
+                const respuesta = await fetch(urlCita + "/estado", {
+                    method: "GET",
+                    headers: { "Accept": "application/json" }
+                });
 
-            function actualizarPlaceholder() {
-
-                if (!campo) {
-
+                if (!respuesta.ok) {
+                    programarSiguienteConsulta();
                     return;
                 }
 
+                const datos = await respuesta.json();
 
-                if (
-                    radioDpi
-                    && radioDpi.checked
-                ) {
-
-                    campo.placeholder =
-                        "Ingrese DPI de 13 dígitos";
-
-
-                    campo.maxLength =
-                        13;
-
-                } else {
-
-                    campo.placeholder =
-                        "Ingrese número de cita";
-
-
-                    campo.removeAttribute(
-                        "maxlength"
-                    );
-                }
-            }
-
-
-            if (radioCita) {
-
-                radioCita.addEventListener(
-                    "change",
-                    actualizarPlaceholder
-                );
-            }
-
-
-            if (radioDpi) {
-
-                radioDpi.addEventListener(
-                    "change",
-                    actualizarPlaceholder
-                );
-            }
-
-
-            actualizarPlaceholder();
-
-
-            // =================================================
-            // RNF-021 - ACTUALIZACIÓN DE ESTADO
-            // =================================================
-
-            const idCita =
-                document.getElementById(
-                    "idCitaActual"
-                );
-
-
-            const estadoActual =
-                document.getElementById(
-                    "estadoCitaActual"
-                );
-
-
-            /*
-             * Si no estamos visualizando una cita,
-             * simplemente no iniciamos el polling.
-             *
-             * El resto del JavaScript ya fue ejecutado.
-             */
-            if (!idCita
-                || !estadoActual) {
-
-                return;
-            }
-
-
-            const numeroCita =
-                idCita.value;
-
-
-            let ultimoEstado =
-                estadoActual.value;
-
-
-            async function verificarEstado() {
-
-                try {
-
-                    const respuesta =
-                        await fetch(
-
-                            "/interno/recepcion/cita/"
-                            + encodeURIComponent(
-                                numeroCita
-                            )
-                            + "/estado",
-
-                            {
-
-                                method: "GET",
-
-                                headers: {
-
-                                    "Accept":
-                                        "application/json"
-                                }
-                            }
-                        );
-
-
-                    if (!respuesta.ok) {
-
-                        programarSiguienteConsulta();
-
-                        return;
-                    }
-
-
-                    const datos =
-                        await respuesta.json();
-
-
-                    if (
-                        datos.estado
-                        && datos.estado !== ultimoEstado
-                    ) {
-
-                        window.location.href =
-                            "/interno/recepcion/cita/"
-                            + encodeURIComponent(
-                                numeroCita
-                            );
-
-
-                        return;
-                    }
-
-
-                    /*
-                     * También recargamos si cambia
-                     * la prioridad.
-                     *
-                     * Esto será útil al marcar una
-                     * cita como Emergencia.
-                     */
-                    const prioridadMostrada =
-                        document.getElementById(
-                            "prioridadCitaActual"
-                        );
-
-
-                    if (
-                        prioridadMostrada
-                        && datos.prioridad
-                        && datos.prioridad
-                        !== prioridadMostrada.value
-                    ) {
-
-                        window.location.href =
-                            "/interno/recepcion/cita/"
-                            + encodeURIComponent(
-                                numeroCita
-                            );
-
-
-                        return;
-                    }
-
-
-                } catch (error) {
-
-                    /*
-                     * El polling nunca debe impedir
-                     * utilizar Recepción.
-                     */
+                if (datos.estado && datos.estado !== ultimoEstado) {
+                    window.location.href = urlCita;
+                    return;
                 }
 
+                // También recarga si cambia la prioridad (p. ej. al marcar Emergencia)
+                const prioridadMostrada = document.getElementById("prioridadCitaActual");
 
-                programarSiguienteConsulta();
+                if (prioridadMostrada && datos.prioridad && datos.prioridad !== prioridadMostrada.value) {
+                    window.location.href = urlCita;
+                    return;
+                }
+
+            } catch (error) {
+                // El polling nunca debe impedir utilizar Recepción.
             }
-
-
-            function programarSiguienteConsulta() {
-
-                setTimeout(
-                    verificarEstado,
-                    5000
-                );
-            }
-
 
             programarSiguienteConsulta();
-
         }
-    );
 
+        function programarSiguienteConsulta() {
+            setTimeout(verificarEstado, 5000);
+        }
+
+        programarSiguienteConsulta();
+    });
 </script>
 
-
 </body>
-
 </html>

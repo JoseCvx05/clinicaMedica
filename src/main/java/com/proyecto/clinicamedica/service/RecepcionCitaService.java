@@ -385,7 +385,7 @@ public class RecepcionCitaService {
                         zonaHoraria
                 );
 
-
+        // consulto las sitas activas con el id del paciente y la fecha actual
         List<Cita> citas =
                 citaRepository
                         .buscarCitasActivasParaRecepcion(
@@ -439,7 +439,7 @@ public class RecepcionCitaService {
     private ResultadoBusqueda resultadoCita(
             Cita cita
     ) {
-
+        // contruyo el detalle de la cita para mostrarlo en la interfaz
         DetalleCita detalle =
                 construirDetalle(
                         cita
@@ -488,7 +488,7 @@ public class RecepcionCitaService {
 
 
         // =================================================
-        // PACIENTE PRESENTE
+        // PACIENTE PRESENTE // para verificar si ya se registró la llegada y que no se registre de nuevo
         // =================================================
 
         if (ESTADO_PRESENTE
@@ -602,6 +602,7 @@ public class RecepcionCitaService {
         /*
          * Bloqueo pesimista para evitar que dos
          * recepcionistas registren la misma llegada.
+         * primera barrera de control de concurrencia.
          */
         Cita cita =
                 citaRepository
@@ -668,7 +669,9 @@ public class RecepcionCitaService {
             );
         }
 
-
+        // =================================================
+        // ESTADO PERMITIDO PARA REGISTRAR LLEGADA
+        // =================================================
         boolean estadoPermitido =
                 ESTADO_PAGADA
                         .equalsIgnoreCase(estadoActual)

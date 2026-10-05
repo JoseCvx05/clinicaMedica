@@ -37,7 +37,7 @@ import java.util.Map;
  * - Revalidar disponibilidad antes de guardar.
  * - Cambiar el médico asignado.
  * - Registrar fecha y usuario modificador.
- * - Registrar la reasignación en bitácora.
+ * - Registrar la reasignación en bit   ácora.
  * - Registrar el motivo opcional de reasignación.
  *
  * =========================================================
@@ -308,7 +308,7 @@ public class ReasignacionMedicoService {
 
 
         // =================================================
-        // BLOQUEO PESIMISTA
+        // SE USA PARA BLOQUEAR LA CITA DURANTE LA REASIGNACIÓN
         // =================================================
 
         Cita cita =
@@ -405,7 +405,7 @@ public class ReasignacionMedicoService {
 
 
         // =================================================
-        // REVALIDAR DISPONIBILIDAD
+        // REVALIDAR DISPONIBILIDAD ANTES DE GUARDAR
         // =================================================
 
         boolean disponible =
@@ -614,7 +614,7 @@ public class ReasignacionMedicoService {
                         .getNombre()
                         .trim();
 
-
+        // la reasignación solo es posible si la cita está en estado "Confirmada" o "Paciente Presente"
         boolean permitido =
                 ESTADO_CONFIRMADA
                         .equalsIgnoreCase(
@@ -639,7 +639,7 @@ public class ReasignacionMedicoService {
     // =====================================================
     // SNAPSHOT DEL MÉDICO
     // =====================================================
-
+    // construyen los valores anteriores y nuevos que se mandan a la bitácora
     private Map<String, Object> crearSnapshotMedico(
             Usuario medico
     ) {

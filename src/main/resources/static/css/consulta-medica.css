@@ -1,0 +1,108 @@
+/* ============================================================
+   SANTOS · Consulta médica
+   Requiere panel-medico.css (variables, encabezado, mensajes,
+   botones y lista de datos).
+   ============================================================ */
+
+.pagina-consulta { max-width: 1350px; }
+
+.titulo-principal { margin-bottom: 1.6rem; }
+.titulo-principal h1 { font-size: clamp(1.7rem, 3.5vw, 2.2rem); color: var(--verde-900); margin-bottom: .4rem; }
+.titulo-principal p { color: var(--tinta-suave); }
+
+/* ---------- Tarjetas ---------- */
+.grid-superior { display: grid; grid-template-columns: 1.3fr 1fr; gap: 1.3rem; margin-bottom: 1.3rem; }
+
+.panel-tarjeta {
+    background: #fff; border: 1px solid var(--linea);
+    border-radius: 18px; padding: 1.5rem;
+}
+.panel-tarjeta h2 { font-size: 1.25rem; color: var(--verde-900); margin-bottom: 1.1rem; }
+
+/* Lista de datos (.datos / .dato vienen de panel-medico.css) */
+.panel-tarjeta .dato { grid-template-columns: 130px 1fr; font-size: .96rem; }
+.dato-fuerte { font-weight: 600; color: var(--verde-900); }
+
+.estado-consulta { display: flex; flex-wrap: wrap; align-items: center; gap: .7rem; }
+.estado { padding: .25rem .8rem; border-radius: 999px; font-size: .85rem; font-weight: 600; }
+.estado-curso { background: var(--verde-100); color: var(--verde-700); }
+.estado-finalizada { background: var(--exito-fondo); color: var(--exito); }
+.version { color: var(--tinta-suave); font-size: .88rem; }
+
+.boton-tts { margin-top: 1.1rem; min-height: 38px; font-size: .88rem; }
+
+/* ---------- Signos vitales ---------- */
+.signos-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: .8rem; }
+
+.signo {
+    padding: .95rem 1rem; background: var(--bruma);
+    border: 1px solid var(--linea); border-radius: 12px;
+}
+.signo > span { display: block; margin-bottom: .25rem; color: var(--tinta-suave); font-size: .85rem; }
+.signo strong { font: 700 1.4rem/1.2 var(--fuente-titulo); color: var(--verde-900); }
+.signo small { font: 500 .8rem var(--fuente-texto); color: var(--tinta-suave); }
+
+/* Alerta: borde rojo grueso + fondo, no depende solo del color */
+.signo.alerta { background: var(--rojo-fondo); border: 2px solid var(--rojo); }
+.signo.alerta strong { color: var(--rojo); }
+.signo.alerta > span::before { content: "⚠ "; }
+
+/* ---------- Formulario ---------- */
+.formulario { margin-top: 0; }
+.seccion-formulario { margin-bottom: 1.3rem; }
+
+.campo { margin-bottom: 1.4rem; }
+.campo:last-child { margin-bottom: 0; }
+.campo label { display: block; margin-bottom: .4rem; font-weight: 600; color: var(--verde-900); font-size: .95rem; }
+.obligatorio { color: var(--rojo); }
+
+.campo input[type="text"], .campo textarea {
+    width: 100%; padding: .75rem .95rem;
+    font: 400 1rem/1.5 var(--fuente-texto); color: var(--tinta);
+    background: #fff; border: 2px solid var(--linea); border-radius: 10px;
+    transition: border-color .15s, box-shadow .15s;
+}
+.campo textarea { min-height: 110px; resize: vertical; }
+.campo input[type="text"]:focus, .campo textarea:focus {
+    outline: none; border-color: var(--verde-500); box-shadow: 0 0 0 4px var(--verde-100);
+}
+.campo input:disabled, .campo textarea:disabled {
+    background: var(--bruma); color: var(--tinta-suave); cursor: not-allowed;
+}
+
+.ayuda { margin-top: .35rem; font-size: .85rem; color: var(--tinta-suave); }
+.error-campo { margin-top: .35rem; font-size: .88rem; font-weight: 600; color: var(--rojo); }
+
+/* ---------- CIE-10 ---------- */
+.contenedor-cie { position: relative; }
+.resultados-cie {
+    display: none; position: absolute; z-index: 30; left: 0; right: 0; top: calc(100% + 6px);
+    max-height: 270px; overflow-y: auto;
+    background: #fff; border: 1px solid var(--linea); border-radius: 12px;
+    box-shadow: 0 12px 30px rgba(10, 61, 58, .16); padding: .3rem;
+}
+.resultado-cie {
+    display: block; width: 100%; padding: .65rem .8rem; text-align: left;
+    background: #fff; border: 0; border-radius: 8px; cursor: pointer;
+    font-family: var(--fuente-texto);
+}
+.resultado-cie:hover, .resultado-cie:focus-visible { background: var(--verde-100); }
+.resultado-cie strong { display: block; color: var(--verde-900); font-size: .92rem; }
+.resultado-cie span { color: var(--tinta-suave); font-size: .85rem; }
+
+/* ---------- Acciones ---------- */
+.acciones-formulario { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: .7rem; }
+
+/* ---------- Responsivo ---------- */
+@media (max-width: 900px) {
+    .grid-superior { grid-template-columns: 1fr; }
+}
+@media (max-width: 650px) {
+    .signos-grid { grid-template-columns: 1fr; }
+    .panel-tarjeta .dato { grid-template-columns: 1fr; gap: 0; }
+    .acciones-formulario { flex-direction: column-reverse; }
+    .acciones-formulario .boton { width: 100%; }
+}
+@media (prefers-reduced-motion: reduce) {
+    .campo input[type="text"], .campo textarea { transition: none; }
+}

@@ -1,0 +1,804 @@
+<!DOCTYPE html>
+<html lang="es"
+      xmlns:th="http://www.thymeleaf.org">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>
+        Receta Médica
+    </title>
+
+
+    <style>
+
+        * {
+            box-sizing: border-box;
+        }
+
+
+        body {
+            margin: 0;
+            font-family: Arial, Helvetica, sans-serif;
+            background: #f4f7fb;
+            color: #1f2937;
+        }
+
+
+        .pagina {
+            width: min(1200px, 94%);
+            margin: 35px auto;
+        }
+
+
+        .encabezado {
+            background: white;
+            border-radius: 14px;
+            padding: 24px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 18px rgba(0, 0, 0, 0.07);
+        }
+
+
+        .encabezado h1 {
+            margin: 0 0 8px 0;
+            font-size: 28px;
+        }
+
+
+        .encabezado p {
+            margin: 0;
+            color: #6b7280;
+        }
+
+
+        .resumen {
+            display: grid;
+            grid-template-columns: repeat(
+                    auto-fit,
+                    minmax(180px, 1fr)
+            );
+            gap: 15px;
+            margin-top: 22px;
+        }
+
+
+        .dato {
+            background: #f8fafc;
+            border: 1px solid #e5e7eb;
+            border-radius: 10px;
+            padding: 14px;
+        }
+
+
+        .dato strong {
+            display: block;
+            margin-bottom: 5px;
+            font-size: 13px;
+            color: #6b7280;
+        }
+
+
+        .dato span {
+            font-weight: bold;
+        }
+
+
+        .tarjeta {
+            background: white;
+            border-radius: 14px;
+            padding: 24px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 18px rgba(0, 0, 0, 0.07);
+        }
+
+
+        .tarjeta h2 {
+            margin-top: 0;
+        }
+
+
+        .barra-superior {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+
+        .contador {
+            font-weight: bold;
+            color: #374151;
+        }
+
+
+        .boton {
+            border: none;
+            border-radius: 8px;
+            padding: 11px 18px;
+            font-size: 14px;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+        }
+
+
+        .boton-agregar {
+            background: #e0f2fe;
+            color: #075985;
+            font-weight: bold;
+        }
+
+
+        .boton-agregar:hover {
+            background: #bae6fd;
+        }
+
+
+        .boton-guardar {
+            background: #2563eb;
+            color: white;
+            font-weight: bold;
+        }
+
+
+        .boton-guardar:hover {
+            background: #1d4ed8;
+        }
+
+
+        .boton-cancelar {
+            background: #e5e7eb;
+            color: #374151;
+        }
+
+
+        .boton-cancelar:hover {
+            background: #d1d5db;
+        }
+
+
+        .boton-eliminar {
+            background: #fee2e2;
+            color: #991b1b;
+            padding: 8px 12px;
+        }
+
+
+        .boton-eliminar:hover {
+            background: #fecaca;
+        }
+
+
+        .medicamento-item {
+            border: 1px solid #dbe3ec;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 18px;
+            background: #fbfdff;
+        }
+
+
+        .medicamento-cabecera {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            margin-bottom: 18px;
+        }
+
+
+        .medicamento-cabecera h3 {
+            margin: 0;
+            font-size: 18px;
+        }
+
+
+        .grid {
+            display: grid;
+            grid-template-columns:
+                    repeat(
+                            2,
+                            minmax(0, 1fr)
+                    );
+            gap: 16px;
+        }
+
+
+        .campo {
+            display: flex;
+            flex-direction: column;
+            gap: 7px;
+        }
+
+
+        .campo-completo {
+            grid-column: 1 / -1;
+        }
+
+
+        label {
+            font-weight: bold;
+            font-size: 14px;
+        }
+
+
+        input,
+        select,
+        textarea {
+            width: 100%;
+            border: 1px solid #cbd5e1;
+            border-radius: 8px;
+            padding: 11px;
+            font-family: inherit;
+            font-size: 14px;
+            background: white;
+        }
+
+
+        input:focus,
+        select:focus,
+        textarea:focus {
+            outline: none;
+            border-color: #2563eb;
+            box-shadow: 0 0 0 3px rgba(
+                    37,
+                    99,
+                    235,
+                    0.12
+            );
+        }
+
+
+        textarea {
+            resize: vertical;
+            min-height: 90px;
+        }
+
+
+        .detalle-catalogo {
+            display: none;
+            margin-top: 9px;
+            padding: 10px;
+            border-radius: 8px;
+            background: #f1f5f9;
+            color: #475569;
+            font-size: 13px;
+            line-height: 1.5;
+        }
+
+
+        .detalle-catalogo.visible {
+            display: block;
+        }
+
+
+        .controlado {
+            margin-top: 8px;
+            display: none;
+            color: #92400e;
+            background: #fef3c7;
+            border: 1px solid #fde68a;
+            border-radius: 7px;
+            padding: 8px;
+            font-size: 13px;
+            font-weight: bold;
+        }
+
+
+        .controlado.visible {
+            display: block;
+        }
+
+
+        .advertencia {
+            background: #eff6ff;
+            border: 1px solid #bfdbfe;
+            color: #1e40af;
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 20px;
+            line-height: 1.5;
+        }
+
+
+        .acciones {
+            display: flex;
+            justify-content: flex-end;
+            gap: 12px;
+            margin-top: 24px;
+            flex-wrap: wrap;
+        }
+
+
+        .sin-catalogo {
+            background: #fff7ed;
+            border: 1px solid #fed7aa;
+            color: #9a3412;
+            padding: 16px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+
+
+        @media (
+        max-width: 720px
+        ) {
+
+            .grid {
+                grid-template-columns: 1fr;
+            }
+
+
+            .campo-completo {
+                grid-column: auto;
+            }
+
+
+            .acciones {
+                flex-direction: column;
+            }
+
+
+            .acciones .boton {
+                width: 100%;
+            }
+        }
+
+        .mensaje-error {
+            background: #fef2f2;
+            border: 1px solid #fecaca;
+            color: #991b1b;
+            padding: 14px 18px;
+            margin-bottom: 20px;
+            border-radius: 10px;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+
+        .mensaje-error strong {
+            margin-right: 5px;
+        }
+
+    </style>
+
+</head>
+
+
+<body>
+
+
+<main class="pagina">
+
+
+    <!-- =================================================
+     MENSAJE DE ERROR
+     ================================================= -->
+
+    <div th:if="${mensajeError}"
+         class="mensaje-error"
+         role="alert">
+
+        <strong>⚠ Error:</strong>
+
+        <span th:text="${mensajeError}">
+        Ocurrió un error.
+    </span>
+
+    </div>
+
+
+    <!-- =================================================
+         ENCABEZADO
+         ================================================= -->
+
+    <section class="encabezado">
+
+        <h1>
+            💊 Generar Receta Médica
+        </h1>
+
+        <p>
+            CU-08 — FA04 · Prescripción de medicamentos
+        </p>
+
+
+        <div class="resumen">
+
+            <div class="dato">
+
+                <strong>
+                    Cita
+                </strong>
+
+                <span th:text="'#' + ${idCita}">
+                    #0
+                </span>
+
+            </div>
+
+
+            <div class="dato">
+
+                <strong>
+                    Consulta Médica
+                </strong>
+
+                <span th:text="'#' + ${idConsulta}">
+                    #0
+                </span>
+
+            </div>
+
+
+            <div class="dato">
+
+                <strong>
+                    Estado
+                </strong>
+
+                <span>
+                    Evaluado — Pendiente de cierre
+                </span>
+
+            </div>
+
+        </div>
+
+    </section>
+
+
+
+    <!-- =================================================
+         CATÁLOGO VACÍO
+         ================================================= -->
+
+    <div class="sin-catalogo"
+         th:if="${medicamentos == null or #lists.isEmpty(medicamentos)}">
+
+        No existen medicamentos activos disponibles
+        en el catálogo.
+
+    </div>
+
+
+
+    <!-- =================================================
+         FORMULARIO
+         ================================================= -->
+
+    <section class="tarjeta"
+             th:unless="${medicamentos == null or #lists.isEmpty(medicamentos)}">
+
+
+        <div class="barra-superior">
+
+            <div>
+
+                <h2>
+                    Medicamentos prescritos
+                </h2>
+
+                <span class="contador"
+                      id="contadorMedicamentos">
+
+                    1 medicamento
+
+                </span>
+
+            </div>
+
+
+            <button type="button"
+                    class="boton boton-agregar"
+                    id="botonAgregar">
+
+                + Agregar medicamento
+
+            </button>
+
+        </div>
+
+
+
+        <form th:action="@{/interno/medico/citas/{idCita}/receta(
+                            idCita=${idCita}
+                         )}"
+              method="post"
+              id="formReceta">
+
+
+            <!-- =========================================
+                 CSRF
+                 ========================================= -->
+
+            <input type="hidden"
+                   th:if="${_csrf != null}"
+                   th:name="${_csrf.parameterName}"
+                   th:value="${_csrf.token}">
+
+
+
+            <!-- =========================================
+                 LISTADO DINÁMICO
+                 ========================================= -->
+
+            <div id="listaMedicamentos">
+            </div>
+
+
+
+            <!-- =========================================
+                 RN-CU08-03
+                 ========================================= -->
+
+            <div class="advertencia">
+
+                <strong>
+                    Importante:
+                </strong>
+
+                medicamento, cantidad, dosis,
+                frecuencia y duración son obligatorios.
+
+                Las indicaciones especiales son opcionales.
+
+            </div>
+
+
+
+            <!-- =========================================
+                 ACCIONES
+                 ========================================= -->
+
+            <div class="acciones">
+
+                <a th:href="@{/interno/medico}"
+                   class="boton boton-cancelar">
+
+                    ← Cancelar
+
+                </a>
+
+
+                <button type="submit"
+                        class="boton boton-guardar"
+                        id="botonGuardar">
+
+                    ✓ Guardar receta
+
+                </button>
+
+            </div>
+
+        </form>
+
+    </section>
+
+</main>
+
+
+
+<!-- =====================================================
+     PLANTILLA DE UN MEDICAMENTO
+     ===================================================== -->
+
+<template id="plantillaMedicamento">
+
+    <article class="medicamento-item">
+
+
+        <!-- =============================================
+             CABECERA
+             ============================================= -->
+
+        <div class="medicamento-cabecera">
+
+            <h3 class="tituloMedicamento">
+                Medicamento
+            </h3>
+
+
+            <button type="button"
+                    class="boton boton-eliminar botonEliminar">
+
+                Eliminar
+
+            </button>
+
+        </div>
+
+
+
+        <div class="grid">
+
+
+            <!-- =========================================
+                 MEDICAMENTO
+                 ========================================= -->
+
+            <div class="campo campo-completo">
+
+                <label>
+                    Medicamento *
+                </label>
+
+
+                <select name="idMedicamento"
+                        class="selectMedicamento"
+                        required>
+
+                    <option value="">
+                        Seleccione un medicamento
+                    </option>
+
+
+                    <option th:each="medicamento : ${medicamentos}"
+
+                            th:value="${medicamento.idMedicamento()}"
+
+                            th:text="${medicamento.nombre()
+                                     + ' — Q'
+                                     + medicamento.precio()
+                                     + ' / '
+                                     + medicamento.unidad()}"
+
+                            th:attr="
+                                data-nombre=${medicamento.nombre()},
+                                data-descripcion=${medicamento.descripcion()},
+                                data-precio=${medicamento.precio()},
+                                data-unidad=${medicamento.unidad()},
+                                data-controlado=${medicamento.controlado()}
+                            ">
+
+                        Medicamento
+
+                    </option>
+
+                </select>
+
+
+                <div class="detalle-catalogo">
+                </div>
+
+
+                <div class="controlado">
+
+                    ⚠ Este medicamento está identificado
+                    como controlado en el catálogo.
+
+                </div>
+
+            </div>
+
+
+
+            <!-- =========================================
+                 CANTIDAD
+                 ========================================= -->
+
+            <div class="campo">
+
+                <label>
+                    Cantidad *
+                </label>
+
+                <input type="number"
+                       name="cantidad"
+                       class="cantidad"
+                       min="1"
+                       step="1"
+                       value="1"
+                       required>
+
+            </div>
+
+
+
+            <!-- =========================================
+                 DOSIS
+                 ========================================= -->
+
+            <div class="campo">
+
+                <label>
+                    Dosis *
+                </label>
+
+                <input type="text"
+                       name="dosis"
+                       class="dosis"
+                       maxlength="150"
+                       placeholder="Ej. 1 tableta"
+                       required>
+
+            </div>
+
+
+
+            <!-- =========================================
+                 FRECUENCIA
+                 ========================================= -->
+
+            <div class="campo">
+
+                <label>
+                    Frecuencia *
+                </label>
+
+                <input type="text"
+                       name="frecuencia"
+                       class="frecuencia"
+                       maxlength="150"
+                       placeholder="Ej. Cada 8 horas"
+                       required>
+
+            </div>
+
+
+
+            <!-- =========================================
+                 DURACIÓN
+                 ========================================= -->
+
+            <div class="campo">
+
+                <label>
+                    Duración *
+                </label>
+
+                <input type="text"
+                       name="duracion"
+                       class="duracion"
+                       maxlength="150"
+                       placeholder="Ej. 7 días"
+                       required>
+
+            </div>
+
+
+
+            <!-- =========================================
+                 INDICACIONES
+                 ========================================= -->
+
+            <div class="campo campo-completo">
+
+                <label>
+                    Indicaciones especiales
+                </label>
+
+                <textarea name="indicaciones"
+                          class="indicaciones"
+                          maxlength="1000"
+                          placeholder="Opcional. Ej. Tomar después de alimentos.">
+                </textarea>
+
+            </div>
+
+        </div>
+
+    </article>
+
+</template>
+
+
+
+<!-- =====================================================
+     JAVASCRIPT
+     ===================================================== -->
+
+<script th:src="@{/js/receta-medica.js}"></script>
+
+
+</body>
+</html>

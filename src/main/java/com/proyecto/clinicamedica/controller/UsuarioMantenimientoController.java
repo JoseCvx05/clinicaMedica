@@ -228,7 +228,7 @@ public class UsuarioMantenimientoController {
 
 
         // =================================================
-        // PAGINACIÓN
+        // PAGINACIÓN // cantidad de páginas, página actual, total de registros, tamaño actual
         // =================================================
 
         model.addAttribute(

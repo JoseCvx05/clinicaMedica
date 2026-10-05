@@ -28,10 +28,11 @@ import org.springframework.security.web.SecurityFilterChain;
  * - Rutas públicas.
  * - Portal del paciente.
  * - Portal interno.
- * - Módulos administrativos.
+ * - CU-01 Administración.
  * - CU-05 Recepción.
  * - CU-06 Caja.
  * - CU-07 Enfermería.
+ * - CU-08 Consulta Médica.
  * - JWT desde cookie HttpOnly.
  * - Autorización mediante roles.
  * - CSRF.
@@ -129,7 +130,7 @@ public class SecurityConfig {
 
 
                 // =========================================
-                // AUTORIZACIÓN DE RUTAS
+                // AUTORIZACIÓN
                 // =========================================
 
                 .authorizeHttpRequests(
@@ -155,15 +156,6 @@ public class SecurityConfig {
 
                                         "/api/public/**",
 
-                                        /*
-                                         * Solamente el endpoint
-                                         * utilizado para iniciar
-                                         * sesión interna es público.
-                                         *
-                                         * NO hacemos público:
-                                         *
-                                         * /api/interno/**
-                                         */
                                         "/api/interno/login",
 
                                         "/css/**",
@@ -180,10 +172,6 @@ public class SecurityConfig {
                                 // CU-01
                                 // ADMINISTRACIÓN
                                 // =========================
-                                //
-                                // Exclusivo:
-                                // ADMINISTRADOR
-                                // =========================
 
                                 .requestMatchers(
                                         "/admin/**"
@@ -196,10 +184,6 @@ public class SecurityConfig {
 
                                 // =========================
                                 // PORTAL DEL PACIENTE
-                                // =========================
-                                //
-                                // Exclusivo:
-                                // PACIENTE
                                 // =========================
 
                                 .requestMatchers(
@@ -215,28 +199,6 @@ public class SecurityConfig {
                                 // CU-05
                                 // RECEPCIÓN
                                 // =========================
-                                //
-                                // Exclusivo:
-                                // RECEPCIONISTA
-                                //
-                                // Incluye:
-                                //
-                                // - Búsqueda de citas.
-                                // - Registro de llegada.
-                                // - Walk-in.
-                                // - Emergencias.
-                                // - Reasignación de médico.
-                                // - Consulta de estado.
-                                //
-                                // IMPORTANTE:
-                                //
-                                // Debe estar ANTES de:
-                                //
-                                // /interno/**
-                                //
-                                // porque Spring Security
-                                // evalúa las reglas en orden.
-                                // =========================
 
                                 .requestMatchers(
                                         "/interno/recepcion/**"
@@ -250,23 +212,6 @@ public class SecurityConfig {
                                 // =========================
                                 // CU-06
                                 // CAJA
-                                // =========================
-                                //
-                                // Exclusivo:
-                                // CAJERO
-                                //
-                                // Incluye:
-                                //
-                                // - Búsqueda de citas.
-                                // - Cobro presencial.
-                                // - Efectivo.
-                                // - Tarjeta.
-                                // - POS.
-                                // - Recibos.
-                                // - Reimpresión.
-                                //
-                                // También debe estar ANTES
-                                // del matcher /interno/**.
                                 // =========================
 
                                 .requestMatchers(
@@ -282,22 +227,6 @@ public class SecurityConfig {
                                 // CU-07
                                 // ENFERMERÍA
                                 // =========================
-                                //
-                                // Exclusivo:
-                                // ENFERMERO
-                                //
-                                // Incluye:
-                                //
-                                // - Panel de Enfermería.
-                                // - Pacientes presentes.
-                                // - Llamado de pacientes.
-                                // - Toma de signos vitales.
-                                // - Registro de emergencia.
-                                // - Alertas clínicas.
-                                //
-                                // También debe estar ANTES
-                                // de /interno/**.
-                                // =========================
 
                                 .requestMatchers(
                                         "/interno/enfermeria/**"
@@ -309,25 +238,44 @@ public class SecurityConfig {
 
 
                                 // =========================
-                                // PORTAL INTERNO GENERAL
+                                // CU-08
+                                // CONSULTA MÉDICA
                                 // =========================
                                 //
-                                // Permite acceder únicamente
-                                // a las rutas internas que NO
-                                // tienen una regla específica
-                                // definida anteriormente.
+                                // Exclusivo:
+                                // MEDICO
                                 //
-                                // Ejemplo:
+                                // Incluye:
                                 //
-                                // /interno/dashboard
+                                // - Panel del Médico.
+                                // - Inicio de consulta.
+                                // - Expediente clínico.
+                                // - CIE-10.
+                                // - Guardar consulta.
+                                // - Finalizar consulta.
+                                // - No asistió.
+                                // - Receta.
+                                // - Laboratorio.
+                                // - Seguimiento.
+                                // - Finalización de atención.
                                 //
-                                // Las rutas específicas:
+                                // Debe permanecer ANTES de:
                                 //
-                                // /interno/recepcion/**
-                                // /interno/caja/**
-                                // /interno/enfermeria/**
+                                // /interno/**
                                 //
-                                // ya fueron protegidas arriba.
+                                // =========================
+
+                                .requestMatchers(
+                                        "/interno/medico/**"
+                                )
+
+                                .hasRole(
+                                        "MEDICO"
+                                )
+
+
+                                // =========================
+                                // PORTAL INTERNO GENERAL
                                 // =========================
 
                                 .requestMatchers(
@@ -353,7 +301,7 @@ public class SecurityConfig {
 
 
                                 // =========================
-                                // RESTO DEL SISTEMA
+                                // RESTO
                                 // =========================
 
                                 .anyRequest()
@@ -371,48 +319,24 @@ public class SecurityConfig {
 
                                 .ignoringRequestMatchers(
 
-                                        /*
-                                         * Endpoints REST
-                                         * públicos.
-                                         */
                                         "/api/public/**",
 
-
-                                        /*
-                                         * Excluimos únicamente
-                                         * el POST encargado del
-                                         * inicio de sesión interno.
-                                         *
-                                         * NO excluimos:
-                                         *
-                                         * /api/interno/**
-                                         */
                                         "/api/interno/login"
                                 )
                 )
 
 
                 // =========================================
-                // JWT / RESOURCE SERVER
+                // JWT
                 // =========================================
 
                 .oauth2ResourceServer(
 
                         oauth2 -> oauth2
 
-
-                                // =========================
-                                // JWT DESDE COOKIE
-                                // =========================
-
                                 .bearerTokenResolver(
                                         jwtCookieBearerTokenResolver
                                 )
-
-
-                                // =========================
-                                // CONVERSIÓN DE ROLES
-                                // =========================
 
                                 .jwt(
 
@@ -427,12 +351,6 @@ public class SecurityConfig {
 
                 // =========================================
                 // STATELESS
-                // =========================================
-                //
-                // No utilizamos HttpSession para mantener
-                // autenticación.
-                //
-                // La autenticación depende del JWT.
                 // =========================================
 
                 .sessionManagement(
@@ -454,27 +372,10 @@ public class SecurityConfig {
                         logout -> logout
 
 
-                                // =========================
-                                // ENDPOINTS DE LOGOUT
-                                // =========================
-                                //
-                                // Paciente:
-                                //
-                                // POST /logout
-                                //
-                                // Interno:
-                                //
-                                // POST /logout-interno
-                                // =========================
-
                                 .logoutRequestMatcher(
 
                                         request -> {
 
-
-                                            // =================
-                                            // SOLO POST
-                                            // =================
 
                                             if (!"POST"
                                                     .equalsIgnoreCase(
@@ -532,8 +433,7 @@ public class SecurityConfig {
 
 
                                 // =========================
-                                // REDIRECCIÓN DESPUÉS
-                                // DEL LOGOUT
+                                // REDIRECCIÓN
                                 // =========================
 
                                 .logoutSuccessHandler(
@@ -551,10 +451,6 @@ public class SecurityConfig {
                                                             .getServletPath();
 
 
-                                            // =================
-                                            // LOGIN INTERNO
-                                            // =================
-
                                             if ("/logout-interno"
                                                     .equals(
                                                             ruta
@@ -568,10 +464,6 @@ public class SecurityConfig {
                                             }
 
 
-                                            // =================
-                                            // LOGIN PACIENTE
-                                            // =================
-
                                             response.sendRedirect(
                                                     "/login"
                                             );
@@ -583,10 +475,7 @@ public class SecurityConfig {
 
 
                 // =========================================
-                // LOGIN TRADICIONAL DESACTIVADO
-                // =========================================
-                //
-                // El sistema utiliza JWT.
+                // FORM LOGIN DESACTIVADO
                 // =========================================
 
                 .formLogin(
@@ -602,10 +491,6 @@ public class SecurityConfig {
                         basic -> basic.disable()
                 );
 
-
-        // =================================================
-        // CONSTRUIR CONFIGURACIÓN
-        // =================================================
 
         return http.build();
     }

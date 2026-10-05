@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel médico | SANTOS</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700&family=Figtree:wght@400;500;600&display=swap"
+          rel="stylesheet">
+
+    <link rel="stylesheet" th:href="@{/css/panel-medico.css}" href="/css/panel-medico.css">
+</head>
+
+<body>
+
+<!-- ENCABEZADO -->
+<header class="encabezado">
+    <div class="barra">
+
+        <a class="marca" th:href="@{/interno/medico}">
+            <span class="logo" aria-hidden="true">
+                <svg viewBox="0 0 24 24"><path d="M9 3h6v6h6v6h-6v6H9v-6H3V9h6z"/></svg>
+            </span>
+            <span class="marca-texto">
+                <strong>SANTOS</strong>
+                <span>Panel médico</span>
+            </span>
+        </a>
+
+        <div class="acciones-cabecera">
+            <span class="rol">Médico</span>
+
+            <!-- SecurityConfig solo permite logout mediante POST -->
+            <form th:action="@{/logout-interno}" method="post">
+                <input th:if="${_csrf != null}" type="hidden"
+                       th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+                <button type="submit" class="boton-salir">Cerrar sesión</button>
+            </form>
+        </div>
+
+    </div>
+</header>
+
+
+<main class="pagina">
+
+    <!-- CABECERA DEL PANEL -->
+    <section class="cabecera-panel">
+        <div class="titulo">
+            <h1>Pacientes del médico</h1>
+            <p>
+                Consulte los pacientes en espera, las consultas abiertas
+                y las atenciones pendientes de cierre.
+            </p>
+        </div>
+
+        <div class="actualizacion">
+            <span class="punto-vivo" aria-hidden="true"></span>
+            Se actualiza cada <strong>30 segundos</strong>
+        </div>
+    </section>
+
+
+    <!-- MENSAJES -->
+    <div th:if="${mensajeExito != null}" class="mensaje mensaje-exito" role="status"
+         th:text="${mensajeExito}">Operación realizada correctamente.</div>
+
+    <div th:if="${mensajeError != null}" class="mensaje mensaje-error" role="alert"
+         th:text="${mensajeError}">Ocurrió un error.</div>
+
+
+    <!-- RESUMEN -->
+    <section class="resumen" aria-label="Resumen">
+
+        <a class="resumen-item" href="#en-espera">
+            <strong th:text="${enEspera != null ? enEspera.size() : 0}">0</strong>
+            <span>En espera</span>
+        </a>
+
+        <a class="resumen-item" href="#en-consulta">
+            <strong th:text="${enConsulta != null ? enConsulta.size() : 0}">0</strong>
+            <span>En consulta</span>
+        </a>
+
+        <a class="resumen-item" href="#evaluados">
+            <strong th:text="${evaluados != null ? evaluados.size() : 0}">0</strong>
+            <span>Evaluados pendientes de cierre</span>
+        </a>
+
+    </section>
+
+
+    <!-- 1. EN ESPERA -->
+    <section class="seccion" id="en-espera" aria-labelledby="t-espera">
+
+        <div class="seccion-cabecera">
+            <h2 id="t-espera">En espera de consulta</h2>
+            <p>Pacientes con signos vitales registrados, listos para ser llamados.</p>
+        </div>
+
+        <div class="contenido-seccion">
+
+            <div class="vacio" th:if="${enEspera == null or enEspera.isEmpty()}">
+                No hay pacientes en espera de consulta.
+            </div>
+
+            <div class="lista" th:if="${enEspera != null and !enEspera.isEmpty()}">
+
+                <article class="tarjeta" th:each="paciente : ${enEspera}"
+                         th:classappend="${paciente.esEmergencia()} ? ' emergencia' : ''">
+
+                    <div class="tarjeta-superior">
+                        <div>
+                            <div class="numero-cita">Cita # <span th:text="${paciente.numeroCita()}">0</span></div>
+                            <h3 class="paciente" th:text="${paciente.nombrePaciente()}">Paciente</h3>
+                        </div>
+                        <span class="etiqueta-emergencia" th:if="${paciente.esEmergencia()}">Emergencia</span>
+                    </div>
+
+                    <dl class="datos">
+                        <div class="dato">
+                            <dt>Especialidad</dt>
+                            <dd th:text="${paciente.especialidad()}">Medicina</dd>
+                        </div>
+                        <div class="dato">
+                            <dt>Fecha</dt>
+                            <dd class="fecha-local" th:attr="data-fecha=${paciente.fechaHoraCita()}"
+                                th:text="${paciente.fechaHoraCita()}">Fecha</dd>
+                        </div>
+                        <div class="dato">
+                            <dt>Estado</dt>
+                            <dd th:text="${paciente.estadoCita()}">En espera</dd>
+                        </div>
+                        <div class="dato">
+                            <dt>Prioridad</dt>
+                            <dd th:text="${paciente.prioridad()}">Normal</dd>
+                        </div>
+                    </dl>
+
+                    <div class="acciones">
+
+                        <!-- Iniciar consulta -->
+                        <form th:action="@{/interno/medico/citas/{id}/iniciar(id=${paciente.numeroCita()})}" method="post">
+                            <input th:if="${_csrf != null}" type="hidden"
+                                   th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+                            <button type="submit" class="boton boton-principal">Iniciar consulta</button>
+                        </form>
+
+                        <!-- FA06: no asistió -->
+                        <form th:action="@{/interno/medico/citas/{id}/no-asistio(id=${paciente.numeroCita()})}"
+                              method="post" onsubmit="return confirmarNoAsistio();">
+                            <input th:if="${_csrf != null}" type="hidden"
+                                   th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+                            <button type="submit" class="boton boton-peligro">No asistió</button>
+                        </form>
+
+                    </div>
+
+                </article>
+
+            </div>
+        </div>
+    </section>
+
+
+    <!-- 2. EN CONSULTA -->
+    <section class="seccion" id="en-consulta" aria-labelledby="t-consulta">
+
+        <div class="seccion-cabecera">
+            <h2 id="t-consulta">En consulta médica</h2>
+            <p>Consultas iniciadas que todavía están en curso.</p>
+        </div>
+
+        <div class="contenido-seccion">
+
+            <div class="vacio" th:if="${enConsulta == null or enConsulta.isEmpty()}">
+                No hay consultas médicas en curso.
+            </div>
+
+            <div class="lista" th:if="${enConsulta != null and !enConsulta.isEmpty()}">
+
+                <article class="tarjeta" th:each="paciente : ${enConsulta}"
+                         th:classappend="${paciente.esEmergencia()} ? ' emergencia' : ''">
+
+                    <div class="tarjeta-superior">
+                        <div>
+                            <div class="numero-cita">Cita # <span th:text="${paciente.numeroCita()}">0</span></div>
+                            <h3 class="paciente" th:text="${paciente.nombrePaciente()}">Paciente</h3>
+                        </div>
+                        <span class="etiqueta-emergencia" th:if="${paciente.esEmergencia()}">Emergencia</span>
+                    </div>
+
+                    <dl class="datos">
+                        <div class="dato">
+                            <dt>Especialidad</dt>
+                            <dd th:text="${paciente.especialidad()}">Especialidad</dd>
+                        </div>
+                        <div class="dato">
+                            <dt>Fecha</dt>
+                            <dd class="fecha-local" th:attr="data-fecha=${paciente.fechaHoraCita()}"
+                                th:text="${paciente.fechaHoraCita()}">Fecha</dd>
+                        </div>
+                        <div class="dato">
+                            <dt>Consulta</dt>
+                            <dd>En curso</dd>
+                        </div>
+                    </dl>
+
+                    <div class="acciones">
+                        <a class="boton boton-principal"
+                           th:href="@{/interno/medico/consulta/{id}(id=${paciente.numeroCita()})}">
+                            Ver / completar consulta
+                        </a>
+                    </div>
+
+                </article>
+
+            </div>
+        </div>
+    </section>
+
+
+    <!-- 3. EVALUADOS -->
+    <section class="seccion" id="evaluados" aria-labelledby="t-evaluados">
+
+        <div class="seccion-cabecera">
+            <h2 id="t-evaluados">Evaluados: pendientes de cierre</h2>
+            <p>Consultas finalizadas clínicamente que aún requieren cerrar la atención.</p>
+        </div>
+
+        <div class="contenido-seccion">
+
+            <div class="vacio" th:if="${evaluados == null or evaluados.isEmpty()}">
+                No hay pacientes pendientes de cierre.
+            </div>
+
+            <div class="lista" th:if="${evaluados != null and !evaluados.isEmpty()}">
+
+                <article class="tarjeta" th:each="paciente : ${evaluados}"
+                         th:classappend="${paciente.esEmergencia()} ? ' emergencia' : ''">
+
+                    <div class="tarjeta-superior">
+                        <div>
+                            <div class="numero-cita">Cita # <span th:text="${paciente.numeroCita()}">0</span></div>
+                            <h3 class="paciente" th:text="${paciente.nombrePaciente()}">Paciente</h3>
+                        </div>
+                        <span class="etiqueta-emergencia" th:if="${paciente.esEmergencia()}">Emergencia</span>
+                    </div>
+
+                    <dl class="datos">
+                        <div class="dato">
+                            <dt>Especialidad</dt>
+                            <dd th:text="${paciente.especialidad()}">Especialidad</dd>
+                        </div>
+                        <div class="dato">
+                            <dt>Estado</dt>
+                            <dd>Consulta finalizada</dd>
+                        </div>
+                        <div class="dato">
+                            <dt>Cierre</dt>
+                            <dd>Pendiente</dd>
+                        </div>
+                    </dl>
+
+                    <div class="acciones">
+
+                        <!-- =============================================
+                             VER CONSULTA
+                             ============================================= -->
+
+                        <a class="boton boton-secundario"
+                           th:href="@{/interno/medico/consulta/{id}
+       (id=${paciente.numeroCita()})}">
+
+                            Ver consulta
+
+                        </a>
+
+                        <!-- =============================================
+     CU-08 FA01
+     GENERAR ORDEN DE LABORATORIO
+     ============================================= -->
+
+                        <a class="boton boton-secundario"
+                           th:href="@{/interno/medico/citas/{id}/laboratorio(
+                id=${paciente.numeroCita()}
+            )}">
+
+                            🧪 Generar orden de laboratorio
+
+                        </a>
+
+                        <!-- =============================================
+     CU-08 - FA04
+     RECETA MÉDICA
+     ============================================= -->
+
+                        <a class="boton boton-secundario"
+                           th:href="@{/interno/medico/citas/{idCita}/receta(
+        idCita=${paciente.numeroCita()}
+   )}">
+
+                            💊 Generar receta
+
+                        </a>
+
+                        <!-- =============================================
+     CU-08 FA02
+     AGENDAR CITA DE SEGUIMIENTO
+     ============================================= -->
+
+                        <a class="boton boton-secundario"
+                           th:href="@{/interno/medico/citas/{id}/seguimiento(
+        id=${paciente.numeroCita()}
+   )}">
+
+                            📅 Agendar Seguimiento
+
+                        </a>
+
+
+                        <!-- =============================================
+                             CU-08
+                             FINALIZAR ATENCIÓN
+                             ============================================= -->
+
+                        <form
+                                th:action="@{/interno/medico/citas/{id}/finalizar-atencion
+            (id=${paciente.numeroCita()})}"
+
+                                method="post"
+
+                                onsubmit="return confirmarFinalizarAtencion();"
+                        >
+
+                            <!-- CSRF -->
+                            <input
+                                    th:if="${_csrf != null}"
+                                    type="hidden"
+                                    th:name="${_csrf.parameterName}"
+                                    th:value="${_csrf.token}"
+                            >
+
+
+                            <button
+                                    type="submit"
+                                    class="boton boton-principal"
+                            >
+
+                                Finalizar atención
+
+                            </button>
+
+                        </form>
+
+                    </div>
+
+                </article>
+
+            </div>
+        </div>
+    </section>
+
+</main>
+
+
+<script>
+    // Formatear fechas: Java envía OffsetDateTime y el navegador la muestra en hora local
+    document.querySelectorAll(".fecha-local").forEach(function (elemento) {
+        const valor = elemento.dataset.fecha;
+        if (!valor) return;
+
+        const fecha = new Date(valor);
+        if (Number.isNaN(fecha.getTime())) return;
+
+        elemento.textContent = fecha.toLocaleString("es-GT", {
+            dateStyle: "medium",
+            timeStyle: "short"
+        });
+    });
+
+    // FA06: confirmación
+    function confirmarNoAsistio() {
+        return window.confirm("¿Confirma que el paciente no asistió al llamado?");
+    }
+
+    // CU-08: confirmar cierre definitivo
+    function confirmarFinalizarAtencion() {
+
+        return window.confirm(
+            "¿Confirma que desea finalizar definitivamente "
+            + "la atención de esta cita?"
+        );
+    }
+
+    // CU-08: refrescar el panel cada 30 segundos
+    window.setTimeout(function () {
+        window.location.reload();
+    }, 30000);
+</script>
+
+</body>
+</html>

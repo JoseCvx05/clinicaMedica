@@ -56,13 +56,13 @@ public class ValidadorFechaHoraCita
         }
 
 
-        OffsetDateTime fechaHora =
-                formulario.getFechaHoraInicio();
+        OffsetDateTime fechaHora =  // Obtener la fecha y hora de inicio de la cita desde el formulario
+                formulario.getFechaHoraInicio(); //obtiene la fecha seleccionada por el usuario para la cita
 
 
         if (fechaHora == null
-                || !fechaHora.isAfter(
-                OffsetDateTime.now()
+                || !fechaHora.isAfter( // Verifica si la fecha y hora es nula o no es futura
+                OffsetDateTime.now()  // Obtiene la fecha y hora actual
         )) {
 
             resultado.agregarError(

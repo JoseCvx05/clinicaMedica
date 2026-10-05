@@ -106,7 +106,7 @@ public class AutenticacionService {
     ) {
 
         // =================================================
-        // 1. RESOLVER POLÍTICA DEL PORTAL
+        // 1. RESOLVER POLÍTICA DEL PORTAL (valida si el rol del usuario puede acceder al portal)
         // =================================================
 
         PoliticaAutenticacion politica =
@@ -179,7 +179,7 @@ public class AutenticacionService {
                 usuario.getFechaBloqueoHasta();
 
 
-        if (bloqueadoHasta != null) {
+            if (bloqueadoHasta != null) {
 
             // ---------------------------------------------
             // BLOQUEO TODAVÍA ACTIVO
@@ -282,10 +282,10 @@ public class AutenticacionService {
 
 
         // =================================================
-        // 10. VALIDAR POLÍTICA DEL PORTAL
+        // 10. VALIDAR rol para ingreso al portal
         // =================================================
 
-        if (!politica.permiteAcceso(
+        if (!politica. permiteAcceso(
                 usuario
         )) {
 

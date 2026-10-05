@@ -159,7 +159,7 @@ public class RegistroExternoController {
                         formulario
                 );
 
-
+        
         // =================================================
         // 2. ERRORES DE VALIDACIÓN
         // =================================================

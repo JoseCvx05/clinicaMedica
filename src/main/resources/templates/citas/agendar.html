@@ -9,9 +9,11 @@
     <meta name="viewport"
           content="width=device-width, initial-scale=1">
 
-    <title th:text="${modoWalkIn
-            ? 'Agendar cita Walk-in'
-            : 'Agendar cita'}">
+    <title th:text="${citaWizard.esSeguimiento
+            ? 'Agendar cita de seguimiento'
+            : (modoWalkIn
+                ? 'Agendar cita Walk-in'
+                : 'Agendar cita')}">
         Agendar cita
     </title>
 
@@ -163,9 +165,11 @@
 
                     <i class="bi bi-calendar-check me-2 text-primary"></i>
 
-                    <span th:text="${modoWalkIn
-                            ? 'Agendar cita Walk-in'
-                            : 'Agendar cita'}">
+                    <span th:text="${citaWizard.esSeguimiento
+                            ? 'Agendar cita de seguimiento'
+                            : (modoWalkIn
+                                ? 'Agendar cita Walk-in'
+                                : 'Agendar cita')}">
                         Agendar cita
                     </span>
 
@@ -173,9 +177,11 @@
 
 
                 <p class="text-secondary mb-0"
-                   th:text="${modoWalkIn
-                           ? 'Complete el agendamiento para el paciente seleccionado en recepción.'
-                           : 'Complete los siguientes pasos para solicitar su cita médica.'}">
+                   th:text="${citaWizard.esSeguimiento
+                        ? 'Seleccione un horario disponible del mismo Médico y complete los datos del seguimiento.'
+                        : (modoWalkIn
+                            ? 'Complete el agendamiento para el paciente seleccionado en recepción.'
+                            : 'Complete los siguientes pasos para solicitar su cita médica.')}">
                 </p>
 
             </div>
@@ -199,6 +205,36 @@
                     <div>
                         La cita será registrada como Walk-in
                         para el paciente seleccionado.
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- =================================================
+                 CU-08 FA02
+                 AVISO DE SEGUIMIENTO
+                 ================================================= -->
+
+            <div class="alert alert-success d-flex align-items-start"
+                 th:if="${citaWizard.esSeguimiento}">
+
+                <i class="bi bi-arrow-repeat fs-4 me-3"></i>
+
+                <div>
+
+                    <strong>
+                        Cita de seguimiento
+                    </strong>
+
+                    <div class="mt-1">
+                        El paciente, Médico, especialidad y sucursal
+                        fueron precargados desde la consulta médica original.
+                    </div>
+
+                    <div class="small mt-1">
+                        Estos datos no pueden modificarse durante este agendamiento.
                     </div>
 
                 </div>
@@ -615,12 +651,17 @@
 
             <section th:if="${citaWizard.pasoActual.name() == 'FECHA_HORA'}">
 
-                <h2 class="h5 fw-bold mb-2">
+                <h2 class="h5 fw-bold mb-2"
+                    th:text="${citaWizard.esSeguimiento
+                        ? 'Seleccione fecha y hora del seguimiento'
+                        : 'Seleccione fecha y hora'}">
                     Seleccione fecha y hora
                 </h2>
 
-                <p class="text-secondary mb-4">
-                    Los horarios se consultan en tiempo real.
+                <p class="text-secondary mb-4"
+                   th:text="${citaWizard.esSeguimiento
+                        ? 'Se muestran únicamente horarios disponibles del mismo Médico de la consulta original.'
+                        : 'Los horarios se consultan en tiempo real.'}">
                 </p>
 
 
@@ -690,6 +731,64 @@
                       id="formHorario">
 
 
+                    <!-- =========================================
+                         CU-08 FA02
+                         TIPO DE SEGUIMIENTO
+                         SELECCIONADO ANTES DE RESERVAR HORARIO
+                         ========================================= -->
+
+                    <div class="mb-4"
+                         th:if="${citaWizard.esSeguimiento}">
+
+                        <label for="tipoSeguimientoHorario"
+                               class="form-label fw-semibold">
+
+                            Tipo de seguimiento
+
+                            <span class="text-danger">
+                                *
+                            </span>
+
+                        </label>
+
+
+                        <select id="tipoSeguimientoHorario"
+                                name="tipoSeguimiento"
+                                class="form-select form-select-lg"
+                                required>
+
+                            <option value="">
+                                Seleccione el tipo de seguimiento
+                            </option>
+
+
+                            <option value="MONITOREO_TRATAMIENTO"
+                                    th:selected="${citaWizard.tipoSeguimiento
+                                            == 'MONITOREO_TRATAMIENTO'}">
+
+                                Monitoreo de Tratamiento
+
+                            </option>
+
+
+                            <option value="REVISION_RESULTADOS_LABORATORIO"
+                                    th:selected="${citaWizard.tipoSeguimiento
+                                            == 'REVISION_RESULTADOS_LABORATORIO'}">
+
+                                Revisión de Resultados de Laboratorio
+
+                            </option>
+
+                        </select>
+
+
+                        <div class="form-text">
+                            Seleccione el motivo principal de la cita de seguimiento.
+                        </div>
+
+                    </div>
+
+
                     <input type="hidden"
                            name="fechaHoraInicio"
                            id="fechaHoraInicio">
@@ -705,6 +804,7 @@
 
                         <button type="submit"
                                 class="btn btn-outline-secondary"
+                                th:if="${!citaWizard.esSeguimiento}"
 
                                 th:formaction="${rutaBaseCitas + '/agendar/volver'}"
 
@@ -716,6 +816,10 @@
                             Volver
 
                         </button>
+
+
+                        <div th:if="${citaWizard.esSeguimiento}">
+                        </div>
 
 
                         <button type="submit"
@@ -749,12 +853,17 @@
 
                     <div>
 
-                        <h2 class="h5 fw-bold mb-2">
+                        <h2 class="h5 fw-bold mb-2"
+                            th:text="${citaWizard.esSeguimiento
+                                ? 'Confirmar cita de seguimiento'
+                                : 'Confirmar cita'}">
                             Confirmar cita
                         </h2>
 
-                        <p class="text-secondary mb-0">
-                            Revise los datos antes de confirmar.
+                        <p class="text-secondary mb-0"
+                           th:text="${citaWizard.esSeguimiento
+                                ? 'Complete los datos clínicos del seguimiento y revise el horario seleccionado.'
+                                : 'Revise los datos antes de confirmar.'}">
                         </p>
 
                     </div>
@@ -841,11 +950,15 @@
                                      th:text="${#temporals.format(
                                                 citaWizard.fechaHoraInicio,
                                                 'dd/MM/yyyy hh:mm a'
-                                              )}">
+                                             )}">
                                 </div>
 
                             </div>
 
+
+                            <!-- =====================================
+                                 WALK-IN
+                                 ===================================== -->
 
                             <div class="col-12"
                                  th:if="${modoWalkIn}">
@@ -859,6 +972,31 @@
 
                                     <span class="fw-semibold">
                                         Tipo de agendamiento: Walk-in
+                                    </span>
+
+                                </div>
+
+                            </div>
+
+
+                            <!-- =====================================
+                                 CU-08 FA02
+                                 SEGUIMIENTO
+                                 ===================================== -->
+
+                            <div class="col-12"
+                                 th:if="${citaWizard.esSeguimiento}">
+
+                                <hr class="my-1">
+
+                                <div class="d-flex align-items-center
+                                            text-success mt-2">
+
+                                    <i class="bi bi-arrow-repeat me-2"></i>
+
+                                    <span class="fw-semibold">
+                                        Tipo de agendamiento:
+                                        Cita de seguimiento
                                     </span>
 
                                 </div>
@@ -883,6 +1021,91 @@
 
 
                     <!-- =========================================
+                         CU-08 FA02
+                         TIPO DE SEGUIMIENTO YA SELECCIONADO
+                         SOLO LECTURA EN CONFIRMACIÓN
+                         ========================================= -->
+
+                    <div class="mb-3"
+                         th:if="${citaWizard.esSeguimiento}">
+
+                        <label class="form-label fw-semibold">
+                            Tipo de seguimiento
+                        </label>
+
+
+                        <div class="form-control bg-light">
+
+                            <span th:if="${citaWizard.tipoSeguimiento
+                                    == 'MONITOREO_TRATAMIENTO'}">
+                                Monitoreo de Tratamiento
+                            </span>
+
+
+                            <span th:if="${citaWizard.tipoSeguimiento
+                                    == 'REVISION_RESULTADOS_LABORATORIO'}">
+                                Revisión de Resultados de Laboratorio
+                            </span>
+
+                        </div>
+
+
+                        <!-- Conserva el valor para el POST final -->
+                        <input type="hidden"
+                               name="tipoSeguimiento"
+                               th:value="${citaWizard.tipoSeguimiento}">
+
+                    </div>
+
+
+                    <!-- =========================================
+                         CU-08 FA02
+                         PRIORIDAD
+                         ========================================= -->
+
+                    <div class="mb-3"
+                         th:if="${citaWizard.esSeguimiento}">
+
+                        <label for="prioridad"
+                               class="form-label fw-semibold">
+
+                            Prioridad
+
+                            <span class="text-danger">
+                                *
+                            </span>
+
+                        </label>
+
+
+                        <select id="prioridad"
+                                name="prioridad"
+                                class="form-select"
+                                required>
+
+                            <option value="Normal"
+                                    th:selected="${citaWizard.prioridad == null
+                                            or citaWizard.prioridad == 'Normal'}">
+
+                                Normal
+
+                            </option>
+
+
+                            <option value="Emergencia"
+                                    th:selected="${citaWizard.prioridad
+                                            == 'Emergencia'}">
+
+                                Emergencia
+
+                            </option>
+
+                        </select>
+
+                    </div>
+
+
+                    <!-- =========================================
                          MOTIVO
                          ========================================= -->
 
@@ -891,7 +1114,17 @@
                         <label for="motivoConsulta"
                                class="form-label fw-semibold">
 
-                            Motivo de la consulta
+                            <span th:text="${citaWizard.esSeguimiento
+                                    ? 'Motivo del seguimiento'
+                                    : 'Motivo de la consulta'}">
+
+                                Motivo de la consulta
+
+                            </span>
+
+                            <span class="text-danger">
+                                *
+                            </span>
 
                         </label>
 
@@ -922,9 +1155,11 @@
 
                     <!-- =========================================
                          DOCUMENTO OPCIONAL
+                         SOLO CU-03 / WALK-IN
                          ========================================= -->
 
-                    <div class="mb-4">
+                    <div class="mb-4"
+                         th:if="${!citaWizard.esSeguimiento}">
 
                         <label for="documento"
                                class="form-label fw-semibold">
@@ -952,6 +1187,10 @@
                     </div>
 
 
+                    <!-- =========================================
+                         BOTONES
+                         ========================================= -->
+
                     <div class="d-flex justify-content-between">
 
 
@@ -975,7 +1214,13 @@
 
                             <i class="bi bi-calendar-check me-2"></i>
 
-                            Confirmar cita
+                            <span th:text="${citaWizard.esSeguimiento
+                                    ? 'Agendar seguimiento'
+                                    : 'Confirmar cita'}">
+
+                                Confirmar cita
+
+                            </span>
 
                         </button>
 

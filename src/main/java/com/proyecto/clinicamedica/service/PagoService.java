@@ -281,7 +281,7 @@ public class PagoService {
             );
         }
 
-
+//validar que exista la clave de idempotencia
         if (formulario.getIdempotencyKey() == null) {
 
             return ResultadoPago.error(
@@ -513,7 +513,7 @@ public class PagoService {
     ) {
 
         // =================================================
-        // IDEMPOTENCIA - PRIMERA REVISIÓN
+        // evita que dos solicitudes de pago iguales se procesen dos veces.
         // =================================================
 
         Pago existente =
@@ -525,7 +525,7 @@ public class PagoService {
                                 null
                         );
 
-
+        // validar que ya exista un pago con la misma clave
         if (existente != null) {
 
             validarIdempotenciaPerteneceACita(
@@ -534,7 +534,7 @@ public class PagoService {
                     idPaciente
             );
 
-
+            // la solicitud de pago ya existe, se devuelve el resultado anterior
             return PreparacionPago.anterior(
                     resultadoDesdePagoExistente(
                             existente
@@ -544,7 +544,7 @@ public class PagoService {
 
 
         // =================================================
-        // BLOQUEAR CITA
+        // BLOQUEAR CITA para que solo se pueda con esa cita y paciente, y evitar que otra trans
         // =================================================
 
         Cita cita =
@@ -562,11 +562,9 @@ public class PagoService {
 
 
         // =================================================
-        // IDEMPOTENCIA - SEGUNDA REVISIÓN
+        // CODIGO DE IDEMPOTENCIA - SEGUNDA REVISIÓN
         // =================================================
-        //
-        // Se repite después del lock para cubrir carreras.
-        // =================================================
+        // verfica si ya existe un pago con la misma clave de idempotencia
 
         existente =
                 pagoRepository
@@ -598,7 +596,7 @@ public class PagoService {
         // =================================================
         // ¿YA ESTÁ PAGADA?
         // =================================================
-
+        // verifica que el pago ya ha sido pagado
         Pago aprobado =
                 pagoRepository
                         .findFirstByCita_IdAndEstadoOrderByFechaCreacionDesc(
@@ -801,7 +799,7 @@ public class PagoService {
 
 
         // =================================================
-        // YA FINALIZADO
+        // YA FINALIZADO y no se puede volver a procesar
         // =================================================
 
         if (!Pago.ESTADO_PROCESANDO.equals(
@@ -833,7 +831,7 @@ public class PagoService {
 
 
         // =================================================
-        // PROTECCIÓN DE INTEGRIDAD
+        // PROTECCIÓN DE INTEGRIDAD para evitar que un pago se asocie a otra cita por error.
         // =================================================
 
         if (pago.getCita() == null
@@ -849,7 +847,7 @@ public class PagoService {
 
 
         // =================================================
-        // RESULTADO NULO
+        // RESULTADO NULO para que el resultado de la pasarela no sea nulo y tenga un código válido.
         // =================================================
 
         if (resultadoPasarela == null
@@ -995,10 +993,10 @@ public class PagoService {
 
 
         pago.setNumeroTransaccion(
-                resultado.numeroTransaccion()
+                resultado.numeroTransaccion() //devuelve el número de transacción de la pasarela
         );
 
-
+        // El intento de pago cambia de PROCESANDO a APROBADO.”
         pago.setEstado(
                 Pago.ESTADO_APROBADO
         );
@@ -1011,7 +1009,7 @@ public class PagoService {
         );
 
 
-        pago.setFechaHoraPago(
+        pago.setFechaHoraPago(  //registra la fecha y hora exacta en que se aprobó el pago
                 ahora
         );
 
@@ -1022,7 +1020,7 @@ public class PagoService {
 
         cita.setEstadoCita(
                 estadoPagada
-        );
+        );  //La cita cambia su estado a Pagada.
 
 
         cita.setFechaModificacion(
@@ -1035,7 +1033,7 @@ public class PagoService {
         // =================================================
 
         pagoRepository.saveAndFlush(
-                pago
+                pago  //hace flush para forzar la sincronización con la base de datos
         );
 
 
@@ -1062,7 +1060,7 @@ public class PagoService {
 
 
     // =====================================================
-    // REGISTRAR RESULTADO FALLIDO
+    // REGISTRAR RESULTADO FALLIDO cuando pasarela devuelve un rechazo o error
     // =====================================================
 
     private ResultadoPago registrarResultadoFallido(
@@ -1296,6 +1294,8 @@ public class PagoService {
 // VALIDAR IDEMPOTENCIA / CITA / PACIENTE
 // =====================================================
 
+    // El sistema verifica que exista el pago, que tenga una cita, que esa cita tenga paciente
+
     private void validarIdempotenciaPerteneceACita(
             Pago pago,
             Integer idCita,
@@ -1347,7 +1347,7 @@ public class PagoService {
                         .getNombre()
                         .trim();
 
-
+        //cita ya pagada
         if (ESTADO_CITA_PAGADA
                 .equalsIgnoreCase(
                         estado
@@ -1438,7 +1438,7 @@ public class PagoService {
 
         SucursalEspecialidad configuracion =
                 sucursalEspecialidadRepository
-                        .findBySucursal_IdAndEspecialidad_IdAndActivoTrue(
+                        .findBySucursal_IdAndEspecialidad_IdAndActivoTrue(  //busca la tarifa activa para esa sucursal y especialidad.
                                 cita.getSucursal().getId(),
                                 cita.getEspecialidad().getId()
                         )
@@ -1451,7 +1451,7 @@ public class PagoService {
 
 
         BigDecimal monto =
-                configuracion.getPrecioConsulta();
+                configuracion.getPrecioConsulta(); //obtiene el precio desde la bd
 
 
         if (monto == null

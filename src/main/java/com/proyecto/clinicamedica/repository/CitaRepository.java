@@ -24,17 +24,26 @@ import java.util.Optional;
  * =========================================================
  *
  * CU-03:
- * - Disponibilidad de horarios.
- * - Cancelación de citas pendientes de pago expiradas.
+ * - Disponibilidad.
+ * - Cancelación de reservas expiradas.
  *
  * CU-04:
- * - Consulta de citas para pago.
- * - Bloqueo durante procesamiento de pago.
+ * - Pago.
  *
  * CU-05:
- * - Búsqueda para recepción.
- * - Búsqueda de citas activas por paciente.
- * - Bloqueo durante registro de llegada.
+ * - Recepción.
+ *
+ * CU-06:
+ * - Caja.
+ *
+ * CU-07:
+ * - Enfermería.
+ *
+ * CU-08:
+ * - Panel del Médico.
+ * - Inicio de consulta.
+ * - No asistió.
+ * - Finalización de atención.
  *
  * =========================================================
  */
@@ -44,48 +53,48 @@ public interface CitaRepository
 
 
     // =====================================================
-    // CU-03 - ¿EXISTE CITA QUE SE SOLAPA?
+    // CU-03 - SOLAPAMIENTO
     // =====================================================
 
-@Query("""
-        SELECT COUNT(c) > 0
-        FROM Cita c
+    @Query("""
+            SELECT COUNT(c) > 0
+            FROM Cita c
 
-        WHERE c.medico.id = :idMedico
+            WHERE c.medico.id = :idMedico
 
-          AND LOWER(c.estadoCita.nombre) <> 'cancelada'
+              AND LOWER(c.estadoCita.nombre) <> 'cancelada'
 
-          AND (
-                LOWER(c.estadoCita.nombre) <> 'pendiente de pago'
+              AND (
+                    LOWER(c.estadoCita.nombre) <> 'pendiente de pago'
 
-                OR
+                    OR
 
-                (
-                    LOWER(c.estadoCita.nombre) = 'pendiente de pago'
+                    (
+                        LOWER(c.estadoCita.nombre) = 'pendiente de pago'
 
-                    AND (
-                        c.fechaExpiracionPago IS NULL
-                        OR c.fechaExpiracionPago > :ahora
+                        AND (
+                            c.fechaExpiracionPago IS NULL
+                            OR c.fechaExpiracionPago > :ahora
+                        )
                     )
-                )
-              )
+                  )
 
-          AND (
-                (
-                    c.fechaHoraFin IS NOT NULL
-                    AND c.fechaHoraCita < :fin
-                    AND c.fechaHoraFin > :inicio
-                )
+              AND (
+                    (
+                        c.fechaHoraFin IS NOT NULL
+                        AND c.fechaHoraCita < :fin
+                        AND c.fechaHoraFin > :inicio
+                    )
 
-                OR
+                    OR
 
-                (
-                    c.fechaHoraFin IS NULL
-                    AND c.fechaHoraCita >= :inicio
-                    AND c.fechaHoraCita < :fin
-                )
-              )
-        """)
+                    (
+                        c.fechaHoraFin IS NULL
+                        AND c.fechaHoraCita >= :inicio
+                        AND c.fechaHoraCita < :fin
+                    )
+                  )
+            """)
     boolean existeCitaSolapada(
 
             @Param("idMedico")
@@ -103,31 +112,34 @@ public interface CitaRepository
 
 
     // =====================================================
-// CU-03 / CU-06 - CANCELAR PAGOS EXPIRADOS
-// =====================================================
+    // CU-03 / CU-06 - CANCELAR PAGOS EXPIRADOS
+    // =====================================================
 
     @Modifying
     @Query("""
-    UPDATE Cita c
+            UPDATE Cita c
 
-    SET c.estadoCita = :estadoCancelada,
-        c.fechaModificacion = :ahora
+            SET c.estadoCita = :estadoCancelada,
+                c.fechaModificacion = :ahora
 
-    WHERE LOWER(c.estadoCita.nombre) = 'pendiente de pago'
+            WHERE LOWER(c.estadoCita.nombre)
+                  = 'pendiente de pago'
 
-      AND LOWER(TRIM(c.canalOrigen)) = 'portal web'
+              AND LOWER(TRIM(c.canalOrigen))
+                  = 'portal web'
 
-      AND c.fechaExpiracionPago IS NOT NULL
+              AND c.fechaExpiracionPago IS NOT NULL
 
-      AND c.fechaExpiracionPago <= :ahora
+              AND c.fechaExpiracionPago <= :ahora
 
-      AND NOT EXISTS (
-            SELECT p.id
-            FROM Pago p
-            WHERE p.cita = c
-              AND UPPER(p.estado) IN ('PROCESANDO', 'APROBADO')
-      )
-    """)
+              AND NOT EXISTS (
+                    SELECT p.id
+                    FROM Pago p
+                    WHERE p.cita = c
+                      AND UPPER(p.estado)
+                          IN ('PROCESANDO', 'APROBADO')
+              )
+            """)
     int cancelarPendientesDePagoExpiradas(
 
             @Param("estadoCancelada")
@@ -143,18 +155,18 @@ public interface CitaRepository
     // =====================================================
 
     @Query("""
-        SELECT c
-        FROM Cita c
+            SELECT c
+            FROM Cita c
 
-        JOIN FETCH c.paciente
-        JOIN FETCH c.medico
-        JOIN FETCH c.sucursal
-        JOIN FETCH c.especialidad
-        JOIN FETCH c.estadoCita
+            JOIN FETCH c.paciente
+            JOIN FETCH c.medico
+            JOIN FETCH c.sucursal
+            JOIN FETCH c.especialidad
+            JOIN FETCH c.estadoCita
 
-        WHERE c.id = :idCita
-          AND c.paciente.id = :idPaciente
-        """)
+            WHERE c.id = :idCita
+              AND c.paciente.id = :idPaciente
+            """)
     Optional<Cita> buscarParaPago(
 
             @Param("idCita")
@@ -166,17 +178,17 @@ public interface CitaRepository
 
 
     // =====================================================
-    // CU-04 - BLOQUEAR CITA DURANTE PAGO
+    // CU-04 - BLOQUEO DURANTE PAGO
     // =====================================================
 
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("""
-        SELECT c
-        FROM Cita c
+            SELECT c
+            FROM Cita c
 
-        WHERE c.id = :idCita
-          AND c.paciente.id = :idPaciente
-        """)
+            WHERE c.id = :idCita
+              AND c.paciente.id = :idPaciente
+            """)
     Optional<Cita> buscarParaPagoConBloqueo(
 
             @Param("idCita")
@@ -188,22 +200,22 @@ public interface CitaRepository
 
 
     // =====================================================
-    // CITAS DEL PACIENTE AUTENTICADO
+    // CITAS DEL PACIENTE
     // =====================================================
 
     @Query("""
-        SELECT c
-        FROM Cita c
+            SELECT c
+            FROM Cita c
 
-        JOIN FETCH c.medico
-        JOIN FETCH c.sucursal
-        JOIN FETCH c.especialidad
-        JOIN FETCH c.estadoCita
+            JOIN FETCH c.medico
+            JOIN FETCH c.sucursal
+            JOIN FETCH c.especialidad
+            JOIN FETCH c.estadoCita
 
-        WHERE c.paciente.id = :idPaciente
+            WHERE c.paciente.id = :idPaciente
 
-        ORDER BY c.fechaHoraCita DESC
-        """)
+            ORDER BY c.fechaHoraCita DESC
+            """)
     List<Cita> buscarCitasDelPaciente(
 
             @Param("idPaciente")
@@ -212,31 +224,21 @@ public interface CitaRepository
 
 
     // =====================================================
-    // CU-05 - BUSCAR CITA POR NÚMERO
+    // CU-05 - CITA POR NÚMERO
     // =====================================================
 
-    /**
-     * Incluye cualquier estado porque recepción debe
-     * distinguir, entre otros:
-     *
-     * - Pendiente de pago.
-     * - Pagada.
-     * - Confirmada.
-     * - Cancelada.
-     * - Paciente Presente.
-     */
     @Query("""
-        SELECT c
-        FROM Cita c
+            SELECT c
+            FROM Cita c
 
-        JOIN FETCH c.paciente
-        JOIN FETCH c.medico
-        JOIN FETCH c.sucursal
-        JOIN FETCH c.especialidad
-        JOIN FETCH c.estadoCita
+            JOIN FETCH c.paciente
+            JOIN FETCH c.medico
+            JOIN FETCH c.sucursal
+            JOIN FETCH c.especialidad
+            JOIN FETCH c.estadoCita
 
-        WHERE c.id = :idCita
-        """)
+            WHERE c.id = :idCita
+            """)
     Optional<Cita> buscarParaRecepcionPorNumero(
 
             @Param("idCita")
@@ -245,82 +247,57 @@ public interface CitaRepository
 
 
     // =====================================================
-    // CU-05 - CITAS ACTIVAS POR PACIENTE
+    // CU-05 - CITAS ACTIVAS DEL PACIENTE
     // =====================================================
 
-    /**
-     * Se utiliza después de localizar al paciente mediante
-     * dpi_hash.
-     *
-     * Para recepción únicamente se consideran estados que
-     * todavía requieren alguna acción dentro del flujo:
-     *
-     * - Pendiente de pago.
-     * - Pagada.
-     * - Confirmada.
-     * - Paciente Presente.
-     *
-     * Orden:
-     *
-     * 1. Si existe una cita "Paciente Presente", tiene
-     *    prioridad inmediata.
-     *
-     * 2. Después se selecciona la próxima cita futura.
-     *
-     * 3. Finalmente se consideran citas pasadas todavía
-     *    activas, comenzando por la más reciente.
-     *
-     * Esto evita seleccionar arbitrariamente citas mediante
-     * citas.get(0).
-     */
     @Query("""
-        SELECT c
-        FROM Cita c
+            SELECT c
+            FROM Cita c
 
-        JOIN FETCH c.paciente
-        JOIN FETCH c.medico
-        JOIN FETCH c.sucursal
-        JOIN FETCH c.especialidad
-        JOIN FETCH c.estadoCita
+            JOIN FETCH c.paciente
+            JOIN FETCH c.medico
+            JOIN FETCH c.sucursal
+            JOIN FETCH c.especialidad
+            JOIN FETCH c.estadoCita
 
-        WHERE c.paciente.id = :idPaciente
+            WHERE c.paciente.id = :idPaciente
 
-          AND LOWER(c.estadoCita.nombre) IN (
-                'pendiente de pago',
-                'pagada',
-                'confirmada',
-                'paciente presente'
-          )
+              AND LOWER(c.estadoCita.nombre) IN (
+                    'pendiente de pago',
+                    'pagada',
+                    'confirmada',
+                    'paciente presente'
+              )
 
-        ORDER BY
+            ORDER BY
 
-            CASE
-                WHEN LOWER(c.estadoCita.nombre)
-                     = 'paciente presente'
-                THEN 0
-                ELSE 1
-            END ASC,
+                CASE
+                    WHEN LOWER(c.estadoCita.nombre)
+                         = 'paciente presente'
+                    THEN 0
+                    ELSE 1
+                END ASC,
 
-            CASE
-                WHEN c.fechaHoraCita >= :ahora
-                THEN 0
-                ELSE 1
-            END ASC,
+                CASE
+                    WHEN c.fechaHoraCita >= :ahora
+                    THEN 0
+                    ELSE 1
+                END ASC,
 
-            CASE
-                WHEN c.fechaHoraCita >= :ahora
-                THEN c.fechaHoraCita
-                ELSE NULL
-            END ASC,
+                CASE
+                    WHEN c.fechaHoraCita >= :ahora
+                    THEN c.fechaHoraCita
+                    ELSE NULL
+                END ASC,
 
-            CASE
-                WHEN c.fechaHoraCita < :ahora
-                THEN c.fechaHoraCita
-                ELSE NULL
-            END DESC,
+                CASE
+                    WHEN c.fechaHoraCita < :ahora
+                    THEN c.fechaHoraCita
+                    ELSE NULL
+                END DESC,
 
-            c.id DESC
-        """)
+                c.id DESC
+            """)
     List<Cita> buscarCitasActivasParaRecepcion(
 
             @Param("idPaciente")
@@ -337,104 +314,88 @@ public interface CitaRepository
 
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("""
-        SELECT c
-        FROM Cita c
+            SELECT c
+            FROM Cita c
 
-        JOIN FETCH c.paciente
-        JOIN FETCH c.estadoCita
+            JOIN FETCH c.paciente
+            JOIN FETCH c.estadoCita
 
-        WHERE c.id = :idCita
-        """)
+            WHERE c.id = :idCita
+            """)
     Optional<Cita> buscarParaRegistrarLlegadaConBloqueo(
 
             @Param("idCita")
             Integer idCita
     );
+
+
     // =====================================================
-// CU-06 - CITA PENDIENTE DE PAGO POR NÚMERO
-// =====================================================
+    // CU-06 - CITA PENDIENTE POR NÚMERO
+    // =====================================================
 
-    /**
-     * Busca una cita específica únicamente cuando todavía
-     * se encuentra Pendiente de pago.
-     *
-     * Se cargan todas las relaciones necesarias para:
-     *
-     * - mostrar el resumen en Caja;
-     * - obtener el precio;
-     * - generar posteriormente el comprobante.
-     */
     @Query("""
-    SELECT c
-    FROM Cita c
+            SELECT c
+            FROM Cita c
 
-    JOIN FETCH c.paciente
-    JOIN FETCH c.medico
-    JOIN FETCH c.sucursal
-    JOIN FETCH c.especialidad
-    JOIN FETCH c.estadoCita
+            JOIN FETCH c.paciente
+            JOIN FETCH c.medico
+            JOIN FETCH c.sucursal
+            JOIN FETCH c.especialidad
+            JOIN FETCH c.estadoCita
 
-    WHERE c.id = :idCita
+            WHERE c.id = :idCita
 
-      AND LOWER(c.estadoCita.nombre)
-          = 'pendiente de pago'
-    """)
+              AND LOWER(c.estadoCita.nombre)
+                  = 'pendiente de pago'
+            """)
     Optional<Cita> buscarPendienteDePagoParaCajaPorNumero(
+
             @Param("idCita")
             Integer idCita
     );
 
 
-// =====================================================
-// CU-06 - CITAS PENDIENTES POR PACIENTE
-// =====================================================
+    // =====================================================
+    // CU-06 - CITAS PENDIENTES POR PACIENTE
+    // =====================================================
 
-    /**
-     * Busca únicamente citas Pendiente de pago del paciente.
-     *
-     * Prioridad:
-     *
-     * 1. Próxima cita futura.
-     * 2. Si no hay futuras, cita pasada más reciente
-     *    que todavía continúe Pendiente de pago.
-     */
     @Query("""
-    SELECT c
-    FROM Cita c
+            SELECT c
+            FROM Cita c
 
-    JOIN FETCH c.paciente
-    JOIN FETCH c.medico
-    JOIN FETCH c.sucursal
-    JOIN FETCH c.especialidad
-    JOIN FETCH c.estadoCita
+            JOIN FETCH c.paciente
+            JOIN FETCH c.medico
+            JOIN FETCH c.sucursal
+            JOIN FETCH c.especialidad
+            JOIN FETCH c.estadoCita
 
-    WHERE c.paciente.id = :idPaciente
+            WHERE c.paciente.id = :idPaciente
 
-      AND LOWER(c.estadoCita.nombre)
-          = 'pendiente de pago'
+              AND LOWER(c.estadoCita.nombre)
+                  = 'pendiente de pago'
 
-    ORDER BY
+            ORDER BY
 
-        CASE
-            WHEN c.fechaHoraCita >= :ahora
-            THEN 0
-            ELSE 1
-        END ASC,
+                CASE
+                    WHEN c.fechaHoraCita >= :ahora
+                    THEN 0
+                    ELSE 1
+                END ASC,
 
-        CASE
-            WHEN c.fechaHoraCita >= :ahora
-            THEN c.fechaHoraCita
-            ELSE NULL
-        END ASC,
+                CASE
+                    WHEN c.fechaHoraCita >= :ahora
+                    THEN c.fechaHoraCita
+                    ELSE NULL
+                END ASC,
 
-        CASE
-            WHEN c.fechaHoraCita < :ahora
-            THEN c.fechaHoraCita
-            ELSE NULL
-        END DESC,
+                CASE
+                    WHEN c.fechaHoraCita < :ahora
+                    THEN c.fechaHoraCita
+                    ELSE NULL
+                END DESC,
 
-        c.id DESC
-    """)
+                c.id DESC
+            """)
     List<Cita> buscarPendientesDePagoParaCajaPorPaciente(
 
             @Param("idPaciente")
@@ -445,142 +406,246 @@ public interface CitaRepository
     );
 
 
-// =====================================================
-// CU-06 - BLOQUEAR CITA DURANTE EL COBRO
-// =====================================================
+    // =====================================================
+    // CU-06 - BLOQUEO DURANTE COBRO
+    // =====================================================
 
-    /**
-     * Se utilizará posteriormente en la sección crítica
-     * del registro del pago.
-     *
-     * Evita que dos Cajeros cobren simultáneamente
-     * la misma cita.
-     */
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("""
-    SELECT c
-    FROM Cita c
+            SELECT c
+            FROM Cita c
 
-    JOIN FETCH c.paciente
-    JOIN FETCH c.sucursal
-    JOIN FETCH c.especialidad
-    JOIN FETCH c.estadoCita
+            JOIN FETCH c.paciente
+            JOIN FETCH c.sucursal
+            JOIN FETCH c.especialidad
+            JOIN FETCH c.estadoCita
 
-    WHERE c.id = :idCita
-    """)
+            WHERE c.id = :idCita
+            """)
     Optional<Cita> buscarParaCobroCajaConBloqueo(
+
             @Param("idCita")
             Integer idCita
     );
+
+
     // =====================================================
-// CU-07 - PANEL DE ENFERMERÍA POR ESTADO
-// =====================================================
+    // CU-07 - PANEL DE ENFERMERÍA
+    // =====================================================
 
-    /**
-     * Obtiene las citas que deben mostrarse en una sección
-     * específica del panel de Enfermería.
-     *
-     * CU-07 utiliza:
-     *
-     * - Paciente Presente
-     * - Signos Vitales
-     *
-     * Las emergencias indicadas previamente por Recepción
-     * aparecen primero.
-     */
     @Query("""
-    SELECT c
-    FROM Cita c
+            SELECT c
+            FROM Cita c
 
-    JOIN FETCH c.paciente
-    JOIN FETCH c.medico
-    JOIN FETCH c.sucursal
-    JOIN FETCH c.especialidad
-    JOIN FETCH c.estadoCita
+            JOIN FETCH c.paciente
+            JOIN FETCH c.medico
+            JOIN FETCH c.sucursal
+            JOIN FETCH c.especialidad
+            JOIN FETCH c.estadoCita
 
-    WHERE LOWER(c.estadoCita.nombre)
-          = LOWER(:estado)
+            WHERE LOWER(c.estadoCita.nombre)
+                  = LOWER(:estado)
 
-      AND NOT EXISTS (
-            SELECT sv.id
-            FROM SignosVitales sv
-            WHERE sv.cita = c
-      )
+              AND NOT EXISTS (
+                    SELECT sv.id
+                    FROM SignosVitales sv
+                    WHERE sv.cita = c
+              )
 
-    ORDER BY
+            ORDER BY
 
-        CASE
-            WHEN LOWER(COALESCE(c.prioridad, ''))
-                 = 'emergencia'
-            THEN 0
-            ELSE 1
-        END ASC,
+                CASE
+                    WHEN LOWER(COALESCE(c.prioridad, ''))
+                         = 'emergencia'
+                    THEN 0
+                    ELSE 1
+                END ASC,
 
-        c.fechaHoraCita ASC,
-        c.id ASC
-    """)
+                c.fechaHoraCita ASC,
+                c.id ASC
+            """)
     List<Cita> buscarParaPanelEnfermeriaPorEstado(
+
             @Param("estado")
             String estado
     );
 
 
-// =====================================================
-// CU-07 - BLOQUEO AL LLAMAR PACIENTE
-// =====================================================
+    // =====================================================
+    // CU-07 - BLOQUEO AL LLAMAR PACIENTE
+    // =====================================================
 
-    /**
-     * Bloquea la cita durante la transición:
-     *
-     * Paciente Presente -> Signos Vitales
-     *
-     * Evita que dos enfermeros llamen simultáneamente
-     * al mismo paciente.
-     */
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("""
-    SELECT c
-    FROM Cita c
+            SELECT c
+            FROM Cita c
 
-    JOIN FETCH c.paciente
-    JOIN FETCH c.estadoCita
-    JOIN FETCH c.sucursal
-    JOIN FETCH c.especialidad
+            JOIN FETCH c.paciente
+            JOIN FETCH c.estadoCita
+            JOIN FETCH c.sucursal
+            JOIN FETCH c.especialidad
 
-    WHERE c.id = :idCita
-    """)
+            WHERE c.id = :idCita
+            """)
     Optional<Cita> buscarParaLlamarEnfermeriaConBloqueo(
+
             @Param("idCita")
             Integer idCita
     );
+
+
     // =====================================================
-// CU-07 - BLOQUEO AL REGISTRAR SIGNOS VITALES
-// =====================================================
+    // CU-07 - BLOQUEO AL REGISTRAR SIGNOS
+    // =====================================================
+
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("""
+            SELECT c
+            FROM Cita c
+
+            JOIN FETCH c.paciente
+            JOIN FETCH c.estadoCita
+            JOIN FETCH c.sucursal
+            JOIN FETCH c.especialidad
+
+            WHERE c.id = :idCita
+            """)
+    Optional<Cita> buscarParaRegistrarSignosVitalesConBloqueo(
+
+            @Param("idCita")
+            Integer idCita
+    );
+
+
+    // =====================================================
+    // CU-08 - PANEL MÉDICO / EN ESPERA
+    // =====================================================
 
     /**
-     * Bloquea la cita durante el registro definitivo
-     * de signos vitales.
+     * Devuelve únicamente las citas:
      *
-     * La cita debe ser revalidada posteriormente por
-     * SignosVitalesService.
+     * - asignadas al Médico autenticado;
+     * - en estado En Espera;
+     * - con signos vitales registrados.
      *
-     * Evita que dos enfermeros registren simultáneamente
-     * los signos de una misma cita.
+     * Las emergencias aparecen primero.
+     */
+    @Query("""
+            SELECT c
+            FROM Cita c
+
+            JOIN FETCH c.paciente
+            JOIN FETCH c.medico
+            JOIN FETCH c.sucursal
+            JOIN FETCH c.especialidad
+            JOIN FETCH c.estadoCita
+
+            WHERE c.medico.id = :idMedico
+
+              AND LOWER(c.estadoCita.nombre)
+                  = LOWER(:estado)
+
+              AND EXISTS (
+                    SELECT sv.id
+                    FROM SignosVitales sv
+                    WHERE sv.cita = c
+              )
+
+            ORDER BY
+
+                CASE
+                    WHEN LOWER(COALESCE(c.prioridad, ''))
+                         = 'emergencia'
+                    THEN 0
+                    ELSE 1
+                END ASC,
+
+                c.fechaHoraCita ASC,
+
+                c.id ASC
+            """)
+    List<Cita> buscarParaPanelMedicoEnEspera(
+
+            @Param("idMedico")
+            Integer idMedico,
+
+            @Param("estado")
+            String estado
+    );
+
+
+    // =====================================================
+    // CU-08 - BLOQUEO PARA OPERACIONES MÉDICAS
+    // =====================================================
+
+    /**
+     * Recupera y bloquea una cita únicamente cuando
+     * pertenece al Médico indicado.
+     *
+     * Se utilizará para:
+     *
+     * - Iniciar consulta.
+     * - Marcar No Asistió.
+     * - Finalizar atención.
+     *
+     * El Service revalidará el estado permitido
+     * según la operación que se esté ejecutando.
      */
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("""
-    SELECT c
-    FROM Cita c
+            SELECT c
+            FROM Cita c
 
-    JOIN FETCH c.paciente
-    JOIN FETCH c.estadoCita
-    JOIN FETCH c.sucursal
-    JOIN FETCH c.especialidad
+            JOIN FETCH c.paciente
+            JOIN FETCH c.medico
+            JOIN FETCH c.sucursal
+            JOIN FETCH c.especialidad
+            JOIN FETCH c.estadoCita
 
-    WHERE c.id = :idCita
-    """)
-    Optional<Cita> buscarParaRegistrarSignosVitalesConBloqueo(
+            WHERE c.id = :idCita
+
+              AND c.medico.id = :idMedico
+            """)
+    Optional<Cita> buscarParaOperacionMedicaConBloqueo(
+
             @Param("idCita")
-            Integer idCita
+            Integer idCita,
+
+            @Param("idMedico")
+            Integer idMedico
+    );
+
+    // =====================================================
+// CU-08 FA02 / RN-CU11-05
+// CITAS DE SEGUIMIENTO PARA RECORDATORIO
+// =====================================================
+
+    @Query("""
+        SELECT DISTINCT c
+        FROM Cita c
+
+        JOIN FETCH c.paciente
+        JOIN FETCH c.medico
+        JOIN FETCH c.sucursal
+        JOIN FETCH c.especialidad
+        JOIN FETCH c.estadoCita
+
+        WHERE c.esSeguimiento = true
+
+          AND c.fechaHoraCita >= :inicio
+          AND c.fechaHoraCita < :fin
+
+          AND LOWER(TRIM(c.estadoCita.nombre))
+              <> 'cancelada'
+
+        ORDER BY c.fechaHoraCita ASC
+        """)
+    List<Cita> buscarSeguimientosParaRecordatorio(
+
+            @Param("inicio")
+            OffsetDateTime inicio,
+
+            @Param("fin")
+            OffsetDateTime fin
     );
 }

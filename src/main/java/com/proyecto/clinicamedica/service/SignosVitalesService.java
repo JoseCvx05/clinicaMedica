@@ -1,12 +1,15 @@
 package com.proyecto.clinicamedica.service;
 
 import com.proyecto.clinicamedica.entity.Cita;
+import com.proyecto.clinicamedica.entity.EstadoCita;
 import com.proyecto.clinicamedica.entity.SignosVitales;
 import com.proyecto.clinicamedica.entity.Usuario;
 
 import com.proyecto.clinicamedica.repository.CitaRepository;
+import com.proyecto.clinicamedica.repository.EstadoCitaRepository;
 import com.proyecto.clinicamedica.repository.SignosVitalesRepository;
 
+import com.proyecto.clinicamedica.service.signos.DatosSignosVitalesEntrada;
 import com.proyecto.clinicamedica.service.signos.ReglaAlertaFrecuenciaCardiaca;
 import com.proyecto.clinicamedica.service.signos.ReglaAlertaPresion;
 import com.proyecto.clinicamedica.service.signos.ReglaAlertaTemperatura;
@@ -19,10 +22,10 @@ import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
 import java.time.OffsetDateTime;
 import java.time.ZoneId;
-
 import java.util.ArrayList;
 import java.util.List;
-import com.proyecto.clinicamedica.service.signos.DatosSignosVitalesEntrada;
+import java.util.Map;
+
 
 /**
  * =========================================================
@@ -41,6 +44,7 @@ import com.proyecto.clinicamedica.service.signos.DatosSignosVitalesEntrada;
  * - Registrar emergencia.
  * - Persistir signos vitales y alertas.
  * - Dejar la información disponible para el expediente.
+ * - Transicionar la cita a "En Espera" al finalizar CU-07.
  *
  * Las alertas clínicas NO bloquean el registro.
  *
@@ -51,15 +55,20 @@ public class SignosVitalesService {
 
 
     // =====================================================
-    // ESTADO / ROL
+    // ESTADOS / ROL
     // =====================================================
 
     private static final String ESTADO_SIGNOS_VITALES =
             "Signos Vitales";
 
+    private static final String ESTADO_EN_ESPERA =
+            "En Espera";
 
     private static final String ROL_ENFERMERO =
             "Enfermero";
+
+    private static final String PRIORIDAD_EMERGENCIA =
+            "Emergencia";
 
 
     // =====================================================
@@ -71,21 +80,17 @@ public class SignosVitalesService {
                     + "sistólica/diastólica (ej: 120/80) "
                     + "dentro de rangos válidos.";
 
-
     private static final String ERROR_TEMPERATURA =
             "La temperatura debe estar entre 34.0 y 42.0°C "
                     + "con un decimal.";
-
 
     private static final String ERROR_PESO =
             "El peso debe estar entre 0.5 y 300 kg "
                     + "con dos decimales.";
 
-
     private static final String ERROR_TALLA =
             "La talla debe estar entre 30 y 250 cm "
                     + "con dos decimales.";
-
 
     private static final String ERROR_FRECUENCIA =
             "La frecuencia cardíaca debe estar entre 30 y 220 "
@@ -102,13 +107,11 @@ public class SignosVitalesService {
     private static final int DIASTOLICA_MINIMA = 40;
     private static final int DIASTOLICA_MAXIMA = 150;
 
-
     private static final BigDecimal TEMPERATURA_MINIMA =
             new BigDecimal("34.0");
 
     private static final BigDecimal TEMPERATURA_MAXIMA =
             new BigDecimal("42.0");
-
 
     private static final BigDecimal PESO_MINIMO =
             new BigDecimal("0.50");
@@ -116,13 +119,11 @@ public class SignosVitalesService {
     private static final BigDecimal PESO_MAXIMO =
             new BigDecimal("300.00");
 
-
     private static final BigDecimal TALLA_MINIMA =
             new BigDecimal("30.00");
 
     private static final BigDecimal TALLA_MAXIMA =
             new BigDecimal("250.00");
-
 
     private static final int FRECUENCIA_MINIMA = 30;
     private static final int FRECUENCIA_MAXIMA = 220;
@@ -136,6 +137,12 @@ public class SignosVitalesService {
 
     private final SignosVitalesRepository
             signosVitalesRepository;
+
+    private final EstadoCitaRepository
+            estadoCitaRepository;
+
+    private final CatalogoEstadoCitaService
+            catalogoEstadoCitaService;
 
     private final UsuarioActualService
             usuarioActualService;
@@ -156,6 +163,10 @@ public class SignosVitalesService {
 
             SignosVitalesRepository signosVitalesRepository,
 
+            EstadoCitaRepository estadoCitaRepository,
+
+            CatalogoEstadoCitaService catalogoEstadoCitaService,
+
             UsuarioActualService usuarioActualService,
 
             List<ReglaAlertaVital> reglasAlertas,
@@ -169,6 +180,12 @@ public class SignosVitalesService {
 
         this.signosVitalesRepository =
                 signosVitalesRepository;
+
+        this.estadoCitaRepository =
+                estadoCitaRepository;
+
+        this.catalogoEstadoCitaService =
+                catalogoEstadoCitaService;
 
         this.usuarioActualService =
                 usuarioActualService;
@@ -187,13 +204,6 @@ public class SignosVitalesService {
     // CONTEXTO DEL FORMULARIO
     // =====================================================
 
-    /**
-     * Recupera únicamente el contexto necesario para
-     * abrir el formulario.
-     *
-     * El ID real del Enfermero se obtiene siempre
-     * desde la sesión autenticada.
-     */
     @Transactional(readOnly = true)
     public ContextoRegistroSignos obtenerContextoRegistro(
             Integer idCita
@@ -207,10 +217,8 @@ public class SignosVitalesService {
             );
         }
 
-
         Usuario enfermero =
                 validarEnfermeroActual();
-
 
         Cita cita =
                 citaRepository
@@ -224,11 +232,9 @@ public class SignosVitalesService {
                                         )
                         );
 
-
         validarCitaParaRegistro(
                 cita
         );
-
 
         if (signosVitalesRepository
                 .existsByCita_Id(
@@ -240,12 +246,10 @@ public class SignosVitalesService {
             );
         }
 
-
         boolean emergenciaPrevia =
                 esEmergenciaPrevia(
                         cita
                 );
-
 
         return new ContextoRegistroSignos(
 
@@ -305,7 +309,6 @@ public class SignosVitalesService {
                                 null
                         );
 
-
         if (cita == null) {
 
             return ResultadoRegistroSignos.error(
@@ -348,14 +351,13 @@ public class SignosVitalesService {
 
 
         // =================================================
-        // 6. FA02 - VALIDAR RANGOS DE CAPTURA
+        // 6. VALIDAR RANGOS DE CAPTURA
         // =================================================
 
         String errorValidacion =
                 validarDatosCaptura(
                         formulario
                 );
-
 
         if (errorValidacion != null) {
 
@@ -366,7 +368,7 @@ public class SignosVitalesService {
 
 
         // =================================================
-        // 7. FA03 - EVALUAR ALERTAS
+        // 7. EVALUAR ALERTAS CLÍNICAS
         // =================================================
 
         EvaluacionAlertas alertas =
@@ -376,12 +378,7 @@ public class SignosVitalesService {
 
 
         // =================================================
-        // 8. FA01 - EMERGENCIA
-        // =================================================
-        //
-        // Si Recepción ya indicó prioridad de emergencia,
-        // no permitimos perder esa condición aunque el
-        // checkbox venga desmarcado.
+        // 8. EMERGENCIA
         // =================================================
 
         boolean esEmergencia =
@@ -394,7 +391,37 @@ public class SignosVitalesService {
 
 
         // =================================================
-        // 9. FECHA/HORA
+        // 9. OBTENER ESTADO FINAL DE CU-07
+        // =================================================
+
+        Map<String, Integer> catalogoEstados =
+                catalogoEstadoCitaService
+                        .listarEstadosActivos();
+
+        Integer idEstadoEnEspera =
+                catalogoEstadoCitaService
+                        .obtenerIdEstadoActivo(
+                                ESTADO_EN_ESPERA,
+                                catalogoEstados
+                        );
+
+        if (idEstadoEnEspera == null) {
+
+            throw new IllegalStateException(
+                    "No existe el estado de cita "
+                            + "'En Espera'."
+            );
+        }
+
+        EstadoCita estadoEnEspera =
+                estadoCitaRepository
+                        .getReferenceById(
+                                idEstadoEnEspera
+                        );
+
+
+        // =================================================
+        // 10. FECHA/HORA
         // =================================================
 
         OffsetDateTime ahora =
@@ -404,77 +431,63 @@ public class SignosVitalesService {
 
 
         // =================================================
-        // 10. CONSTRUIR ENTIDAD
+        // 11. CONSTRUIR SIGNOS VITALES
         // =================================================
 
         SignosVitales signos =
                 new SignosVitales();
 
-
         signos.setCita(
                 cita
         );
-
 
         signos.setEnfermero(
                 enfermero
         );
 
-
         signos.setPresionSistolica(
                 formulario.getPresionSistolica()
         );
-
 
         signos.setPresionDiastolica(
                 formulario.getPresionDiastolica()
         );
 
-
         signos.setTemperatura(
                 formulario.getTemperatura()
         );
-
 
         signos.setPeso(
                 formulario.getPeso()
         );
 
-
         signos.setTalla(
                 formulario.getTalla()
         );
-
 
         signos.setFrecuenciaCardiaca(
                 formulario.getFrecuenciaCardiaca()
         );
 
-
         signos.setEsEmergencia(
                 esEmergencia
         );
-
 
         signos.setAlertaPresion(
                 alertas.alertaPresion()
         );
 
-
         signos.setAlertaTemperatura(
                 alertas.alertaTemperatura()
         );
-
 
         signos.setAlertaFrecuenciaCardiaca(
                 alertas.alertaFrecuenciaCardiaca()
         );
 
-
         signos.setFechaHoraRegistro(
                 ahora
         );
-
 
         signos.setCreadoPor(
                 enfermero
@@ -482,12 +495,7 @@ public class SignosVitalesService {
 
 
         // =================================================
-        // 11. GUARDAR
-        // =================================================
-        //
-        // Al completarse esta transacción, el registro
-        // queda inmediatamente disponible para el
-        // expediente del paciente.
+        // 12. GUARDAR SIGNOS
         // =================================================
 
         SignosVitales guardados =
@@ -498,16 +506,49 @@ public class SignosVitalesService {
 
 
         // =================================================
-        // 12. MENSAJE FINAL
+        // 13. SINCRONIZAR EMERGENCIA
+        // =================================================
+
+        if (esEmergencia) {
+
+            cita.setPrioridad(
+                    PRIORIDAD_EMERGENCIA
+            );
+        }
+
+
+        // =================================================
+        // 14. CU-07 -> CU-08
+        // SIGNOS VITALES -> EN ESPERA
+        // =================================================
+
+        cita.setEstadoCita(
+                estadoEnEspera
+        );
+
+        cita.setFechaModificacion(
+                ahora
+        );
+
+        cita.setModificadoPor(
+                enfermero
+        );
+
+        citaRepository
+                .saveAndFlush(
+                        cita
+                );
+
+
+        // =================================================
+        // 15. MENSAJE FINAL
         // =================================================
 
         String nombrePaciente =
                 cita.getPaciente()
                         .getNombreCompleto();
 
-
         String mensaje;
-
 
         if (esEmergencia) {
 
@@ -527,7 +568,6 @@ public class SignosVitalesService {
                             + "a la sala de espera.";
         }
 
-
         return ResultadoRegistroSignos.exito(
 
                 mensaje,
@@ -545,21 +585,9 @@ public class SignosVitalesService {
     // VALIDAR DATOS DE CAPTURA
     // =====================================================
 
-    /**
-     * FA02.
-     *
-     * Devuelve el mensaje exacto de la primera regla
-     * de captura que falle.
-     *
-     * Si todo es válido devuelve null.
-     */
     private String validarDatosCaptura(
             DatosSignosVitalesEntrada datos
     ) {
-
-        // =================================================
-        // RN-CU07-01 - PRESIÓN
-        // =================================================
 
         if (datos.getPresionSistolica() == null
                 || datos.getPresionDiastolica() == null
@@ -579,10 +607,6 @@ public class SignosVitalesService {
             return ERROR_PRESION;
         }
 
-
-        // =================================================
-        // RN-CU07-02 - TEMPERATURA
-        // =================================================
 
         if (datos.getTemperatura() == null
 
@@ -605,10 +629,6 @@ public class SignosVitalesService {
         }
 
 
-        // =================================================
-        // RN-CU07-03 - PESO
-        // =================================================
-
         if (datos.getPeso() == null
 
                 || datos.getPeso()
@@ -629,10 +649,6 @@ public class SignosVitalesService {
             return ERROR_PESO;
         }
 
-
-        // =================================================
-        // RN-CU07-04 - TALLA
-        // =================================================
 
         if (datos.getTalla() == null
 
@@ -655,10 +671,6 @@ public class SignosVitalesService {
         }
 
 
-        // =================================================
-        // RN-CU07-05 - FRECUENCIA CARDÍACA
-        // =================================================
-
         if (datos.getFrecuenciaCardiaca() == null
 
                 || datos.getFrecuenciaCardiaca()
@@ -670,7 +682,6 @@ public class SignosVitalesService {
             return ERROR_FRECUENCIA;
         }
 
-
         return null;
     }
 
@@ -679,21 +690,6 @@ public class SignosVitalesService {
     // DECIMALES EXACTOS
     // =====================================================
 
-    /**
-     * La regla consolidada exige:
-     *
-     * Temperatura -> 1 decimal.
-     * Peso        -> 2 decimales.
-     * Talla       -> 2 decimales.
-     *
-     * Ejemplos:
-     *
-     * 36.0  -> válido para temperatura.
-     * 36    -> inválido.
-     *
-     * 70.50 -> válido para peso.
-     * 70.5  -> inválido.
-     */
     private boolean tieneDecimalesExactos(
 
             BigDecimal valor,
@@ -723,27 +719,22 @@ public class SignosVitalesService {
         boolean alertaFrecuencia =
                 false;
 
-
         List<String> mensajes =
                 new ArrayList<>();
 
-
         for (ReglaAlertaVital regla :
                 reglasAlertas) {
-
 
             ReglaAlertaVital.EvaluacionAlertaVital evaluacion =
                     regla.evaluar(
                             datos
                     );
 
-
             if (evaluacion == null
                     || !evaluacion.alerta()) {
 
                 continue;
             }
-
 
             if (evaluacion.mensaje() != null
                     && !evaluacion.mensaje()
@@ -754,39 +745,21 @@ public class SignosVitalesService {
                 );
             }
 
-
-            // =============================================
-            // MAPEO DE ALERTA AL REGISTRO
-            // =============================================
-
             switch (evaluacion.codigo()) {
 
                 case ReglaAlertaPresion.CODIGO ->
                         alertaPresion = true;
 
-
                 case ReglaAlertaTemperatura.CODIGO ->
                         alertaTemperatura = true;
-
 
                 case ReglaAlertaFrecuenciaCardiaca.CODIGO ->
                         alertaFrecuencia = true;
 
-
                 default -> {
-
-                    /*
-                     * Una futura regla clínica puede existir
-                     * sin romper el flujo.
-                     *
-                     * Para persistir un nuevo indicador
-                     * específico también requeriría su
-                     * correspondiente cambio de esquema.
-                     */
                 }
             }
         }
-
 
         return new EvaluacionAlertas(
 
@@ -841,7 +814,7 @@ public class SignosVitalesService {
 
         return cita != null
                 && cita.getPrioridad() != null
-                && "Emergencia"
+                && PRIORIDAD_EMERGENCIA
                 .equalsIgnoreCase(
                         cita.getPrioridad()
                                 .trim()
@@ -858,7 +831,6 @@ public class SignosVitalesService {
         Usuario usuario =
                 usuarioActualService
                         .obtenerUsuarioActual();
-
 
         if (usuario == null
 
@@ -883,7 +855,6 @@ public class SignosVitalesService {
                             + "para registrar signos vitales."
             );
         }
-
 
         return usuario;
     }

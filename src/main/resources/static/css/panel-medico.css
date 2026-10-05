@@ -1,0 +1,157 @@
+/* ============================================================
+   SANTOS · Panel médico
+   ============================================================ */
+:root {
+    --verde-900: #0a3d3a;
+    --verde-700: #0d5c57;
+    --verde-500: #14837b;
+    --verde-100: #dcefed;
+    --bruma: #f2f7f6;
+    --tinta: #14272a;
+    --tinta-suave: #4a5f62;
+    --linea: #d5e2e1;
+    --ambar: #f0b04a;
+    --rojo: #b3261e;
+    --rojo-fondo: #fceceb;
+    --exito: #17683a;
+    --exito-fondo: #e6f4ec;
+    --fuente-titulo: "Bricolage Grotesque", "Segoe UI", system-ui, sans-serif;
+    --fuente-texto: "Figtree", "Segoe UI", system-ui, sans-serif;
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+html { scroll-behavior: smooth; scroll-padding-top: 88px; }
+
+body {
+    margin: 0; font-family: var(--fuente-texto);
+    background: var(--bruma); color: var(--tinta);
+    line-height: 1.55; -webkit-font-smoothing: antialiased;
+}
+h1, h2, h3 { font-family: var(--fuente-titulo); letter-spacing: -0.01em; margin: 0; }
+p { margin: 0; }
+:focus-visible { outline: 3px solid var(--ambar); outline-offset: 2px; }
+
+/* ---------- Encabezado ---------- */
+.encabezado { position: sticky; top: 0; z-index: 20; background: #fff; border-bottom: 1px solid var(--linea); }
+.barra {
+    max-width: 1400px; margin: 0 auto; padding: .7rem 1.5rem;
+    display: flex; align-items: center; justify-content: space-between; gap: 1.2rem;
+}
+.marca { display: flex; align-items: center; gap: .7rem; text-decoration: none; color: var(--verde-900); }
+.logo { display: grid; place-items: center; width: 40px; height: 40px; border-radius: 12px; background: var(--verde-700); }
+.logo svg { width: 22px; fill: #fff; }
+.marca-texto { display: flex; flex-direction: column; line-height: 1.15; }
+.marca-texto strong { font: 700 1.25rem var(--fuente-titulo); letter-spacing: .05em; }
+.marca-texto span { font-size: .8rem; color: var(--tinta-suave); }
+
+.acciones-cabecera { display: flex; align-items: center; gap: 1rem; }
+.acciones-cabecera form { margin: 0; }
+.rol { padding: .25rem .8rem; border-radius: 999px; background: var(--verde-100); color: var(--verde-700); font-size: .85rem; font-weight: 600; }
+.boton-salir {
+    padding: .55rem 1.1rem; border: 2px solid var(--linea); border-radius: 999px;
+    background: #fff; color: var(--tinta); font: 600 .9rem var(--fuente-texto); cursor: pointer;
+}
+.boton-salir:hover { background: var(--bruma); border-color: var(--verde-500); }
+
+/* ---------- Página ---------- */
+.pagina { max-width: 1400px; margin: 0 auto; padding: 2rem 1.5rem 4rem; }
+
+.cabecera-panel { display: flex; justify-content: space-between; align-items: flex-start; gap: 1.2rem; margin-bottom: 1.6rem; }
+.titulo h1 { font-size: clamp(1.7rem, 3.5vw, 2.2rem); color: var(--verde-900); margin-bottom: .4rem; }
+.titulo p { color: var(--tinta-suave); max-width: 60ch; }
+
+.actualizacion {
+    display: inline-flex; align-items: center; gap: .55rem; white-space: nowrap;
+    padding: .5rem .9rem; border: 1px solid var(--linea); border-radius: 999px;
+    background: #fff; color: var(--tinta-suave); font-size: .85rem;
+}
+.punto-vivo { width: 9px; height: 9px; border-radius: 50%; background: var(--verde-500); }
+
+/* ---------- Mensajes ---------- */
+.mensaje { margin-bottom: 1.2rem; padding: .9rem 1.1rem; border-radius: 12px; font-weight: 500; border-left: 4px solid; }
+.mensaje-exito { background: var(--exito-fondo); color: var(--exito); border-color: var(--exito); }
+.mensaje-error { background: var(--rojo-fondo); color: var(--rojo); border-color: var(--rojo); }
+
+/* ---------- Resumen ---------- */
+.resumen { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-bottom: 2rem; }
+.resumen-item {
+    display: flex; align-items: baseline; gap: .9rem;
+    padding: 1.1rem 1.3rem; background: #fff; border: 1px solid var(--linea);
+    border-radius: 16px; text-decoration: none; color: inherit;
+    transition: border-color .15s;
+}
+.resumen-item:hover { border-color: var(--verde-500); }
+.resumen-item strong { font: 700 2.4rem/1 var(--fuente-titulo); color: var(--verde-700); }
+.resumen-item span { color: var(--tinta-suave); font-size: .95rem; line-height: 1.3; }
+
+/* ---------- Secciones ---------- */
+.seccion { margin-bottom: 2rem; background: #fff; border: 1px solid var(--linea); border-radius: 18px; overflow: hidden; }
+.seccion-cabecera { padding: 1.3rem 1.5rem; border-bottom: 1px solid var(--linea); }
+.seccion-cabecera h2 { font-size: 1.3rem; color: var(--verde-900); margin-bottom: .25rem; }
+.seccion-cabecera p { color: var(--tinta-suave); font-size: .93rem; }
+.contenido-seccion { padding: 1.5rem; }
+
+.vacio {
+    padding: 1.6rem; text-align: center; color: var(--tinta-suave);
+    border: 1px dashed var(--verde-500); border-radius: 12px; background: var(--bruma);
+}
+
+/* ---------- Tarjetas de paciente ---------- */
+.lista { display: grid; grid-template-columns: repeat(auto-fill, minmax(310px, 1fr)); gap: 1.1rem; }
+
+.tarjeta {
+    display: flex; flex-direction: column;
+    padding: 1.2rem; background: #fff; border: 1px solid var(--linea); border-radius: 14px;
+}
+.tarjeta.emergencia { border: 2px solid var(--rojo); background: var(--rojo-fondo); }
+
+.tarjeta-superior { display: flex; justify-content: space-between; align-items: flex-start; gap: .7rem; margin-bottom: 1rem; }
+.numero-cita { font-size: .85rem; color: var(--tinta-suave); font-weight: 600; }
+.paciente { margin-top: .2rem; font-size: 1.2rem; color: var(--verde-900); }
+.etiqueta-emergencia {
+    flex: none; padding: .3rem .75rem; border-radius: 999px;
+    background: var(--rojo); color: #fff; font-size: .8rem; font-weight: 700;
+}
+
+.datos { display: grid; gap: .45rem; margin: 0 0 1.1rem; }
+.dato { display: grid; grid-template-columns: 105px 1fr; gap: .6rem; font-size: .92rem; }
+.dato dt { color: var(--tinta-suave); font-weight: 500; }
+.dato dd { margin: 0; word-break: break-word; }
+
+.acciones { display: flex; flex-wrap: wrap; gap: .6rem; margin-top: auto; padding-top: 1rem; border-top: 1px solid var(--linea); }
+.tarjeta.emergencia .acciones { border-color: #f0c4c1; }
+.acciones form { margin: 0; }
+
+/* ---------- Botones ---------- */
+.boton {
+    display: inline-flex; align-items: center; justify-content: center;
+    min-height: 42px; padding: .55rem 1.1rem; border-radius: 999px;
+    font: 600 .92rem var(--fuente-texto); text-decoration: none; cursor: pointer;
+    border: 2px solid transparent; transition: background-color .15s, border-color .15s;
+}
+.boton-principal { background: var(--verde-700); color: #fff; }
+.boton-principal:hover { background: var(--verde-900); }
+.boton-secundario { background: #fff; color: var(--verde-700); border-color: var(--verde-700); }
+.boton-secundario:hover { background: var(--verde-100); }
+.boton-peligro { background: #fff; color: var(--rojo); border-color: var(--rojo); }
+.boton-peligro:hover { background: var(--rojo-fondo); }
+
+/* ---------- Responsivo ---------- */
+@media (max-width: 850px) {
+    .resumen { grid-template-columns: 1fr; }
+    .cabecera-panel { flex-direction: column; }
+}
+@media (max-width: 600px) {
+    .barra { padding: .7rem 1rem; }
+    .pagina { padding: 1.5rem 1rem 3rem; }
+    .rol { display: none; }
+    .lista { grid-template-columns: 1fr; }
+    .contenido-seccion { padding: 1rem; }
+    .dato { grid-template-columns: 1fr; gap: 0; }
+    .acciones .boton, .acciones form { flex: 1 1 100%; }
+    .acciones form .boton { width: 100%; }
+}
+@media (prefers-reduced-motion: reduce) {
+    html { scroll-behavior: auto; }
+    .resumen-item, .boton { transition: none; }
+}

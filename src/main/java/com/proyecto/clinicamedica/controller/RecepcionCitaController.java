@@ -423,8 +423,8 @@ public class RecepcionCitaController {
     // RNF-021 - CONSULTA AUTOMÁTICA DE ESTADO
     // =====================================================
 
-    @GetMapping("/cita/{idCita}/estado")
-    @ResponseBody
+    @GetMapping("/cita/{idCita}/estado") //sigifica que este metodo reponde en una peticion get
+    @ResponseBody //lo que retorna el metodo lo envia como respuesta al navegador
     public ResponseEntity<Map<String, Object>> consultarEstado(
 
             @PathVariable("idCita")
@@ -445,7 +445,7 @@ public class RecepcionCitaController {
                     .build();
         }
 
-
+        // construyo un estructura para guardar datos que se enviaran al navegador
         Map<String, Object> respuesta =
                 new LinkedHashMap<>();
 

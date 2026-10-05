@@ -165,7 +165,7 @@ public class UsuarioConsultaService {
 
 
         // =================================================
-        // SPECIFICATION
+        // construye segun el tipo de filtro seleccionado y el criterio de búsqueda
         // =================================================
 
         Specification<Usuario> specification =

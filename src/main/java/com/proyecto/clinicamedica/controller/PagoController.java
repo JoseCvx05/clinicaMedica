@@ -117,6 +117,8 @@ public class PagoController {
         // RNF-016 - IDEMPOTENCIA
         // =================================================
 
+        //genera una nueva idempotency key para cada intento de pago
+
         formulario.setIdempotencyKey(
                 UUID.randomUUID()
         );
@@ -173,7 +175,7 @@ public class PagoController {
 
 
         // =================================================
-        // PROCESAR CU-04
+        // PROCESAR PAGO
         // =================================================
 
         PagoService.ResultadoPago resultado =

@@ -1,618 +1,314 @@
 <!DOCTYPE html>
-<html lang="es"
-      xmlns:th="http://www.thymeleaf.org">
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
 
 <head>
-
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SANTOS | Clínica médica</title>
 
-    <meta name="viewport"
-          content="width=device-width, initial-scale=1.0">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700&family=Figtree:wght@400;500;600&display=swap"
+          rel="stylesheet">
 
-    <title>Sistema Informático Hospitalario</title>
-
-    <!-- CSS propio -->
-    <link rel="stylesheet"
-          th:href="@{/css/portal.css}">
-
+    <link rel="stylesheet" th:href="@{/css/portal.css}">
 </head>
 
 <body>
 
-<!-- ======================================================
-     ENCABEZADO
-     ====================================================== -->
+<!-- ENCABEZADO -->
 <header class="encabezado-principal">
-
     <div class="contenedor encabezado-contenido">
 
-        <div class="marca">
+        <a href="#inicio" class="marca" aria-label="SANTOS, ir al inicio">
+            <span class="marca-simbolo" aria-hidden="true">
+                <svg viewBox="0 0 24 24"><path d="M9 3h6v6h6v6h-6v6H9v-6H3V9h6z"/></svg>
+            </span>
+            <span class="marca-texto">
+                <strong>SANTOS</strong>
+                <small>Clínica médica</small>
+            </span>
+        </a>
 
-            <h1>
-                Sistema Informático Hospitalario
-            </h1>
-
-            <p>
-                Portal de atención al paciente
-            </p>
-
-        </div>
-
-        <nav class="navegacion-principal">
-
-            <a href="#inicio">
-                Inicio
-            </a>
-
-            <a href="#servicios">
-                Servicios
-            </a>
-
-            <a href="#especialidades">
-                Especialidades
-            </a>
-
-            <a href="#sucursales">
-                Ubicaciones
-            </a>
-
-            <a href="#horarios">
-                Horarios
-            </a>
-
-            <button type="button"
-                    class="boton boton-primario"
-                    id="btnAbrirVerificacionDpi">
-
-                Agendar Cita
-
+        <nav class="navegacion-principal" aria-label="Principal">
+            <a href="#servicios">Servicios</a>
+            <a href="#especialidades">Especialidades</a>
+            <a href="#sucursales">Ubicaciones</a>
+            <a href="#horarios">Horarios</a>
+            <button type="button" class="boton boton-primario" id="btnAbrirVerificacionDpi">
+                Agendar cita
             </button>
-
         </nav>
 
     </div>
-
 </header>
 
 
-<!-- ======================================================
-     CONTENIDO PRINCIPAL
-     ====================================================== -->
 <main>
 
-    <!-- ==================================================
-         INICIO
-         ================================================== -->
-    <section id="inicio"
-             class="seccion-inicio">
-
+    <!-- INICIO -->
+    <section id="inicio" class="seccion-inicio">
         <div class="contenedor inicio-contenido">
 
             <div class="inicio-texto">
-
-                <span class="etiqueta">
-                    Atención médica
-                </span>
-
-                <h2>
-                    Bienvenido al Portal del Paciente
-                </h2>
+                <h2>Su salud, en manos de personas que la cuidan.</h2>
 
                 <p>
-                    Consulte las especialidades disponibles,
-                    conozca nuestras ubicaciones y acceda al
-                    proceso de agendamiento de citas médicas.
+                    Consulte nuestras especialidades y sucursales, y agende su
+                    cita médica desde aquí.
                 </p>
 
-                <button type="button"
-                        class="boton boton-primario boton-grande"
-                        id="btnAgendarCitaInicio">
-
-                    Agendar Cita
-
-                </button>
-
+                <div class="inicio-acciones">
+                    <button type="button" class="boton boton-claro boton-grande" id="btnAgendarCitaInicio">
+                        Agendar cita
+                    </button>
+                    <a href="#especialidades" class="boton boton-contorno boton-grande">
+                        Ver especialidades
+                    </a>
+                </div>
             </div>
 
-        </div>
+            <aside class="inicio-panel" aria-label="Cómo agendar una cita">
+                <h3>Para agendar necesita</h3>
+                <ol>
+                    <li>
+                        <span>1</span>
+                        <div>
+                            <strong>Su número de DPI</strong>
+                            <p>Verificamos que esté registrado en SANTOS.</p>
+                        </div>
+                    </li>
+                    <li>
+                        <span>2</span>
+                        <div>
+                            <strong>Elegir su cita</strong>
+                            <p>Después de verificar, continúa con el agendamiento.</p>
+                        </div>
+                    </li>
+                </ol>
+            </aside>
 
+        </div>
     </section>
 
 
-    <!-- ==================================================
-         SERVICIOS
-         ================================================== -->
-    <section id="servicios"
-             class="seccion">
-
+    <!-- SERVICIOS -->
+    <section id="servicios" class="seccion">
         <div class="contenedor">
 
             <div class="titulo-seccion">
-
-                <span>
-                    Portal del paciente
-                </span>
-
-                <h2>
-                    Servicios disponibles
-                </h2>
-
+                <h2>Servicios para pacientes</h2>
                 <p>
-                    Desde el portal puede consultar información
-                    del hospital y acceder a los servicios
-                    disponibles para pacientes.
+                    Consulte información de la clínica y acceda a los servicios
+                    disponibles en línea.
                 </p>
-
             </div>
-
 
             <div class="rejilla-tarjetas">
 
-                <!-- Servicio definido por el CU-00 -->
-                <article class="tarjeta">
-
-                    <div class="tarjeta-icono">
-                        01
+                <article class="tarjeta tarjeta-destacada">
+                    <div class="tarjeta-icono" aria-hidden="true">
+                        <svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>
                     </div>
-
-                    <h3>
-                        Agendamiento de citas
-                    </h3>
-
+                    <h3>Agendamiento de citas</h3>
                     <p>
-                        Inicie el proceso de verificación de
-                        registro para posteriormente acceder
-                        al agendamiento de una cita médica.
+                        Verifique su registro con su DPI y continúe con el
+                        agendamiento de su cita médica.
                     </p>
-
-                    <button type="button"
-                            class="boton boton-secundario"
-                            id="btnAgendarCitaServicios">
-
+                    <button type="button" class="boton boton-primario" id="btnAgendarCitaServicios">
                         Agendar cita
-
                     </button>
-
                 </article>
 
-
-                <!-- Información explícitamente solicitada
-                     por el objetivo del CU-00 -->
                 <article class="tarjeta">
-
-                    <div class="tarjeta-icono">
-                        02
+                    <div class="tarjeta-icono" aria-hidden="true">
+                        <svg viewBox="0 0 24 24"><path d="M12 21s-7-4.5-7-11a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 6.500-7 11-7 11z"/></svg>
                     </div>
-
-                    <h3>
-                        Especialidades
-                    </h3>
-
-                    <p>
-                        Consulte las especialidades médicas
-                        activas disponibles en el sistema.
-                    </p>
-
-                    <a href="#especialidades"
-                       class="boton boton-secundario">
-
-                        Ver especialidades
-
-                    </a>
-
+                    <h3>Especialidades</h3>
+                    <p>Conozca las especialidades médicas activas en SANTOS.</p>
+                    <a href="#especialidades" class="boton boton-secundario">Ver especialidades</a>
                 </article>
 
-
                 <article class="tarjeta">
-
-                    <div class="tarjeta-icono">
-                        03
+                    <div class="tarjeta-icono" aria-hidden="true">
+                        <svg viewBox="0 0 24 24"><path d="M12 22s7-6.200 7-12a7 7 0 0 0-14 0c0 5.800 7 12 7 12z"/><circle cx="12" cy="10" r="2.500"/></svg>
                     </div>
-
-                    <h3>
-                        Sucursales
-                    </h3>
-
-                    <p>
-                        Consulte las ubicaciones disponibles
-                        para recibir atención médica.
-                    </p>
-
-                    <a href="#sucursales"
-                       class="boton boton-secundario">
-
-                        Ver ubicaciones
-
-                    </a>
-
+                    <h3>Sucursales</h3>
+                    <p>Encuentre la sede más conveniente para recibir atención.</p>
+                    <a href="#sucursales" class="boton boton-secundario">Ver ubicaciones</a>
                 </article>
 
             </div>
-
         </div>
-
     </section>
 
 
-    <!-- ==================================================
-         ESPECIALIDADES
-         ================================================== -->
-    <section id="especialidades"
-             class="seccion seccion-alternativa">
-
+    <!-- ESPECIALIDADES -->
+    <section id="especialidades" class="seccion seccion-alternativa">
         <div class="contenedor">
 
             <div class="titulo-seccion">
-
-                <span>
-                    Catálogo médico
-                </span>
-
-                <h2>
-                    Especialidades disponibles
-                </h2>
-
-                <p>
-                    Estas especialidades corresponden a
-                    registros activos del sistema.
-                </p>
-
+                <h2>Especialidades disponibles</h2>
+                <p>Estas son las especialidades activas en el sistema.</p>
             </div>
 
-
-            <!-- ==================================================
-                 CUANDO EXISTEN ESPECIALIDADES
-                 ================================================== -->
             <div class="rejilla-tarjetas"
                  th:if="${especialidades != null and !especialidades.isEmpty()}">
 
-                <article class="tarjeta"
+                <article class="tarjeta tarjeta-especialidad"
                          th:each="especialidad : ${especialidades}">
-
-                    <h3 th:text="${especialidad.nombre}">
-                        Especialidad
-                    </h3>
-
-                    <p th:text="${especialidad.descripcion}">
-                        Descripción de la especialidad.
-                    </p>
-
+                    <h3 th:text="${especialidad.nombre}">Especialidad</h3>
+                    <p th:text="${especialidad.descripcion}">Descripción de la especialidad.</p>
                 </article>
 
             </div>
 
-
-            <!-- ==================================================
-                 CUANDO NO EXISTEN ESPECIALIDADES
-                 ================================================== -->
             <div class="mensaje-vacio"
                  th:if="${especialidades == null or especialidades.isEmpty()}">
-
-                Actualmente no hay especialidades disponibles
-                para mostrar.
-
+                Por ahora no hay especialidades para mostrar. Vuelva a consultar más tarde.
             </div>
 
         </div>
-
     </section>
 
 
-    <!-- ==================================================
-         SUCURSALES / UBICACIONES
-         ================================================== -->
-    <section id="sucursales"
-             class="seccion">
-
+    <!-- SUCURSALES -->
+    <section id="sucursales" class="seccion">
         <div class="contenedor">
 
             <div class="titulo-seccion">
-
-                <span>
-                    Ubicaciones
-                </span>
-
-                <h2>
-                    Sucursales
-                </h2>
-
-                <p>
-                    Consulte las sedes activas registradas
-                    dentro del sistema.
-                </p>
-
+                <h2>Nuestras sucursales</h2>
+                <p>Sedes activas donde puede recibir atención.</p>
             </div>
 
-
-            <!-- ==================================================
-                 CUANDO EXISTEN SUCURSALES
-                 ================================================== -->
             <div class="rejilla-tarjetas"
                  th:if="${sucursales != null and !sucursales.isEmpty()}">
 
-                <article class="tarjeta"
+                <article class="tarjeta tarjeta-sucursal"
                          th:each="sucursal : ${sucursales}">
 
-                    <h3 th:text="${sucursal.nombre}">
-                        Nombre de sucursal
-                    </h3>
-
+                    <h3 th:text="${sucursal.nombre}">Nombre de sucursal</h3>
 
                     <div class="dato-sucursal"
                          th:if="${sucursal.direccion != null and !sucursal.direccion.isBlank()}">
-
-                        <strong>
-                            Dirección:
-                        </strong>
-
-                        <span th:text="${sucursal.direccion}">
-                            Dirección
-                        </span>
-
+                        <strong>Dirección</strong>
+                        <span th:text="${sucursal.direccion}">Dirección</span>
                     </div>
-
 
                     <div class="dato-sucursal"
                          th:if="${sucursal.telefono != null and !sucursal.telefono.isBlank()}">
-
-                        <strong>
-                            Teléfono:
-                        </strong>
-
-                        <span th:text="${sucursal.telefono}">
-                            00000000
-                        </span>
-
+                        <strong>Teléfono</strong>
+                        <span th:text="${sucursal.telefono}">00000000</span>
                     </div>
-
 
                     <p th:if="${sucursal.descripcion != null and !sucursal.descripcion.isBlank()}"
                        th:text="${sucursal.descripcion}">
-
                         Descripción de la sucursal.
-
                     </p>
 
                 </article>
 
             </div>
 
-
-            <!-- ==================================================
-                 CUANDO NO EXISTEN SUCURSALES
-                 ================================================== -->
             <div class="mensaje-vacio"
                  th:if="${sucursales == null or sucursales.isEmpty()}">
-
-                Actualmente no hay sucursales disponibles
-                para mostrar.
-
+                Por ahora no hay sucursales para mostrar. Vuelva a consultar más tarde.
             </div>
 
         </div>
-
     </section>
 
 
-    <!-- ==================================================
-         HORARIOS
-         ================================================== -->
-    <section id="horarios"
-             class="seccion seccion-alternativa">
-
+    <!-- HORARIOS -->
+    <section id="horarios" class="seccion seccion-alternativa">
         <div class="contenedor">
 
             <div class="titulo-seccion">
-
-                <span>
-                    Atención
-                </span>
-
-                <h2>
-                    Horarios de atención
-                </h2>
-
+                <h2>Horarios de atención</h2>
             </div>
 
-
-            <!--
-                El CU-00 exige mostrar horarios.
-
-                Sin embargo, los documentos actuales no
-                proporcionan horarios concretos ni existe
-                actualmente una tabla de horarios en el DDL.
-
-                No se colocan valores inventados.
-
-                Esta sección queda preparada para conectarla
-                posteriormente al origen de datos oficial.
-            -->
+            <!-- Pendiente: conectar al origen oficial de horarios.
+                 No se muestran valores inventados. -->
             <div class="mensaje-informativo">
-
-                Los horarios de atención serán mostrados
-                según la configuración oficial de cada
-                sucursal.
-
+                El horario de cada sucursal se mostrará aquí según su
+                configuración oficial.
             </div>
 
         </div>
-
     </section>
 
 </main>
 
 
-<!-- ======================================================
-     PIE DE PÁGINA
-     ====================================================== -->
+<!-- PIE DE PÁGINA -->
 <footer class="pie-pagina">
-
-    <div class="contenedor">
-
-        <p>
-            Sistema Informático Hospitalario
-        </p>
-
-        <p>
-            Portal de atención al paciente
-        </p>
-
+    <div class="contenedor pie-contenido">
+        <strong>SANTOS</strong>
+        <span>Clínica médica · Portal del paciente</span>
     </div>
-
 </footer>
 
 
-<!-- ======================================================
-     MODAL - VERIFICAR REGISTRO
-     ====================================================== -->
-<div class="modal-fondo"
-     id="modalVerificacionDpi"
-     aria-hidden="true">
+<!-- MODAL: VERIFICAR REGISTRO -->
+<div class="modal-fondo" id="modalVerificacionDpi" aria-hidden="true">
 
-    <div class="modal-contenido"
-         role="dialog"
-         aria-modal="true"
+    <div class="modal-contenido" role="dialog" aria-modal="true"
          aria-labelledby="tituloModalVerificacionDpi">
 
-        <!-- ===============================================
-             ENCABEZADO DEL MODAL
-             =============================================== -->
         <div class="modal-encabezado">
-
             <div>
-
-                <h2 id="tituloModalVerificacionDpi">
-                    Verificar Registro
-                </h2>
-
-                <p>
-                    Ingrese su número de DPI para verificar
-                    si está registrado en el sistema.
-                </p>
-
+                <h2 id="tituloModalVerificacionDpi">Verificar registro</h2>
+                <p>Ingrese su número de DPI para comprobar que está registrado en SANTOS.</p>
             </div>
 
-
-            <button type="button"
-                    class="modal-cerrar"
-                    id="btnCerrarModalDpi"
-                    aria-label="Cerrar">
-
+            <button type="button" class="modal-cerrar" id="btnCerrarModalDpi" aria-label="Cerrar">
                 ×
-
             </button>
-
         </div>
 
-
-        <!-- ===============================================
-             FORMULARIO
-             =============================================== -->
-        <form id="formVerificacionDpi"
-              novalidate>
+        <form id="formVerificacionDpi" novalidate>
 
             <div class="campo-formulario">
-
                 <div class="campo-etiqueta">
-
-                    <label for="dpi">
-                        Número de DPI
-                    </label>
-
-                    <span id="contadorDpi">
-                        0/13 dígitos
-                    </span>
-
+                    <label for="dpi">Número de DPI</label>
+                    <span id="contadorDpi">0/13 dígitos</span>
                 </div>
 
-
-                <input type="text"
-                       id="dpi"
-                       name="dpi"
-                       maxlength="13"
-                       inputmode="numeric"
-                       autocomplete="off"
+                <input type="text" id="dpi" name="dpi" maxlength="13"
+                       inputmode="numeric" autocomplete="off"
                        placeholder="Ingrese 13 dígitos"
                        aria-describedby="mensajeErrorDpi">
 
-
-                <!-- =======================================
-                     MENSAJE FA01
-                     ======================================= -->
-                <div class="mensaje-error"
-                     id="mensajeErrorDpi"
-                     role="alert"
-                     aria-live="polite">
-
-                </div>
-
+                <!-- FA01 -->
+                <div class="mensaje-error" id="mensajeErrorDpi"
+                     role="alert" aria-live="polite"></div>
             </div>
 
+            <div class="mensaje-resultado" id="mensajeResultadoDpi"
+                 role="status" aria-live="polite"></div>
 
-            <!-- ===========================================
-                 MENSAJE GENERAL DE LA VERIFICACIÓN
-                 =========================================== -->
-            <div class="mensaje-resultado"
-                 id="mensajeResultadoDpi"
-                 role="status"
-                 aria-live="polite">
-
-            </div>
-
-
-            <!-- ===========================================
-                 INDICADOR DE CARGA
-                 Paso 7: "Verificando..."
-                 =========================================== -->
-            <div class="estado-carga"
-                 id="estadoCargaDpi"
-                 hidden>
-
+            <!-- Paso 7 -->
+            <div class="estado-carga" id="estadoCargaDpi" hidden>
                 <span class="spinner"></span>
-
-                <span>
-                    Verificando...
-                </span>
-
+                <span>Verificando...</span>
             </div>
 
-
-            <!-- ===========================================
-                 ACCIONES
-                 =========================================== -->
             <div class="modal-acciones">
-
                 <!-- FA02 -->
-                <button type="button"
-                        class="boton boton-secundario"
+                <button type="button" class="boton boton-secundario"
                         id="btnCancelarVerificacionDpi">
-
                     Cancelar
-
                 </button>
 
-
-                <button type="submit"
-                        class="boton boton-primario"
-                        id="btnVerificarDpi">
-
+                <button type="submit" class="boton boton-primario" id="btnVerificarDpi">
                     Verificar DPI
-
                 </button>
-
             </div>
 
         </form>
-
     </div>
-
 </div>
 
-
-<!-- ======================================================
-     JAVASCRIPT
-     ====================================================== -->
 <script th:src="@{/js/portal.js}"></script>
-
 </body>
 </html>

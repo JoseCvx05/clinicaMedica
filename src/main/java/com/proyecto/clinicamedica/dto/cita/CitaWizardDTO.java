@@ -11,14 +11,24 @@ import java.time.OffsetDateTime;
  *
  * CU-03 Agendar Citas.
  *
- * Conserva las selecciones realizadas por el paciente
- * durante los 5 pasos del asistente.
+ * Reutilizado también por:
+ *
+ * CU-08 FA02 - Agendar Cita de Seguimiento.
+ *
+ * Conserva temporalmente las selecciones realizadas
+ * durante el asistente de agendamiento.
  *
  * No contiene lógica de negocio.
  *
  * No contiene el archivo PDF.
- * Los documentos se manejarán mediante un DTO/servicio
- * independiente en el Paso 5.
+ *
+ * SEGURIDAD:
+ *
+ * En citas de seguimiento no se confía en paciente,
+ * médico, sucursal ni especialidad recibidos desde HTML.
+ * Esos datos se obtendrán nuevamente desde la consulta
+ * médica de origen.
+ *
  * =========================================================
  */
 public class CitaWizardDTO {
@@ -83,6 +93,48 @@ public class CitaWizardDTO {
     // =====================================================
 
     private String motivoConsulta;
+
+
+    // =====================================================
+    // CU-08 FA02 - CITA DE SEGUIMIENTO
+    // =====================================================
+
+    /*
+     * Indica si el wizard fue iniciado desde una
+     * consulta médica para crear una cita de seguimiento.
+     */
+    private Boolean esSeguimiento =
+            false;
+
+
+    /*
+     * Identificador de la Consulta Médica que originó
+     * el seguimiento.
+     *
+     * El backend volverá a consultar esta entidad
+     * antes de reservar o crear la cita.
+     */
+    private Integer idConsultaOrigen;
+
+
+    /*
+     * Valores permitidos serán validados posteriormente
+     * por el Service.
+     *
+     * Ejemplos:
+     *
+     * - MONITOREO_TRATAMIENTO
+     * - REVISION_RESULTADOS_LABORATORIO
+     */
+    private String tipoSeguimiento;
+
+
+    /*
+     * Prioridad de la cita de seguimiento.
+     *
+     * No se utilizará sin validación del backend.
+     */
+    private String prioridad;
 
 
     // =====================================================
@@ -211,5 +263,61 @@ public class CitaWizardDTO {
 
         this.motivoConsulta =
                 motivoConsulta;
+    }
+
+
+    // =====================================================
+    // CU-08 FA02
+    // =====================================================
+
+    public Boolean getEsSeguimiento() {
+        return esSeguimiento;
+    }
+
+    public void setEsSeguimiento(
+            Boolean esSeguimiento
+    ) {
+
+        this.esSeguimiento =
+                esSeguimiento;
+    }
+
+
+    public Integer getIdConsultaOrigen() {
+        return idConsultaOrigen;
+    }
+
+    public void setIdConsultaOrigen(
+            Integer idConsultaOrigen
+    ) {
+
+        this.idConsultaOrigen =
+                idConsultaOrigen;
+    }
+
+
+    public String getTipoSeguimiento() {
+        return tipoSeguimiento;
+    }
+
+    public void setTipoSeguimiento(
+            String tipoSeguimiento
+    ) {
+
+        this.tipoSeguimiento =
+                tipoSeguimiento;
+    }
+
+
+    public String getPrioridad() {
+        return prioridad;
+    }
+
+    public void setPrioridad(
+            String prioridad
+    ) {
+
+        this.prioridad =
+                prioridad;
     }
 }

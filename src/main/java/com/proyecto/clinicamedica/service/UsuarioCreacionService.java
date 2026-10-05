@@ -395,7 +395,7 @@ public class UsuarioCreacionService {
             return null;
         }
 
-
+        //busca en la base de datos el rol por su id, si no lo encuentra devuelve null
         return rolRepository
                 .findById(
                         formulario.getIdRol()
@@ -627,7 +627,7 @@ public class UsuarioCreacionService {
                 )
         );
 
-
+        //no permitir que se guarde la especialidad si el rol no es médico
         if (!rolEsMedico) {
 
             formulario.setIdEspecialidad(

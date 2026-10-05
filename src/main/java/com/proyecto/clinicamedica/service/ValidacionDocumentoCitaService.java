@@ -173,8 +173,8 @@ public class ValidacionDocumentoCitaService {
         // =================================================
 
         try (
-                PDDocument documento =
-                        Loader.loadPDF(
+                PDDocument documento = //PDDocument → representa un PDF cargado en memoria.
+                        Loader.loadPDF( //intenta abrir los bytes del archivo como un PDF real usando PDFBox
                                 contenido
                         )
         ) {
@@ -190,7 +190,7 @@ public class ValidacionDocumentoCitaService {
 
 
             // =============================================
-            // NO DEBE ESTAR ENCRIPTADO
+            // NO DEBE ESTAR ENCRIPTADO o PROTEGIDO CON CONTRASEÑA
             // =============================================
 
             if (documento.isEncrypted()) {

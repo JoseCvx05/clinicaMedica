@@ -59,7 +59,6 @@ public class PagoFormularioValidator
     private static final String MENSAJE_CVV =
             "El CVV debe contener 3 ó 4 dígitos numéricos.";
 
-
     // =====================================================
     // PATRONES
     // =====================================================

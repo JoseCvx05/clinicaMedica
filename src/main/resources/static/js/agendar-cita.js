@@ -1,6 +1,6 @@
 /**
  * =========================================================
- * JAVASCRIPT - CU-03 AGENDAR CITAS
+ * JAVASCRIPT - CU-03 / CU-08 FA02 AGENDAR CITAS
  * =========================================================
  *
  * Funciones actuales:
@@ -11,6 +11,7 @@
  * - Seleccionar horario.
  * - Enviar fecha/hora al backend.
  * - Mostrar contador de reserva temporal.
+ * - Soportar Paciente, Recepción y Médico.
  *
  * =========================================================
  */
@@ -258,6 +259,10 @@ function obtenerRutaBaseCitas() {
     );
 
 
+    // =====================================================
+    // CU-05 - RECEPCIÓN / WALK-IN
+    // =====================================================
+
     if (rutaActual.startsWith(
         "/interno/recepcion/"
     )) {
@@ -265,6 +270,22 @@ function obtenerRutaBaseCitas() {
         return "/interno/recepcion/citas";
     }
 
+
+    // =====================================================
+    // CU-08 FA02 - MÉDICO / SEGUIMIENTO
+    // =====================================================
+
+    if (rutaActual.startsWith(
+        "/interno/medico/"
+    )) {
+
+        return "/interno/medico/citas";
+    }
+
+
+    // =====================================================
+    // CU-03 - PACIENTE
+    // =====================================================
 
     return "/paciente/citas";
 }
@@ -588,14 +609,22 @@ function inicializarContadorReserva() {
                 );
 
 
-                // =============================================
-                // FA03
-                // =============================================
+                // =========================================
+                // RESERVA EXPIRADA
+                // =========================================
                 //
-                // No liberamos únicamente desde JavaScript.
-                // El backend comprobará si la reserva
-                // realmente expiró.
-                // =============================================
+                // JavaScript únicamente redirige.
+                //
+                // El backend vuelve a comprobar el estado
+                // real de la reserva antes de continuar.
+                //
+                // Funciona para:
+                //
+                // - Paciente
+                // - Recepción
+                // - Médico / seguimiento
+                //
+                // =========================================
 
                 const rutaBase =
                     obtenerRutaBaseCitas();

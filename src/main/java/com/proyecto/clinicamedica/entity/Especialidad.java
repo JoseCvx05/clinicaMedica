@@ -69,11 +69,8 @@ public class Especialidad {
      * true  = activo
      * false = inactivo
      */
-    @Column(
-            name = "activo",
-            nullable = false
-    )
-    private Boolean activo = true;
+    @Column(name = "activo")
+    private Boolean activo;
 
 
     /**

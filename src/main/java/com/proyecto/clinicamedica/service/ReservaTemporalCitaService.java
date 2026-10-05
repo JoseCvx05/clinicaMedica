@@ -168,7 +168,7 @@ public class ReservaTemporalCitaService {
                         .findById(
                                 idPaciente
                         )
-                        .orElseThrow(
+                        .orElseThrow(  //si no encuentra el paciente, lanza una excepción
                                 () ->
                                         new ReservaCitaInvalidaException(
                                                 "El paciente no existe."
@@ -190,9 +190,10 @@ public class ReservaTemporalCitaService {
         // VALIDAR SUCURSAL
         // =================================================
 
+
         if (!catalogoCitaService
                 .existeSucursalActiva(
-                        idSucursal
+                        idSucursal // Verifica que la sucursal exista y esté activa.
                 )) {
 
             throw new ReservaCitaInvalidaException(
@@ -247,7 +248,7 @@ public class ReservaTemporalCitaService {
         // no podrán completar esta sección al mismo tiempo.
         // =================================================
 
-        Usuario medico =
+        Usuario medico = // Bloquea al médico para evitar que otros pacientes lo reserven al mismo tiempo.
                 usuarioRepository
                         .findByIdForUpdate(
                                 idMedico
@@ -259,7 +260,7 @@ public class ReservaTemporalCitaService {
                                         )
                         );
 
-
+        // verifica el que medico este activo para poder reservar una cita con el, si no esta activo lanza una excepción.z
         if (!Boolean.TRUE.equals(
                 medico.getActivo()
         )) {
@@ -294,14 +295,14 @@ public class ReservaTemporalCitaService {
         // =================================================
         // LIBERAR RESERVAS ANTERIORES DEL PACIENTE
         // =================================================
-
+        // Se liberan las reservas anteriores del paciente para evitar que tenga múltiples reservas activas al mismo tiempo.
         liberarDelPacienteInterno(
                 idPaciente
         );
 
 
         // =================================================
-        // OBTENER SUCURSAL
+        // OBTENER SUCURSAL desde la base de datos para asegurarse de que existe y está activa.
         // =================================================
 
         Sucursal sucursal =
@@ -318,7 +319,7 @@ public class ReservaTemporalCitaService {
 
 
         // =================================================
-        // OBTENER ESPECIALIDAD
+        // OBTENER ESPECIALIDAD DESDE LA BASE DE DATOS PARA ASEGURARSE DE QUE EXISTE Y ESTÁ ACTIVA.
         // =================================================
 
         Especialidad especialidad =
@@ -372,12 +373,14 @@ public class ReservaTemporalCitaService {
         );
 
 
-        reserva.setTokenReserva(
-                UUID.randomUUID()
-                        .toString()
+        reserva.setTokenReserva( // Genera un token único para la reserva temporal.
+                UUID.randomUUID() // sirve para identificar la reserva de manera única y segura.
+                        .toString() //lo convierte a cadena de texto para almacenarlo en la base de datos
         );
 
-
+        // =================================================
+        // ESTABLECER FECHA DE EXPIRACIÓN
+        // =================================================
         reserva.setFechaExpiracion(
                 OffsetDateTime
                         .now(
@@ -388,14 +391,14 @@ public class ReservaTemporalCitaService {
                         )
         );
 
-
+        // GUARDAR RESERVA TEMPORAL ACTIVA LUEGO DE CREARLA
         reserva.setActiva(
                 true
         );
 
 
         // =================================================
-        // GUARDAR RESERVA
+        // GUARDAR RESERVA // segunda barrera para corroborar que el horario haya sido ocupado
         // =================================================
 
         try {
@@ -411,6 +414,7 @@ public class ReservaTemporalCitaService {
                             reserva
                     );
 
+            //maneja el caso de que otro paciente haya ocupado el horario justo al momento de guardar la reserva.
         } catch (DataIntegrityViolationException ex) {
 
             /*
@@ -469,12 +473,12 @@ public class ReservaTemporalCitaService {
         // =================================================
 
         if (!reserva
-                .getFechaExpiracion()
-                .isAfter(
+                .getFechaExpiracion() //obtiene la fecha de expiración de la reserva temporal
+                .isAfter( //verica si la fecha de expiración es después de la fecha actual
                         ahora
                 )) {
 
-            reserva.liberar();
+            reserva.liberar(); //si la reserva ha expirado, se libera inmediatamente para que no quede activa en la base de datos
 
             return Optional.empty();
         }
@@ -652,10 +656,16 @@ public class ReservaTemporalCitaService {
                         zonaHoraria
                 );
 
-
+        // =================================================
+        // OBTENER RESERVAS EXPIRADAS
+        // =================================================
+        //
         List<ReservaTemporalCita> expiradas =
                 reservaTemporalCitaRepository
                         .findTop100ByActivaTrueAndFechaExpiracionLessThanEqualOrderByFechaExpiracionAsc(
+                                //LessThanEqual(ahora) fecha menor o igual a ahora, o sea, ya venció.
+                                //Top100 limita a 100 resultados para evitar sobrecargar la memoria si hay muchas reservas vencidas.
+                                //for recorre la lista de reservas vencidas y las libera una por una.
                                 ahora
                         );
 
@@ -688,13 +698,14 @@ public class ReservaTemporalCitaService {
                 || inicio == null
                 || fin == null) {
 
-            throw new ReservaCitaInvalidaException(
+            throw new ReservaCitaInvalidaException(    //throw new hace que se lance una excepción
                     "Los datos de la reserva están incompletos."
             );
         }
 
 
-        if (!fin.isAfter(
+
+        if (!fin.isAfter( //verifica que la fecha de fin sea después de la fecha de inicio
                 inicio
         )) {
 

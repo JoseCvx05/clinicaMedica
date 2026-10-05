@@ -1,0 +1,951 @@
+<!DOCTYPE html>
+<html lang="es"
+      xmlns:th="http://www.thymeleaf.org">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>
+        Orden de Laboratorio
+    </title>
+
+
+    <style>
+
+        :root {
+            --fondo: #f4f7fb;
+            --tarjeta: #ffffff;
+            --principal: #0f4c81;
+            --principal-hover: #0b3b65;
+            --secundario: #64748b;
+            --texto: #1e293b;
+            --borde: #dbe3ec;
+            --exito: #166534;
+            --exito-fondo: #dcfce7;
+            --error: #991b1b;
+            --error-fondo: #fee2e2;
+        }
+
+
+        * {
+            box-sizing: border-box;
+        }
+
+
+        body {
+            margin: 0;
+            font-family: Arial, Helvetica, sans-serif;
+            background: var(--fondo);
+            color: var(--texto);
+        }
+
+
+        .encabezado {
+            background: var(--principal);
+            color: white;
+            padding: 20px 30px;
+        }
+
+
+        .encabezado-contenido {
+            max-width: 1200px;
+            margin: auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 20px;
+        }
+
+
+        .marca h1 {
+            margin: 0;
+            font-size: 24px;
+        }
+
+
+        .marca p {
+            margin: 5px 0 0;
+            opacity: .85;
+        }
+
+
+        .contenedor {
+            max-width: 1200px;
+            margin: 30px auto;
+            padding: 0 20px 40px;
+        }
+
+
+        .tarjeta {
+            background: var(--tarjeta);
+            border: 1px solid var(--borde);
+            border-radius: 14px;
+            margin-bottom: 22px;
+            box-shadow: 0 4px 12px rgba(15, 23, 42, .05);
+            overflow: hidden;
+        }
+
+
+        .tarjeta-encabezado {
+            padding: 22px 25px;
+            border-bottom: 1px solid var(--borde);
+        }
+
+
+        .tarjeta-encabezado h2 {
+            margin: 0 0 6px;
+            color: var(--principal);
+        }
+
+
+        .tarjeta-encabezado p {
+            margin: 0;
+            color: var(--secundario);
+        }
+
+
+        .tarjeta-contenido {
+            padding: 25px;
+        }
+
+
+        .datos-consulta {
+            display: grid;
+            grid-template-columns:
+                repeat(auto-fit, minmax(220px, 1fr));
+            gap: 15px;
+        }
+
+
+        .dato {
+            background: #f8fafc;
+            border: 1px solid var(--borde);
+            border-radius: 10px;
+            padding: 15px;
+        }
+
+
+        .dato strong {
+            display: block;
+            margin-bottom: 5px;
+            color: var(--secundario);
+            font-size: 13px;
+        }
+
+
+        .dato span {
+            font-weight: bold;
+        }
+
+
+        .mensaje {
+            border-radius: 10px;
+            padding: 14px 16px;
+            margin-bottom: 20px;
+        }
+
+
+        .mensaje-error {
+            background: var(--error-fondo);
+            color: var(--error);
+            border: 1px solid #fecaca;
+        }
+
+
+        .mensaje-exito {
+            background: var(--exito-fondo);
+            color: var(--exito);
+            border: 1px solid #bbf7d0;
+        }
+
+
+        .catalogo {
+            display: grid;
+            gap: 15px;
+        }
+
+
+        .examen {
+            border: 1px solid var(--borde);
+            border-radius: 12px;
+            padding: 18px;
+            transition: .2s ease;
+            cursor: pointer;
+            display: block;
+        }
+
+
+        .examen:hover {
+            border-color: var(--principal);
+            box-shadow: 0 3px 9px rgba(15, 76, 129, .08);
+        }
+
+
+        .examen.seleccionado {
+            border-color: var(--principal);
+            background: #eff6ff;
+        }
+
+
+        .examen-superior {
+            display: flex;
+            align-items: flex-start;
+            gap: 14px;
+        }
+
+
+        .examen-checkbox {
+            width: 20px;
+            height: 20px;
+            margin-top: 2px;
+            cursor: pointer;
+        }
+
+
+        .examen-info {
+            flex: 1;
+        }
+
+
+        .examen-info h3 {
+            margin: 0 0 5px;
+            font-size: 17px;
+        }
+
+
+        .laboratorio {
+            color: var(--principal);
+            font-size: 13px;
+            font-weight: bold;
+            margin-bottom: 8px;
+        }
+
+
+        .descripcion {
+            color: var(--secundario);
+            margin: 0 0 12px;
+            line-height: 1.5;
+        }
+
+
+        .detalles-examen {
+            display: grid;
+            grid-template-columns:
+                repeat(auto-fit, minmax(150px, 1fr));
+            gap: 10px;
+        }
+
+
+        .detalle {
+            background: #f8fafc;
+            padding: 9px 11px;
+            border-radius: 8px;
+            font-size: 13px;
+        }
+
+
+        .detalle strong {
+            display: block;
+            color: var(--secundario);
+            margin-bottom: 3px;
+        }
+
+
+        .sin-examenes {
+            padding: 25px;
+            text-align: center;
+            border: 1px dashed var(--borde);
+            border-radius: 10px;
+            color: var(--secundario);
+        }
+
+
+        .campo {
+            margin-bottom: 20px;
+        }
+
+
+        .campo label {
+            display: block;
+            font-weight: bold;
+            margin-bottom: 8px;
+        }
+
+
+        textarea {
+            width: 100%;
+            min-height: 130px;
+            resize: vertical;
+            padding: 12px;
+            border: 1px solid var(--borde);
+            border-radius: 9px;
+            font-family: inherit;
+            font-size: 15px;
+        }
+
+
+        textarea:focus {
+            outline: none;
+            border-color: var(--principal);
+        }
+
+
+        .ayuda {
+            margin-top: 6px;
+            color: var(--secundario);
+            font-size: 13px;
+        }
+
+
+        .barra-seleccion {
+            margin-bottom: 18px;
+            background: #f8fafc;
+            border: 1px solid var(--borde);
+            border-radius: 9px;
+            padding: 12px 14px;
+            font-weight: bold;
+        }
+
+
+        .acciones {
+            display: flex;
+            justify-content: flex-end;
+            gap: 12px;
+            margin-top: 25px;
+            flex-wrap: wrap;
+        }
+
+
+        .boton {
+            border: none;
+            border-radius: 9px;
+            padding: 12px 20px;
+            font-size: 15px;
+            font-weight: bold;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+
+        .boton-secundario {
+            background: #e2e8f0;
+            color: #334155;
+        }
+
+
+        .boton-principal {
+            background: var(--principal);
+            color: white;
+        }
+
+
+        .boton-principal:hover {
+            background: var(--principal-hover);
+        }
+
+
+        .boton-principal:disabled {
+            opacity: .55;
+            cursor: not-allowed;
+        }
+
+
+        .advertencia {
+            margin-top: 20px;
+            background: #fffbeb;
+            border: 1px solid #fde68a;
+            color: #854d0e;
+            border-radius: 10px;
+            padding: 14px;
+        }
+
+
+        @media (max-width: 700px) {
+
+            .encabezado-contenido {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+
+            .acciones {
+                flex-direction: column-reverse;
+            }
+
+
+            .boton {
+                width: 100%;
+                text-align: center;
+            }
+        }
+
+    </style>
+
+</head>
+
+
+<body>
+
+
+<header class="encabezado">
+
+    <div class="encabezado-contenido">
+
+        <div class="marca">
+
+            <h1>
+                SANTOS
+            </h1>
+
+            <p>
+                Módulo Médico · Orden de Laboratorio
+            </p>
+
+        </div>
+
+    </div>
+
+</header>
+
+
+<main class="contenedor">
+
+
+    <!-- =================================================
+         MENSAJES
+         ================================================= -->
+
+    <div class="mensaje mensaje-error"
+         th:if="${mensajeError != null}"
+         th:text="${mensajeError}">
+    </div>
+
+
+    <div class="mensaje mensaje-exito"
+         th:if="${mensajeExito != null}"
+         th:text="${mensajeExito}">
+    </div>
+
+
+
+    <!-- =================================================
+         CONTEXTO
+         ================================================= -->
+
+    <section class="tarjeta">
+
+        <div class="tarjeta-encabezado">
+
+            <h2>
+                Generar orden de laboratorio
+            </h2>
+
+            <p>
+                Seleccione los exámenes requeridos para el paciente.
+            </p>
+
+        </div>
+
+
+        <div class="tarjeta-contenido">
+
+            <div class="datos-consulta">
+
+                <div class="dato">
+
+                    <strong>
+                        Número de cita
+                    </strong>
+
+                    <span th:text="${idCita}">
+                        0
+                    </span>
+
+                </div>
+
+
+                <div class="dato">
+
+                    <strong>
+                        Consulta médica
+                    </strong>
+
+                    <span th:text="${idConsulta}">
+                        0
+                    </span>
+
+                </div>
+
+
+                <div class="dato">
+
+                    <strong>
+                        Estado
+                    </strong>
+
+                    <span>
+                        Evaluado — Pendiente de cierre
+                    </span>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </section>
+
+
+
+    <!-- =================================================
+         FORMULARIO
+         ================================================= -->
+
+    <form th:action="@{/interno/medico/citas/{idCita}/laboratorio(
+                        idCita=${idCita}
+                     )}"
+          method="post"
+          id="form-orden">
+
+
+        <!-- =============================================
+             CSRF
+             ============================================= -->
+
+        <input th:if="${_csrf != null}"
+               type="hidden"
+               th:name="${_csrf.parameterName}"
+               th:value="${_csrf.token}">
+
+
+
+        <!-- =============================================
+             CATÁLOGO
+             ============================================= -->
+
+        <section class="tarjeta">
+
+            <div class="tarjeta-encabezado">
+
+                <h2>
+                    Catálogo de exámenes
+                </h2>
+
+                <p>
+                    Debe seleccionar al menos un examen.
+                </p>
+
+            </div>
+
+
+            <div class="tarjeta-contenido">
+
+
+                <div class="barra-seleccion">
+
+                    Exámenes seleccionados:
+
+                    <span id="contador">
+                        0
+                    </span>
+
+                </div>
+
+
+
+                <!-- SIN RESULTADOS -->
+
+                <div class="sin-examenes"
+                     th:if="${examenes == null or examenes.isEmpty()}">
+
+                    No existen exámenes de laboratorio
+                    activos disponibles.
+
+                </div>
+
+
+
+                <!-- CATÁLOGO -->
+
+                <div class="catalogo"
+                     th:if="${examenes != null and !examenes.isEmpty()}">
+
+
+                    <label class="examen"
+                           th:each="examen : ${examenes}">
+
+
+                        <div class="examen-superior">
+
+
+                            <input type="checkbox"
+                                   class="examen-checkbox"
+                                   name="idsExamenes"
+                                   th:value="${examen.idExamen}">
+
+
+                            <div class="examen-info">
+
+
+                                <div class="laboratorio"
+                                     th:text="${examen.laboratorio}">
+                                    Laboratorio
+                                </div>
+
+
+                                <h3 th:text="${examen.nombre}">
+                                    Examen
+                                </h3>
+
+
+                                <p class="descripcion"
+                                   th:text="${examen.descripcion != null
+                                             ? examen.descripcion
+                                             : 'Sin descripción registrada.'}">
+                                    Descripción
+                                </p>
+
+
+                                <div class="detalles-examen">
+
+
+                                    <div class="detalle">
+
+                                        <strong>
+                                            Precio
+                                        </strong>
+
+                                        <span>
+                                            Q
+                                            <span th:text="${#numbers.formatDecimal(
+                                                    examen.precio,
+                                                    1,
+                                                    2
+                                            )}">
+                                                0.00
+                                            </span>
+                                        </span>
+
+                                    </div>
+
+
+
+                                    <div class="detalle">
+
+                                        <strong>
+                                            Rango de referencia
+                                        </strong>
+
+                                        <span th:text="${examen.rangoReferencia != null
+                                                         ? examen.rangoReferencia
+                                                         : 'No especificado'}">
+                                            Rango
+                                        </span>
+
+                                    </div>
+
+
+
+                                    <div class="detalle">
+
+                                        <strong>
+                                            Unidad
+                                        </strong>
+
+                                        <span th:text="${examen.unidad != null
+                                                         ? examen.unidad
+                                                         : 'No especificada'}">
+                                            Unidad
+                                        </span>
+
+                                    </div>
+
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                    </label>
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+
+        <!-- =============================================
+             OBSERVACIONES
+             ============================================= -->
+
+        <section class="tarjeta">
+
+            <div class="tarjeta-encabezado">
+
+                <h2>
+                    Observaciones médicas
+                </h2>
+
+                <p>
+                    Campo opcional.
+                </p>
+
+            </div>
+
+
+            <div class="tarjeta-contenido">
+
+
+                <div class="campo">
+
+                    <label for="observaciones">
+                        Observaciones
+                    </label>
+
+
+                    <textarea id="observaciones"
+                              name="observaciones"
+                              maxlength="5000"
+                              placeholder="Ejemplo: realizar en ayunas, prioridad clínica, indicaciones especiales..."></textarea>
+
+
+                    <div class="ayuda">
+
+                        Máximo 5000 caracteres.
+
+                        <span id="contador-caracteres">
+                            0
+                        </span>
+
+                        / 5000
+
+                    </div>
+
+                </div>
+
+
+
+                <div class="advertencia">
+
+                    <strong>
+                        Importante:
+                    </strong>
+
+                    la orden solamente podrá generarse
+                    mientras la consulta médica se encuentre
+                    finalizada y la atención continúe pendiente
+                    de cierre.
+
+                </div>
+
+
+
+                <div class="acciones">
+
+
+                    <a th:href="@{/interno/medico}"
+                       class="boton boton-secundario">
+
+                        Cancelar
+
+                    </a>
+
+
+                    <button type="submit"
+                            id="boton-guardar"
+                            class="boton boton-principal"
+                            disabled>
+
+                        Guardar orden
+
+                    </button>
+
+                </div>
+
+            </div>
+
+        </section>
+
+    </form>
+
+</main>
+
+
+
+<script>
+
+    document.addEventListener(
+        "DOMContentLoaded",
+        function () {
+
+            const checks =
+                document.querySelectorAll(
+                    ".examen-checkbox"
+                );
+
+
+            const contador =
+                document.getElementById(
+                    "contador"
+                );
+
+
+            const botonGuardar =
+                document.getElementById(
+                    "boton-guardar"
+                );
+
+
+            const observaciones =
+                document.getElementById(
+                    "observaciones"
+                );
+
+
+            const contadorCaracteres =
+                document.getElementById(
+                    "contador-caracteres"
+                );
+
+
+            // =============================================
+            // ACTUALIZAR SELECCIÓN
+            // =============================================
+
+            function actualizarSeleccion() {
+
+                let cantidad = 0;
+
+
+                checks.forEach(
+                    function (check) {
+
+                        const tarjeta =
+                            check.closest(
+                                ".examen"
+                            );
+
+
+                        if (check.checked) {
+
+                            cantidad++;
+
+                            if (tarjeta) {
+
+                                tarjeta.classList.add(
+                                    "seleccionado"
+                                );
+                            }
+
+                        } else {
+
+                            if (tarjeta) {
+
+                                tarjeta.classList.remove(
+                                    "seleccionado"
+                                );
+                            }
+                        }
+                    }
+                );
+
+
+                contador.textContent =
+                    cantidad;
+
+
+                botonGuardar.disabled =
+                    cantidad === 0;
+            }
+
+
+            checks.forEach(
+                function (check) {
+
+                    check.addEventListener(
+                        "change",
+                        actualizarSeleccion
+                    );
+                }
+            );
+
+
+            // =============================================
+            // CONTADOR DE OBSERVACIONES
+            // =============================================
+
+            function actualizarCaracteres() {
+
+                contadorCaracteres.textContent =
+                    observaciones.value.length;
+            }
+
+
+            observaciones.addEventListener(
+                "input",
+                actualizarCaracteres
+            );
+
+
+            // =============================================
+            // CONFIRMACIÓN
+            // =============================================
+
+            document
+                .getElementById(
+                    "form-orden"
+                )
+                .addEventListener(
+                    "submit",
+                    function (event) {
+
+                        const seleccionados =
+                            document.querySelectorAll(
+                                ".examen-checkbox:checked"
+                            );
+
+
+                        if (seleccionados.length === 0) {
+
+                            event.preventDefault();
+
+                            alert(
+                                "Debe seleccionar al menos un examen de laboratorio."
+                            );
+
+                            return;
+                        }
+
+
+                        const confirmar =
+                            window.confirm(
+                                "¿Desea generar la orden de laboratorio con los exámenes seleccionados?"
+                            );
+
+
+                        if (!confirmar) {
+
+                            event.preventDefault();
+                        }
+                    }
+                );
+
+
+            actualizarSeleccion();
+
+            actualizarCaracteres();
+        }
+    );
+
+</script>
+
+
+</body>
+</html> 

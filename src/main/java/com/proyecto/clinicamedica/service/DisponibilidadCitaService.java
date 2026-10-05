@@ -613,7 +613,7 @@ public class DisponibilidadCitaService {
 
 
         // =================================================
-        // DURACIÓN EXACTA
+        // DURACIÓN EXACTA de la cita según el bloque
         // =================================================
 
         long duracion =

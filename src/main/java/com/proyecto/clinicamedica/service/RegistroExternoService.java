@@ -178,15 +178,7 @@ public class RegistroExternoService {
                 obtenerRolPaciente();
 
 
-        if (rolPaciente == null) {
 
-            resultado.agregarError(
-                    "registro",
-                    "No fue posible completar el registro en este momento."
-            );
-
-            return resultado;
-        }
 
 
         // =================================================
@@ -237,7 +229,7 @@ public class RegistroExternoService {
 
 
         // =================================================
-        // 7. PERSISTIR USUARIO
+        // 7. PERSISTIR USUARIO// evita que se guarden varios usuarios al mismo tiempo con el mismo DPI, NIT etc
         // =================================================
 
         try {

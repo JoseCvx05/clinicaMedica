@@ -68,6 +68,9 @@ public class ConfirmacionCitaService {
     private final ReservaTemporalCitaService
             reservaTemporalCitaService;
 
+    private final SeguimientoCitaService
+            seguimientoCitaService;
+
     private final int duracionPagoMinutos;
 
     private final ZoneId zonaHoraria;
@@ -80,6 +83,7 @@ public class ConfirmacionCitaService {
     public ConfirmacionCitaService(
             CitaRepository citaRepository,
             EstadoCitaRepository estadoCitaRepository,
+            SeguimientoCitaService seguimientoCitaService,
             ReservaTemporalCitaService reservaTemporalCitaService,
 
             @Value("${cita.pago.duracion-minutos:10}")
@@ -97,6 +101,9 @@ public class ConfirmacionCitaService {
 
         this.reservaTemporalCitaService =
                 reservaTemporalCitaService;
+
+        this.seguimientoCitaService =
+                seguimientoCitaService;
 
         this.duracionPagoMinutos =
                 duracionPagoMinutos;
@@ -126,6 +133,23 @@ public class ConfirmacionCitaService {
                 paciente,
                 wizard
         );
+
+        // =================================================
+// SEGURIDAD
+//
+// El flujo normal del paciente NO puede crear
+// citas de seguimiento.
+// =================================================
+
+        if (Boolean.TRUE.equals(
+                wizard.getEsSeguimiento()
+        )) {
+
+            throw new ReservaCitaInvalidaException(
+                    "Las citas de seguimiento solamente pueden "
+                            + "ser agendadas por el Médico responsable."
+            );
+        }
 
 
         // =================================================
@@ -266,7 +290,7 @@ public class ConfirmacionCitaService {
 
 
         // =================================================
-        // ESTADO
+        // ESTADO / CAMBIA DE PENDIENTE DE PAGO
         // =================================================
 
         cita.setEstadoCita(
@@ -391,7 +415,7 @@ public class ConfirmacionCitaService {
         // WIZARD
         // =================================================
 
-        if (wizard == null) {
+        if (wizard == null) { // no se puede continuar sin datos de la cita y lanza un mensaje
 
             throw new ReservaCitaInvalidaException(
                     "Los datos de la cita no están disponibles."
@@ -400,13 +424,13 @@ public class ConfirmacionCitaService {
 
 
         // =================================================
-        // TOKEN DE RESERVA
+        // TOKEN DE RESERVA / VALIDAR QUE EXISTA UNA RESERVA TEMPORAL
         // =================================================
 
         if (wizard.getTokenReserva() == null
                 || wizard
                 .getTokenReserva()
-                .isBlank()) {
+                .isBlank()) {  // significa que no hay una reserva temporal para confirmar
 
             throw new ReservaCitaInvalidaException(
                     "No existe una reserva temporal para confirmar."
@@ -513,10 +537,10 @@ public class ConfirmacionCitaService {
 
         ReservaTemporalCita reserva =
                 reservaTemporalCitaService
-                        .buscarVigente(
+                        .buscarVigente( //busca un reserva temporal activa
                                 wizard.getTokenReserva()
                         )
-                        .orElseThrow(
+                        .orElseThrow( // sino se encotra lanza una excepción
                                 () ->
                                         new ReservaExpiradaException(
                                                 MENSAJE_RESERVA_EXPIRADA
@@ -525,7 +549,7 @@ public class ConfirmacionCitaService {
 
 
         // =================================================
-        // VALIDAR PACIENTE DE LA RESERVA
+        // VALIDAR PACIENTE DE LA RESERVA / EVITA QUE OTRO PACIENTE CONFIRME LA CITA DE OTRO USUARIO
         // =================================================
 
         if (reserva.getPaciente() == null
@@ -537,6 +561,26 @@ public class ConfirmacionCitaService {
             throw new ReservaCitaInvalidaException(
                     "La reserva no pertenece al paciente indicado."
             );
+        }
+
+        // =================================================
+// CU-08 FA02
+// VALIDAR CITA DE SEGUIMIENTO
+// =================================================
+
+        boolean esSeguimiento =
+                Boolean.TRUE.equals(
+                        wizard.getEsSeguimiento()
+                );
+
+        if (esSeguimiento) {
+
+            seguimientoCitaService
+                    .validarParaConfirmacion(
+                            wizard,
+                            paciente,
+                            reserva
+                    );
         }
 
 
@@ -626,9 +670,43 @@ public class ConfirmacionCitaService {
         );
 
 
-        cita.setEsSeguimiento(
-                false
-        );
+        // =================================================
+// CU-08 FA02
+// DATOS DE SEGUIMIENTO
+// =================================================
+
+        if (esSeguimiento) {
+
+            cita.setEsSeguimiento(
+                    true
+            );
+
+            cita.setTipoSeguimiento(
+                    wizard.getTipoSeguimiento()
+            );
+
+            cita.setIdConsultaOrigen(
+                    wizard.getIdConsultaOrigen()
+            );
+
+        } else {
+
+            /*
+             * CU-03 / CU-05 mantienen exactamente
+             * su comportamiento anterior.
+             */
+            cita.setEsSeguimiento(
+                    false
+            );
+
+            cita.setTipoSeguimiento(
+                    null
+            );
+
+            cita.setIdConsultaOrigen(
+                    null
+            );
+        }
 
 
         // =================================================
@@ -681,8 +759,8 @@ public class ConfirmacionCitaService {
         // =================================================
 
         Cita citaGuardada =
-                citaRepository
-                        .saveAndFlush(
+                citaRepository //aceso a la tabla cita
+                        .saveAndFlush(  //guarda y sincroniza con la bd
                                 cita
                         );
 
