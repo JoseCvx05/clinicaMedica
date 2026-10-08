@@ -1,0 +1,997 @@
+<!DOCTYPE html>
+<html lang="es"
+      xmlns:th="http://www.thymeleaf.org">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>
+        Comprobante de Laboratorio
+    </title>
+
+
+    <style>
+
+        :root {
+            --fondo: #f4f7fb;
+            --tarjeta: #ffffff;
+            --principal: #0f4c81;
+            --principal-hover: #0b3b65;
+            --verde: #166534;
+            --verde-fondo: #dcfce7;
+            --texto: #1e293b;
+            --secundario: #64748b;
+            --borde: #dbe3ec;
+            --azul-suave: #eff6ff;
+        }
+
+
+        * {
+            box-sizing: border-box;
+        }
+
+
+        body {
+            margin: 0;
+
+            font-family:
+                    Arial,
+                    Helvetica,
+                    sans-serif;
+
+            background: var(--fondo);
+
+            color: var(--texto);
+        }
+
+
+        /* =================================================
+           ENCABEZADO
+           ================================================= */
+
+        .encabezado {
+            background: var(--principal);
+
+            color: white;
+
+            padding: 20px 30px;
+        }
+
+
+        .encabezado-contenido {
+            max-width: 1050px;
+
+            margin: auto;
+
+            display: flex;
+
+            justify-content: space-between;
+            align-items: center;
+
+            gap: 20px;
+        }
+
+
+        .marca h1 {
+            margin: 0;
+
+            font-size: 24px;
+        }
+
+
+        .marca p {
+            margin: 5px 0 0;
+
+            opacity: .85;
+        }
+
+
+        /* =================================================
+           CONTENEDOR
+           ================================================= */
+
+        .contenedor {
+            max-width: 1050px;
+
+            margin: 30px auto;
+
+            padding: 0 20px 40px;
+        }
+
+
+        /* =================================================
+           COMPROBANTE
+           ================================================= */
+
+        .comprobante {
+            background: var(--tarjeta);
+
+            border: 1px solid var(--borde);
+
+            border-radius: 15px;
+
+            overflow: hidden;
+
+            box-shadow:
+                    0 6px 18px
+                    rgba(15, 23, 42, .07);
+        }
+
+
+        /* =================================================
+           CABECERA COMPROBANTE
+           ================================================= */
+
+        .cabecera-comprobante {
+            padding: 28px;
+
+            background: linear-gradient(
+                    135deg,
+                    #f0fdf4,
+                    #ffffff
+            );
+
+            border-bottom:
+                    1px solid var(--borde);
+
+            display: flex;
+
+            justify-content: space-between;
+            align-items: center;
+
+            gap: 25px;
+
+            flex-wrap: wrap;
+        }
+
+
+        .aprobado {
+            display: flex;
+
+            align-items: center;
+
+            gap: 16px;
+        }
+
+
+        .icono-aprobado {
+            width: 55px;
+            height: 55px;
+
+            border-radius: 50%;
+
+            background: var(--verde-fondo);
+
+            color: var(--verde);
+
+            display: flex;
+
+            align-items: center;
+            justify-content: center;
+
+            font-size: 28px;
+
+            font-weight: bold;
+        }
+
+
+        .aprobado h2 {
+            margin: 0 0 5px;
+
+            color: var(--verde);
+        }
+
+
+        .aprobado p {
+            margin: 0;
+
+            color: var(--secundario);
+        }
+
+
+        .transaccion {
+            padding: 13px 16px;
+
+            background: white;
+
+            border: 1px solid var(--borde);
+
+            border-radius: 10px;
+
+            min-width: 280px;
+        }
+
+
+        .transaccion strong {
+            display: block;
+
+            margin-bottom: 5px;
+
+            color: var(--secundario);
+
+            font-size: 11px;
+
+            text-transform: uppercase;
+        }
+
+
+        .transaccion span {
+            color: var(--principal);
+
+            font-weight: bold;
+
+            word-break: break-all;
+        }
+
+
+        /* =================================================
+           CONTENIDO
+           ================================================= */
+
+        .contenido {
+            padding: 28px;
+        }
+
+
+        .titulo-seccion {
+            margin: 0 0 15px;
+
+            color: var(--principal);
+
+            font-size: 18px;
+        }
+
+
+        .seccion {
+            margin-bottom: 28px;
+        }
+
+
+        /* =================================================
+           DATOS
+           ================================================= */
+
+        .datos {
+            display: grid;
+
+            grid-template-columns:
+                    repeat(
+                            2,
+                            minmax(0, 1fr)
+                    );
+
+            gap: 14px;
+        }
+
+
+        .dato {
+            padding: 14px;
+
+            border: 1px solid var(--borde);
+
+            border-radius: 10px;
+
+            background: #f8fafc;
+        }
+
+
+        .dato strong {
+            display: block;
+
+            margin-bottom: 6px;
+
+            color: var(--secundario);
+
+            font-size: 11px;
+
+            text-transform: uppercase;
+        }
+
+
+        .numero-orden {
+            color: var(--principal);
+
+            font-weight: bold;
+        }
+
+
+        /* =================================================
+           TABLA
+           ================================================= */
+
+        .tabla-contenedor {
+            overflow-x: auto;
+
+            border: 1px solid var(--borde);
+
+            border-radius: 10px;
+        }
+
+
+        table {
+            width: 100%;
+
+            border-collapse: collapse;
+        }
+
+
+        thead {
+            background: #f8fafc;
+        }
+
+
+        th,
+        td {
+            padding: 13px 12px;
+
+            border-bottom:
+                    1px solid var(--borde);
+
+            text-align: left;
+        }
+
+
+        th {
+            font-size: 11px;
+
+            color: var(--secundario);
+
+            text-transform: uppercase;
+        }
+
+
+        tbody tr:last-child td {
+            border-bottom: none;
+        }
+
+
+        .precio {
+            text-align: right;
+        }
+
+
+        /* =================================================
+           PAGO
+           ================================================= */
+
+        .pago-grid {
+            display: grid;
+
+            grid-template-columns:
+                    repeat(
+                            auto-fit,
+                            minmax(180px, 1fr)
+                    );
+
+            gap: 14px;
+        }
+
+
+        .pago-item {
+            border: 1px solid var(--borde);
+
+            border-radius: 10px;
+
+            padding: 14px;
+
+            background: var(--azul-suave);
+        }
+
+
+        .pago-item strong {
+            display: block;
+
+            margin-bottom: 5px;
+
+            color: var(--secundario);
+
+            font-size: 11px;
+
+            text-transform: uppercase;
+        }
+
+
+        /* =================================================
+           TOTAL
+           ================================================= */
+
+        .total {
+            margin-top: 20px;
+
+            padding: 20px;
+
+            border-radius: 12px;
+
+            background: var(--verde-fondo);
+
+            display: flex;
+
+            justify-content: space-between;
+            align-items: center;
+
+            gap: 20px;
+        }
+
+
+        .total span {
+            color: var(--verde);
+
+            font-weight: bold;
+        }
+
+
+        .total strong {
+            color: var(--verde);
+
+            font-size: 28px;
+        }
+
+
+        /* =================================================
+           ACCIONES
+           ================================================= */
+
+        .acciones {
+            margin-top: 24px;
+
+            display: flex;
+
+            justify-content: space-between;
+
+            gap: 12px;
+
+            flex-wrap: wrap;
+        }
+
+
+        .boton {
+            padding: 12px 18px;
+
+            border-radius: 9px;
+
+            border: none;
+
+            font-weight: bold;
+
+            cursor: pointer;
+
+            text-decoration: none;
+
+            font-size: 14px;
+        }
+
+
+        .boton-principal {
+            background: var(--principal);
+
+            color: white;
+        }
+
+
+        .boton-principal:hover {
+            background: var(--principal-hover);
+        }
+
+
+        .boton-secundario {
+            background: #e2e8f0;
+
+            color: #334155;
+        }
+
+
+        /* =================================================
+           IMPRESIÓN
+           ================================================= */
+
+        @media print {
+
+            body {
+                background: white;
+            }
+
+
+            .encabezado,
+            .acciones {
+                display: none;
+            }
+
+
+            .contenedor {
+                max-width: none;
+
+                margin: 0;
+
+                padding: 0;
+            }
+
+
+            .comprobante {
+                box-shadow: none;
+
+                border: none;
+            }
+        }
+
+
+        @media (max-width: 700px) {
+
+            .datos {
+                grid-template-columns: 1fr;
+            }
+
+
+            .transaccion {
+                min-width: 100%;
+            }
+
+
+            .acciones {
+                flex-direction: column;
+            }
+
+
+            .acciones .boton {
+                width: 100%;
+
+                text-align: center;
+            }
+        }
+
+    </style>
+
+</head>
+
+
+<body>
+
+
+<!-- =====================================================
+     ENCABEZADO
+     ===================================================== -->
+
+<header class="encabezado">
+
+    <div class="encabezado-contenido">
+
+        <div class="marca">
+
+            <h1>
+                SANTOS
+            </h1>
+
+            <p>
+                Caja · Comprobante de Laboratorio
+            </p>
+
+        </div>
+
+    </div>
+
+</header>
+
+
+
+<main class="contenedor">
+
+
+    <section class="comprobante">
+
+
+        <!-- =================================================
+             CABECERA
+             ================================================= -->
+
+        <div class="cabecera-comprobante">
+
+
+            <div class="aprobado">
+
+
+                <div class="icono-aprobado">
+                    ✓
+                </div>
+
+
+                <div>
+
+                    <h2>
+                        Pago registrado
+                    </h2>
+
+                    <p>
+                        El servicio de laboratorio fue
+                        cobrado correctamente.
+                    </p>
+
+                </div>
+
+
+            </div>
+
+
+
+            <div class="transaccion">
+
+                <strong>
+                    Número de transacción
+                </strong>
+
+                <span th:text="${comprobanteLaboratorio.numeroTransaccion}">
+                    LAB-CAJA-000000
+                </span>
+
+            </div>
+
+
+        </div>
+
+
+
+        <div class="contenido">
+
+
+            <!-- =================================================
+                 INFORMACIÓN GENERAL
+                 ================================================= -->
+
+            <section class="seccion">
+
+                <h3 class="titulo-seccion">
+                    Información del servicio
+                </h3>
+
+
+                <div class="datos">
+
+
+                    <div class="dato">
+
+                        <strong>
+                            Orden de laboratorio
+                        </strong>
+
+                        <span class="numero-orden"
+                              th:text="${comprobanteLaboratorio.numeroOrden}">
+                            LAB-000000
+                        </span>
+
+                    </div>
+
+
+                    <div class="dato">
+
+                        <strong>
+                            Paciente
+                        </strong>
+
+                        <span th:text="${comprobanteLaboratorio.nombrePaciente}">
+                            Paciente
+                        </span>
+
+                    </div>
+
+
+                    <div class="dato">
+
+                        <strong>
+                            Médico solicitante
+                        </strong>
+
+                        <span th:text="${comprobanteLaboratorio.nombreMedico}">
+                            Médico
+                        </span>
+
+                    </div>
+
+
+                    <div class="dato">
+
+                        <strong>
+                            Sucursal
+                        </strong>
+
+                        <span th:text="${comprobanteLaboratorio.sucursal}">
+                            Sucursal
+                        </span>
+
+                    </div>
+
+
+                    <div class="dato">
+
+                        <strong>
+                            Servicio
+                        </strong>
+
+                        <span th:text="${comprobanteLaboratorio.detalleServicio}">
+                            Exámenes de laboratorio
+                        </span>
+
+                    </div>
+
+
+                    <div class="dato">
+
+                        <strong>
+                            Fecha y hora del pago
+                        </strong>
+
+                        <span th:if="${comprobanteLaboratorio.fechaHoraTransaccion != null}"
+                              th:text="${#temporals.format(
+                                            comprobanteLaboratorio.fechaHoraTransaccion,
+                                            'dd/MM/yyyy HH:mm'
+                                       )}">
+                            Fecha
+                        </span>
+
+                        <span th:unless="${comprobanteLaboratorio.fechaHoraTransaccion != null}">
+                            No disponible
+                        </span>
+
+                    </div>
+
+
+                    <div class="dato">
+
+                        <strong>
+                            Cajero
+                        </strong>
+
+                        <span th:if="${comprobanteLaboratorio.cajero != null
+                                     and !comprobanteLaboratorio.cajero.isBlank()}"
+                              th:text="${comprobanteLaboratorio.cajero}">
+                            Cajero
+                        </span>
+
+                        <span th:unless="${comprobanteLaboratorio.cajero != null
+                                         and !comprobanteLaboratorio.cajero.isBlank()}">
+                            No disponible
+                        </span>
+
+                    </div>
+
+
+                </div>
+
+            </section>
+
+
+
+            <!-- =================================================
+                 EXÁMENES
+                 ================================================= -->
+
+            <section class="seccion">
+
+                <h3 class="titulo-seccion">
+                    Exámenes cobrados
+                </h3>
+
+
+                <div class="tabla-contenedor">
+
+                    <table>
+
+                        <thead>
+
+                        <tr>
+
+                            <th>
+                                #
+                            </th>
+
+                            <th>
+                                Examen
+                            </th>
+
+                            <th class="precio">
+                                Precio
+                            </th>
+
+                        </tr>
+
+                        </thead>
+
+
+                        <tbody>
+
+                        <tr th:each="examen, iterador :
+                                     ${comprobanteLaboratorio.examenes}">
+
+                            <td th:text="${iterador.count}">
+                                1
+                            </td>
+
+
+                            <td>
+
+                                <strong th:text="${examen.nombreExamen}">
+                                    Examen
+                                </strong>
+
+                            </td>
+
+
+                            <td class="precio">
+
+                                Q
+                                <span th:text="${#numbers.formatDecimal(
+                                                    examen.precioExamen,
+                                                    1,
+                                                    2
+                                               )}">
+                                    0.00
+                                </span>
+
+                            </td>
+
+                        </tr>
+
+                        </tbody>
+
+                    </table>
+
+                </div>
+
+            </section>
+
+
+
+            <!-- =================================================
+                 INFORMACIÓN DEL PAGO
+                 ================================================= -->
+
+            <section class="seccion">
+
+                <h3 class="titulo-seccion">
+                    Información del pago
+                </h3>
+
+
+                <div class="pago-grid">
+
+
+                    <div class="pago-item">
+
+                        <strong>
+                            Método de pago
+                        </strong>
+
+                        <span th:text="${comprobanteLaboratorio.formaPago}">
+                            Forma de pago
+                        </span>
+
+                    </div>
+
+
+
+                    <!-- EFECTIVO -->
+
+                    <div class="pago-item"
+                         th:if="${comprobanteLaboratorio.esEfectivo()}">
+
+                        <strong>
+                            Monto recibido
+                        </strong>
+
+                        Q
+                        <span th:text="${#numbers.formatDecimal(
+                                            comprobanteLaboratorio.montoRecibido,
+                                            1,
+                                            2
+                                       )}">
+                            0.00
+                        </span>
+
+                    </div>
+
+
+                    <div class="pago-item"
+                         th:if="${comprobanteLaboratorio.esEfectivo()}">
+
+                        <strong>
+                            Cambio
+                        </strong>
+
+                        Q
+                        <span th:text="${#numbers.formatDecimal(
+                                            comprobanteLaboratorio.cambio,
+                                            1,
+                                            2
+                                       )}">
+                            0.00
+                        </span>
+
+                    </div>
+
+
+
+                    <!-- TARJETA -->
+
+                    <div class="pago-item"
+                         th:if="${comprobanteLaboratorio.esTarjeta()}">
+
+                        <strong>
+                            Referencia de tarjeta
+                        </strong>
+
+                        <span th:text="${comprobanteLaboratorio.referenciaTarjeta}">
+                            **** 1234
+                        </span>
+
+                    </div>
+
+
+                </div>
+
+
+
+                <!-- TOTAL -->
+
+                <div class="total">
+
+                    <span>
+                        Total pagado
+                    </span>
+
+                    <strong>
+
+                        Q
+                        <span th:text="${#numbers.formatDecimal(
+                                            comprobanteLaboratorio.montoPagado,
+                                            1,
+                                            2
+                                       )}">
+                            0.00
+                        </span>
+
+                    </strong>
+
+                </div>
+
+            </section>
+
+
+
+            <!-- =================================================
+                 ACCIONES
+                 ================================================= -->
+
+            <div class="acciones">
+
+
+                <a th:href="@{/interno/caja}"
+                   class="boton boton-secundario">
+
+                    Volver a Caja
+
+                </a>
+
+
+                <button type="button"
+                        class="boton boton-principal"
+                        onclick="window.print();">
+
+                    Imprimir comprobante
+
+                </button>
+
+
+            </div>
+
+
+        </div>
+
+    </section>
+
+
+</main>
+
+
+</body>
+</html>

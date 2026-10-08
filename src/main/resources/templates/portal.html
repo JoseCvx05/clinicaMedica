@@ -4,11 +4,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#1B5FA6">
     <title>SANTOS | Clínica médica</title>
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700&family=Figtree:wght@400;500;600&display=swap"
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
           rel="stylesheet">
 
     <link rel="stylesheet" th:href="@{/css/portal.css}">
@@ -51,6 +52,8 @@
         <div class="contenedor inicio-contenido">
 
             <div class="inicio-texto">
+                <span class="etiqueta">Portal del paciente</span>
+
                 <h2>Su salud, en manos de personas que la cuidan.</h2>
 
                 <p>
@@ -107,14 +110,16 @@
             <div class="rejilla-tarjetas">
 
                 <article class="tarjeta tarjeta-destacada">
-                    <div class="tarjeta-icono" aria-hidden="true">
-                        <svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>
+                    <div>
+                        <div class="tarjeta-icono" aria-hidden="true">
+                            <svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>
+                        </div>
+                        <h3>Agendamiento de citas</h3>
+                        <p>
+                            Verifique su registro con su DPI y continúe con el
+                            agendamiento de su cita médica.
+                        </p>
                     </div>
-                    <h3>Agendamiento de citas</h3>
-                    <p>
-                        Verifique su registro con su DPI y continúe con el
-                        agendamiento de su cita médica.
-                    </p>
                     <button type="button" class="boton boton-primario" id="btnAgendarCitaServicios">
                         Agendar cita
                     </button>

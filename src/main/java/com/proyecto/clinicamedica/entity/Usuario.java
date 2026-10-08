@@ -212,6 +212,29 @@ public class Usuario {
     )
     private Boolean activo = true;
 
+    // =====================================================
+// CU-09 - SUPERVISOR DE LABORATORIO
+// =====================================================
+//
+// Este permiso NO representa un nuevo rol.
+//
+// Un usuario debe:
+// - tener rol Laboratorista;
+// - estar activo;
+// - tener supervisorLaboratorio = true;
+//
+// para poder validar resultados antes de publicarlos.
+//
+// La autorización real se verificará nuevamente
+// en el Service de CU-09.
+// =====================================================
+
+    @Column(
+            name = "supervisor_laboratorio",
+            nullable = false
+    )
+    private Boolean supervisorLaboratorio = false;
+
 
     // =====================================================
     // SEGURIDAD DE LOGIN
@@ -285,9 +308,16 @@ public class Usuario {
             activo = true;
         }
 
+
+        if (supervisorLaboratorio == null) {
+            supervisorLaboratorio = false;
+        }
+
+
         if (intentosFallidosLogin == null) {
             intentosFallidosLogin = 0;
         }
+
 
         if (fechaCreacion == null) {
             fechaCreacion = OffsetDateTime.now();

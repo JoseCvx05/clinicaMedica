@@ -33,6 +33,7 @@ import org.springframework.security.web.SecurityFilterChain;
  * - CU-06 Caja.
  * - CU-07 Enfermería.
  * - CU-08 Consulta Médica.
+ * - CU-09 Gestión de Laboratorio.
  * - JWT desde cookie HttpOnly.
  * - Autorización mediante roles.
  * - CSRF.
@@ -199,6 +200,24 @@ public class SecurityConfig {
                                 // CU-05
                                 // RECEPCIÓN
                                 // =========================
+                                //
+                                // Exclusivo:
+                                // RECEPCIONISTA
+                                //
+                                // Incluye:
+                                //
+                                // - Búsqueda de citas.
+                                // - Registro de llegada.
+                                // - Walk-in.
+                                // - Emergencias.
+                                // - Reasignación de médico.
+                                // - Consulta de estado.
+                                //
+                                // Debe permanecer ANTES de:
+                                //
+                                // /interno/**
+                                //
+                                // =========================
 
                                 .requestMatchers(
                                         "/interno/recepcion/**"
@@ -213,6 +232,25 @@ public class SecurityConfig {
                                 // CU-06
                                 // CAJA
                                 // =========================
+                                //
+                                // Exclusivo:
+                                // CAJERO
+                                //
+                                // Incluye:
+                                //
+                                // - Búsqueda de citas.
+                                // - Cobro presencial.
+                                // - Efectivo.
+                                // - Tarjeta.
+                                // - POS.
+                                // - Recibos.
+                                // - Reimpresión.
+                                //
+                                // Debe permanecer ANTES de:
+                                //
+                                // /interno/**
+                                //
+                                // =========================
 
                                 .requestMatchers(
                                         "/interno/caja/**"
@@ -226,6 +264,24 @@ public class SecurityConfig {
                                 // =========================
                                 // CU-07
                                 // ENFERMERÍA
+                                // =========================
+                                //
+                                // Exclusivo:
+                                // ENFERMERO
+                                //
+                                // Incluye:
+                                //
+                                // - Panel de Enfermería.
+                                // - Pacientes presentes.
+                                // - Llamado de pacientes.
+                                // - Toma de signos vitales.
+                                // - Registro de emergencia.
+                                // - Alertas clínicas.
+                                //
+                                // Debe permanecer ANTES de:
+                                //
+                                // /interno/**
+                                //
                                 // =========================
 
                                 .requestMatchers(
@@ -275,7 +331,64 @@ public class SecurityConfig {
 
 
                                 // =========================
+                                // CU-09
+                                // GESTIÓN DE LABORATORIO
+                                // =========================
+                                //
+                                // Exclusivo:
+                                // LABORATORISTA
+                                //
+                                // Incluye:
+                                //
+                                // - Panel de órdenes.
+                                // - Filtros.
+                                // - Detalle de orden.
+                                // - Registro de resultados.
+                                // - Validación de resultados.
+                                // - Publicación.
+                                // - Finalización de órdenes.
+                                //
+                                // IMPORTANTE:
+                                //
+                                // Esta regla debe permanecer
+                                // ANTES del matcher general:
+                                //
+                                // /interno/**
+                                //
+                                // =========================
+
+                                .requestMatchers(
+                                        "/interno/laboratorio",
+                                        "/interno/laboratorio/**"
+                                )
+
+                                .hasRole(
+                                        "LABORATORISTA"
+                                )
+
+
+                                // =========================
                                 // PORTAL INTERNO GENERAL
+                                // =========================
+                                //
+                                // Permite acceder a rutas
+                                // internas que NO poseen una
+                                // regla específica anterior.
+                                //
+                                // Ejemplo:
+                                //
+                                // /interno/dashboard
+                                //
+                                // Las rutas específicas de:
+                                //
+                                // - Recepción
+                                // - Caja
+                                // - Enfermería
+                                // - Médico
+                                // - Laboratorio
+                                //
+                                // ya fueron protegidas arriba.
+                                //
                                 // =========================
 
                                 .requestMatchers(
@@ -311,6 +424,13 @@ public class SecurityConfig {
 
                 // =========================================
                 // CSRF
+                // =========================================
+                //
+                // CU-09 NO se excluye de CSRF.
+                //
+                // Todos los POST internos de Laboratorio
+                // deberán enviar correctamente el token.
+                //
                 // =========================================
 
                 .csrf(
@@ -372,10 +492,28 @@ public class SecurityConfig {
                         logout -> logout
 
 
+                                // =========================
+                                // ENDPOINTS DE LOGOUT
+                                // =========================
+                                //
+                                // Paciente:
+                                //
+                                // POST /logout
+                                //
+                                // Interno:
+                                //
+                                // POST /logout-interno
+                                //
+                                // =========================
+
                                 .logoutRequestMatcher(
 
                                         request -> {
 
+
+                                            // =================
+                                            // SOLO POST
+                                            // =================
 
                                             if (!"POST"
                                                     .equalsIgnoreCase(

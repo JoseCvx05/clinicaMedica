@@ -1,0 +1,151 @@
+/* ==========================================================================
+   SANTOS · Mis citas
+   Mismo sistema visual que el resto del portal. Solo presentación.
+   ========================================================================== */
+
+:root {
+    --lienzo: #F4F7FA;
+    --superficie: #FFFFFF;
+    --tinta: #0F2233;
+    --tinta-suave: #4A5E70;
+    --tinta-tenue: #7A8B9A;
+    --linea: rgba(15, 34, 51, 0.08);
+    --azul: #1B5FA6;
+    --azul-tinte: #E8F0FA;
+    --turquesa: #0B8C86;
+    --turquesa-tinte: #E2F4F2;
+    --salida: cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+
+body {
+    margin: 0;
+    min-height: 100vh;
+    min-height: 100dvh;
+    font-family: 'Plus Jakarta Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
+    font-size: 16px;
+    line-height: 1.6;
+    color: var(--tinta);
+    background:
+            radial-gradient(60% 40% at 8% 0%, rgba(11, 140, 134, 0.09), transparent 70%),
+            radial-gradient(50% 40% at 100% 100%, rgba(27, 95, 166, 0.09), transparent 70%),
+            var(--lienzo);
+    background-attachment: fixed;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+}
+
+h1, h2, p { margin: 0; }
+h1, h2 { letter-spacing: -0.03em; text-wrap: balance; }
+a { text-decoration: none; }
+svg { display: block; fill: none; stroke: currentColor; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
+:focus-visible { outline: 3px solid rgba(27, 95, 166, 0.35); outline-offset: 2px; border-radius: 10px; }
+
+.contenedor { width: min(1100px, 100% - 32px); margin: 0 auto; padding: 32px 0 64px; }
+
+.marca { display: flex; align-items: center; gap: 12px; margin-bottom: 28px; font-weight: 800; letter-spacing: 0.06em; }
+.marca-simbolo { display: grid; place-items: center; width: 40px; height: 40px; color: #fff; background: var(--azul); border-radius: 12px; }
+.marca-simbolo svg { width: 20px; height: 20px; fill: currentColor; stroke: none; }
+.marca small { font-size: 13px; font-weight: 500; letter-spacing: 0; color: var(--tinta-tenue); }
+
+/* ---------- Encabezado ---------- */
+.encabezado-pagina { display: flex; flex-direction: column; gap: 16px; margin-bottom: 32px; }
+.encabezado-pagina h1 { font-size: clamp(1.9rem, 4vw, 2.75rem); font-weight: 800; line-height: 1.08; letter-spacing: -0.04em; }
+.encabezado-pagina p { margin-top: 8px; font-size: 17px; color: var(--tinta-suave); }
+
+.btn-volver {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    align-self: flex-start;
+    min-height: 46px;
+    padding: 0 20px;
+    font-size: 15px;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    color: var(--azul);
+    background: var(--superficie);
+    border: 1.5px solid rgba(27, 95, 166, 0.35);
+    border-radius: 14px;
+    transition: transform 160ms var(--salida), background-color 160ms var(--salida), border-color 160ms var(--salida);
+    -webkit-tap-highlight-color: transparent;
+}
+.btn-volver svg { width: 18px; height: 18px; }
+.btn-volver:active { transform: scale(0.97); transition-duration: 90ms; }
+@media (hover: hover) { .btn-volver:hover { background: var(--azul-tinte); border-color: var(--azul); } }
+
+/* ---------- Estado vacío ---------- */
+.sin-citas {
+    padding: clamp(40px, 8vw, 72px) 24px;
+    text-align: center;
+    background: var(--superficie);
+    border: 1px dashed rgba(15, 34, 51, 0.18);
+    border-radius: 24px;
+}
+.sin-citas-icono { display: grid; place-items: center; width: 64px; height: 64px; margin: 0 auto 20px; color: var(--turquesa); background: var(--turquesa-tinte); border-radius: 20px; }
+.sin-citas-icono svg { width: 30px; height: 30px; }
+.sin-citas h2 { font-size: 22px; font-weight: 800; }
+.sin-citas p { max-width: 38ch; margin: 8px auto 0; color: var(--tinta-suave); }
+
+/* ---------- Listado ---------- */
+.lista-citas { display: grid; gap: 14px; }
+
+.cita-card {
+    padding: 24px 28px;
+    background: var(--superficie);
+    border: 1px solid var(--linea);
+    border-radius: 20px;
+    box-shadow: 0 1px 2px rgba(15, 34, 51, 0.04), 0 18px 40px -26px rgba(15, 34, 51, 0.16);
+    transition: transform 220ms var(--salida), box-shadow 220ms var(--salida);
+    animation: sube 520ms var(--salida) both;
+}
+.cita-card:nth-child(2) { animation-delay: 60ms; }
+.cita-card:nth-child(3) { animation-delay: 120ms; }
+.cita-card:nth-child(n+4) { animation-delay: 180ms; }
+@media (hover: hover) { .cita-card:hover { transform: translateY(-2px); box-shadow: 0 2px 4px rgba(15, 34, 51, 0.04), 0 28px 50px -28px rgba(15, 34, 51, 0.26); } }
+
+.cita-fila { display: grid; grid-template-columns: 1.1fr 1.2fr 1fr auto; align-items: center; gap: 20px 28px; }
+
+.cita-dato { min-width: 0; }
+.cita-dato small { display: block; font-size: 12.5px; font-weight: 600; color: var(--tinta-tenue); }
+.cita-dato strong { display: block; margin-top: 2px; font-size: 16px; font-weight: 700; font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
+.cita-dato .cita-sub { margin-top: 0; font-size: 14px; font-weight: 500; color: var(--tinta-suave); }
+
+.cita-estado { justify-self: end; }
+.badge-estado {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 7px 14px;
+    font-size: 13.5px;
+    font-weight: 700;
+    line-height: 1.2;
+    border-radius: 999px;
+    white-space: nowrap;
+}
+.badge-estado::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: currentColor; }
+.badge-pagada { color: #1F7A4D; background: #E6F4EC; }
+.badge-cancelada { color: #B3303A; background: #FCEBEC; }
+.badge-pendiente { color: #8A5A00; background: #FFF3DC; }
+
+@keyframes sube { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
+
+@media (min-width: 768px) {
+    .encabezado-pagina { flex-direction: row; align-items: center; justify-content: space-between; }
+}
+
+@media (max-width: 991px) {
+    .cita-fila { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .cita-estado { justify-self: start; grid-column: 1 / -1; }
+}
+
+@media (max-width: 520px) {
+    .cita-card { padding: 20px; }
+    .cita-fila { grid-template-columns: 1fr; gap: 16px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation-duration: 0.01ms !important; animation-delay: 0ms !important; transition-duration: 0.01ms !important; }
+}

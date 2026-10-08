@@ -1,0 +1,1156 @@
+<!DOCTYPE html>
+<html lang="es"
+      xmlns:th="http://www.thymeleaf.org">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>
+        Órdenes de Laboratorio
+    </title>
+
+
+    <style>
+
+        :root {
+            --fondo: #f4f7fb;
+            --tarjeta: #ffffff;
+            --principal: #0f4c81;
+            --principal-hover: #0b3b65;
+            --texto: #1e293b;
+            --secundario: #64748b;
+            --borde: #dbe3ec;
+
+            --pendiente-fondo: #fff7ed;
+            --pendiente-texto: #9a3412;
+
+            --proceso-fondo: #eff6ff;
+            --proceso-texto: #1d4ed8;
+
+            --completada-fondo: #dcfce7;
+            --completada-texto: #166534;
+
+            --cancelada-fondo: #fee2e2;
+            --cancelada-texto: #991b1b;
+
+            --externa-fondo: #f5f3ff;
+            --externa-texto: #7c3aed;
+
+            --interna-fondo: #ecfeff;
+            --interna-texto: #155e75;
+
+            --error-fondo: #fee2e2;
+            --error-texto: #991b1b;
+
+            --supervisor-fondo: #fef3c7;
+            --supervisor-texto: #92400e;
+        }
+
+
+        * {
+            box-sizing: border-box;
+        }
+
+
+        body {
+            margin: 0;
+            font-family: Arial, Helvetica, sans-serif;
+            background: var(--fondo);
+            color: var(--texto);
+        }
+
+
+        /* =================================================
+           ENCABEZADO
+           ================================================= */
+
+        .encabezado {
+            background: var(--principal);
+            color: white;
+            padding: 20px 30px;
+        }
+
+
+        .encabezado-contenido {
+            max-width: 1400px;
+            margin: auto;
+
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+
+            gap: 20px;
+        }
+
+
+        .marca h1 {
+            margin: 0;
+            font-size: 24px;
+        }
+
+
+        .marca p {
+            margin: 5px 0 0;
+            opacity: .85;
+        }
+
+
+        .usuario {
+            text-align: right;
+        }
+
+
+        .usuario strong {
+            display: block;
+        }
+
+
+        .usuario span {
+            font-size: 13px;
+            opacity: .9;
+        }
+
+
+        /* =================================================
+           CONTENEDOR
+           ================================================= */
+
+        .contenedor {
+            max-width: 1400px;
+            margin: 30px auto;
+            padding: 0 20px 40px;
+        }
+
+
+        .titulo-pagina {
+            margin-bottom: 22px;
+        }
+
+
+        .titulo-pagina h2 {
+            margin: 0 0 6px;
+            color: var(--principal);
+        }
+
+
+        .titulo-pagina p {
+            margin: 0;
+            color: var(--secundario);
+        }
+
+
+        /* =================================================
+           TARJETAS
+           ================================================= */
+
+        .tarjeta {
+            background: var(--tarjeta);
+
+            border: 1px solid var(--borde);
+            border-radius: 14px;
+
+            box-shadow:
+                    0 4px 12px rgba(15, 23, 42, .05);
+
+            margin-bottom: 22px;
+
+            overflow: hidden;
+        }
+
+
+        .tarjeta-encabezado {
+            padding: 20px 24px;
+            border-bottom: 1px solid var(--borde);
+        }
+
+
+        .tarjeta-encabezado h3 {
+            margin: 0 0 5px;
+            color: var(--principal);
+        }
+
+
+        .tarjeta-encabezado p {
+            margin: 0;
+            color: var(--secundario);
+            font-size: 14px;
+        }
+
+
+        .tarjeta-contenido {
+            padding: 24px;
+        }
+
+
+        /* =================================================
+           MENSAJES
+           ================================================= */
+
+        .mensaje {
+            border-radius: 10px;
+            padding: 14px 16px;
+            margin-bottom: 20px;
+        }
+
+
+        .mensaje-error {
+            background: var(--error-fondo);
+            color: var(--error-texto);
+            border: 1px solid #fecaca;
+        }
+
+
+        /* =================================================
+           INFO USUARIO
+           ================================================= */
+
+        .info-laboratorista {
+            display: grid;
+
+            grid-template-columns:
+                    repeat(
+                            auto-fit,
+                            minmax(220px, 1fr)
+                    );
+
+            gap: 15px;
+        }
+
+
+        .dato {
+            border: 1px solid var(--borde);
+            border-radius: 10px;
+            background: #f8fafc;
+            padding: 14px;
+        }
+
+
+        .dato strong {
+            display: block;
+            margin-bottom: 5px;
+
+            color: var(--secundario);
+            font-size: 12px;
+            text-transform: uppercase;
+        }
+
+
+        .badge-supervisor {
+            display: inline-block;
+
+            background: var(--supervisor-fondo);
+            color: var(--supervisor-texto);
+
+            padding: 6px 10px;
+            border-radius: 999px;
+
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+
+        /* =================================================
+           FILTROS
+           ================================================= */
+
+        .filtros {
+            display: grid;
+
+            grid-template-columns:
+                    repeat(
+                            auto-fit,
+                            minmax(200px, 1fr)
+                    );
+
+            gap: 16px;
+            align-items: end;
+        }
+
+
+        .campo label {
+            display: block;
+
+            margin-bottom: 7px;
+
+            font-size: 13px;
+            font-weight: bold;
+        }
+
+
+        .campo input,
+        .campo select {
+
+            width: 100%;
+
+            border: 1px solid var(--borde);
+            border-radius: 9px;
+
+            padding: 11px 12px;
+
+            background: white;
+
+            font-size: 14px;
+        }
+
+
+        .campo input:focus,
+        .campo select:focus {
+
+            outline: none;
+            border-color: var(--principal);
+        }
+
+
+        .acciones-filtros {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+
+        .boton {
+            border: none;
+            border-radius: 9px;
+
+            padding: 11px 17px;
+
+            text-decoration: none;
+
+            font-weight: bold;
+            font-size: 14px;
+
+            cursor: pointer;
+        }
+
+
+        .boton-principal {
+            background: var(--principal);
+            color: white;
+        }
+
+
+        .boton-principal:hover {
+            background: var(--principal-hover);
+        }
+
+
+        .boton-secundario {
+            background: #e2e8f0;
+            color: #334155;
+        }
+
+
+        /* =================================================
+           TABLA
+           ================================================= */
+
+        .tabla-contenedor {
+            overflow-x: auto;
+        }
+
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 1050px;
+        }
+
+
+        thead {
+            background: #f8fafc;
+        }
+
+
+        th,
+        td {
+            text-align: left;
+
+            padding: 14px 12px;
+
+            border-bottom: 1px solid var(--borde);
+
+            vertical-align: middle;
+        }
+
+
+        th {
+            color: var(--secundario);
+
+            font-size: 12px;
+
+            text-transform: uppercase;
+        }
+
+
+        td {
+            font-size: 14px;
+        }
+
+
+        tbody tr:hover {
+            background: #f8fafc;
+        }
+
+
+        .numero-orden {
+            color: var(--principal);
+            font-weight: bold;
+        }
+
+
+        /* =================================================
+           BADGES
+           ================================================= */
+
+        .badge {
+            display: inline-block;
+
+            border-radius: 999px;
+
+            padding: 6px 10px;
+
+            font-size: 12px;
+            font-weight: bold;
+
+            white-space: nowrap;
+        }
+
+
+        .estado-pendiente {
+            background: var(--pendiente-fondo);
+            color: var(--pendiente-texto);
+        }
+
+
+        .estado-proceso {
+            background: var(--proceso-fondo);
+            color: var(--proceso-texto);
+        }
+
+
+        .estado-completada {
+            background: var(--completada-fondo);
+            color: var(--completada-texto);
+        }
+
+
+        .estado-cancelada {
+            background: var(--cancelada-fondo);
+            color: var(--cancelada-texto);
+        }
+
+
+        .tipo-externa {
+            background: var(--externa-fondo);
+            color: var(--externa-texto);
+        }
+
+
+        .tipo-interna {
+            background: var(--interna-fondo);
+            color: var(--interna-texto);
+        }
+
+
+        /* =================================================
+           SIN RESULTADOS
+           ================================================= */
+
+        .sin-resultados {
+            text-align: center;
+            padding: 35px 20px;
+
+            color: var(--secundario);
+        }
+
+
+        .sin-resultados strong {
+            display: block;
+            color: var(--texto);
+            margin-bottom: 7px;
+        }
+
+
+        /* =================================================
+           PIE / ACCIONES
+           ================================================= */
+
+        .pie {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+
+            gap: 15px;
+
+            margin-top: 20px;
+
+            flex-wrap: wrap;
+        }
+
+
+        .total {
+            color: var(--secundario);
+            font-size: 14px;
+        }
+
+
+        @media (max-width: 700px) {
+
+            .encabezado-contenido {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+
+            .usuario {
+                text-align: left;
+            }
+
+
+            .acciones-filtros {
+                flex-direction: column;
+            }
+
+
+            .acciones-filtros .boton {
+                width: 100%;
+                text-align: center;
+            }
+        }
+
+    </style>
+
+</head>
+
+
+<body>
+
+
+<!-- =====================================================
+     ENCABEZADO
+     ===================================================== -->
+
+<header class="encabezado">
+
+    <div class="encabezado-contenido">
+
+
+        <div class="marca">
+
+            <h1>
+                SANTOS
+            </h1>
+
+            <p>
+                CU-09 · Gestión de Laboratorio
+            </p>
+
+        </div>
+
+
+        <div class="usuario">
+
+            <strong th:text="${laboratorista.nombreCompleto}">
+                Laboratorista
+            </strong>
+
+            <span>
+                Personal de Laboratorio
+            </span>
+
+        </div>
+
+
+    </div>
+
+</header>
+
+
+
+<main class="contenedor">
+
+
+    <!-- =================================================
+         MENSAJES
+         ================================================= -->
+
+    <div class="mensaje mensaje-error"
+         th:if="${mensajeError != null}"
+         th:text="${mensajeError}">
+    </div>
+
+
+
+    <!-- =================================================
+         TÍTULO
+         ================================================= -->
+
+    <div class="titulo-pagina">
+
+        <h2>
+            Órdenes de Laboratorio
+        </h2>
+
+        <p>
+            Consulte y filtre las órdenes registradas
+            para la sucursal asignada.
+        </p>
+
+    </div>
+
+
+
+    <!-- =================================================
+         INFORMACIÓN DEL LABORATORISTA
+         ================================================= -->
+
+    <section class="tarjeta">
+
+        <div class="tarjeta-encabezado">
+
+            <h3>
+                Sesión de Laboratorio
+            </h3>
+
+            <p>
+                Información del usuario autenticado.
+            </p>
+
+        </div>
+
+
+        <div class="tarjeta-contenido">
+
+            <div class="info-laboratorista">
+
+
+                <div class="dato">
+
+                    <strong>
+                        Usuario
+                    </strong>
+
+                    <span th:text="${laboratorista.nombreUsuario}">
+                        usuario
+                    </span>
+
+                </div>
+
+
+                <div class="dato">
+
+                    <strong>
+                        Nombre
+                    </strong>
+
+                    <span th:text="${laboratorista.nombreCompleto}">
+                        Nombre del laboratorista
+                    </span>
+
+                </div>
+
+
+                <div class="dato">
+
+                    <strong>
+                        Autorización
+                    </strong>
+
+
+                    <span th:if="${esSupervisor}"
+                          class="badge-supervisor">
+
+                        Supervisor de Laboratorio
+
+                    </span>
+
+
+                    <span th:unless="${esSupervisor}">
+
+                        Laboratorista
+
+                    </span>
+
+                </div>
+
+
+            </div>
+
+        </div>
+
+    </section>
+
+
+
+    <!-- =================================================
+         FILTROS
+         ================================================= -->
+
+    <section class="tarjeta">
+
+        <div class="tarjeta-encabezado">
+
+            <h3>
+                Filtros
+            </h3>
+
+            <p>
+                Puede buscar por estado, paciente o médico.
+            </p>
+
+        </div>
+
+
+        <div class="tarjeta-contenido">
+
+
+            <form th:action="@{/interno/laboratorio}"
+                  method="get">
+
+
+                <div class="filtros">
+
+
+                    <!-- ESTADO -->
+
+                    <div class="campo">
+
+                        <label for="estado">
+                            Estado
+                        </label>
+
+
+                        <select id="estado"
+                                name="estado">
+
+
+                            <option value="">
+                                Todos
+                            </option>
+
+
+                            <option th:each="estado : ${estados}"
+                                    th:value="${estado.name()}"
+                                    th:selected="${filtroEstado != null
+                                                  and filtroEstado.equalsIgnoreCase(
+                                                        estado.name()
+                                                  )}"
+                                    th:text="${estado.name() == 'PENDIENTE'
+                                              ? 'Pendiente'
+                                              : (
+                                                estado.name() == 'EN_PROCESO'
+                                                ? 'En proceso'
+                                                : (
+                                                  estado.name() == 'COMPLETADA'
+                                                  ? 'Completada'
+                                                  : 'Cancelada'
+                                                )
+                                              )}">
+                                Estado
+                            </option>
+
+
+                        </select>
+
+                    </div>
+
+
+
+                    <!-- PACIENTE -->
+
+                    <div class="campo">
+
+                        <label for="paciente">
+                            Paciente
+                        </label>
+
+
+                        <input type="text"
+                               id="paciente"
+                               name="paciente"
+                               maxlength="100"
+                               placeholder="Nombre del paciente"
+                               th:value="${filtroPaciente}">
+
+                    </div>
+
+
+
+                    <!-- MÉDICO -->
+
+                    <div class="campo">
+
+                        <label for="medico">
+                            Médico
+                        </label>
+
+
+                        <input type="text"
+                               id="medico"
+                               name="medico"
+                               maxlength="100"
+                               placeholder="Nombre del médico"
+                               th:value="${filtroMedico}">
+
+                    </div>
+
+
+
+                    <!-- BOTONES -->
+
+                    <div class="acciones-filtros">
+
+
+                        <button type="submit"
+                                class="boton boton-principal">
+
+                            Buscar
+
+                        </button>
+
+
+                        <a th:href="@{/interno/laboratorio}"
+                           class="boton boton-secundario">
+
+                            Limpiar
+
+                        </a>
+
+
+                    </div>
+
+
+                </div>
+
+            </form>
+
+
+        </div>
+
+    </section>
+
+
+
+    <!-- =================================================
+         ÓRDENES
+         ================================================= -->
+
+    <section class="tarjeta">
+
+        <div class="tarjeta-encabezado">
+
+            <h3>
+                Órdenes registradas
+            </h3>
+
+            <p>
+                Las órdenes externas también se muestran,
+                pero no se procesan dentro del laboratorio.
+            </p>
+
+        </div>
+
+
+        <!-- SIN ÓRDENES -->
+
+        <div class="sin-resultados"
+             th:if="${ordenes == null or ordenes.isEmpty()}">
+
+            <strong>
+                No se encontraron órdenes de laboratorio.
+            </strong>
+
+            Modifique los filtros o verifique que existan
+            órdenes registradas para su sucursal.
+
+        </div>
+
+
+
+        <!-- TABLA -->
+
+        <div class="tabla-contenedor"
+             th:if="${ordenes != null and !ordenes.isEmpty()}">
+
+
+            <table>
+
+                <thead>
+
+                <tr>
+
+                    <th>
+                        Orden
+                    </th>
+
+                    <th>
+                        Paciente
+                    </th>
+
+                    <th>
+                        Médico
+                    </th>
+
+                    <th>
+                        Estado
+                    </th>
+
+                    <th>
+                        Tipo
+                    </th>
+
+                    <th>
+                        Fecha de creación
+                    </th>
+
+                    <th>
+                        Observaciones
+                    </th>
+
+                    <th>
+                        Acciones
+                    </th>
+
+                </tr>
+
+                </thead>
+
+
+                <tbody>
+
+
+                <tr th:each="orden : ${ordenes}">
+
+
+                    <!-- NÚMERO -->
+
+                    <td>
+
+                        <span class="numero-orden"
+                              th:text="${orden.numeroOrden}">
+
+                            LAB-00000000
+
+                        </span>
+
+                    </td>
+
+
+
+                    <!-- PACIENTE -->
+
+                    <td>
+
+                        <span th:if="${orden.cita != null
+                                     and orden.cita.paciente != null}"
+                              th:text="${orden.cita.paciente.nombreCompleto}">
+
+                            Paciente
+
+                        </span>
+
+
+                        <span th:unless="${orden.cita != null
+                                         and orden.cita.paciente != null}">
+
+                            No disponible
+
+                        </span>
+
+                    </td>
+
+
+
+                    <!-- MÉDICO -->
+
+                    <td>
+
+                        <span th:if="${orden.medico != null}"
+                              th:text="${orden.medico.nombreCompleto}">
+
+                            Médico
+
+                        </span>
+
+
+                        <span th:unless="${orden.medico != null}">
+
+                            No disponible
+
+                        </span>
+
+                    </td>
+
+
+
+                    <!-- ESTADO -->
+
+                    <td>
+
+
+                        <span th:if="${orden.estado.name() == 'PENDIENTE'}"
+                              class="badge estado-pendiente">
+
+                            Pendiente
+
+                        </span>
+
+
+                        <span th:if="${orden.estado.name() == 'EN_PROCESO'}"
+                              class="badge estado-proceso">
+
+                            En proceso
+
+                        </span>
+
+
+                        <span th:if="${orden.estado.name() == 'COMPLETADA'}"
+                              class="badge estado-completada">
+
+                            Completada
+
+                        </span>
+
+
+                        <span th:if="${orden.estado.name() == 'CANCELADA'}"
+                              class="badge estado-cancelada">
+
+                            Cancelada
+
+                        </span>
+
+
+                    </td>
+
+
+
+                    <!-- INTERNA / EXTERNA -->
+
+                    <td>
+
+
+                        <span th:if="${orden.ordenExterna}"
+                              class="badge tipo-externa">
+
+                            Externa
+
+                        </span>
+
+
+                        <span th:unless="${orden.ordenExterna}"
+                              class="badge tipo-interna">
+
+                            Interna
+
+                        </span>
+
+
+                    </td>
+
+
+
+                    <!-- FECHA -->
+
+                    <td>
+
+                        <span th:text="${orden.fechaHoraCreacion}">
+                            Fecha
+                        </span>
+
+                    </td>
+
+
+
+                    <!-- OBSERVACIONES -->
+
+                    <td>
+
+                        <span th:if="${orden.observaciones != null
+                                     and !orden.observaciones.isBlank()}"
+                              th:text="${orden.observaciones}">
+
+                            Observaciones
+
+                        </span>
+
+
+                        <span th:unless="${orden.observaciones != null
+                                         and !orden.observaciones.isBlank()}">
+
+                            Sin observaciones
+
+                        </span>
+
+                    </td>
+
+                    <!-- ACCIONES -->
+
+                    <td>
+
+                        <a th:href="@{/interno/laboratorio/ordenes/{idOrden}(
+                    idOrden=${orden.id}
+                )}"
+                           class="boton boton-principal">
+
+                            Ver detalle
+
+                        </a>
+
+                    </td>
+
+
+                </tr>
+
+
+                </tbody>
+
+            </table>
+
+
+        </div>
+
+
+
+        <!-- PIE -->
+
+        <div class="tarjeta-contenido"
+             th:if="${ordenes != null}">
+
+            <div class="pie">
+
+
+                <div class="total">
+
+                    Total de órdenes:
+
+                    <strong th:text="${ordenes.size()}">
+                        0
+                    </strong>
+
+                </div>
+
+
+                <a th:href="@{/interno/dashboard}"
+                   class="boton boton-secundario">
+
+                    Volver al panel
+
+                </a>
+
+
+            </div>
+
+        </div>
+
+    </section>
+
+
+</main>
+
+
+</body>
+</html>

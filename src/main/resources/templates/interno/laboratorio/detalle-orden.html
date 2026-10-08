@@ -1,0 +1,1111 @@
+<!DOCTYPE html>
+<html lang="es"
+      xmlns:th="http://www.thymeleaf.org">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>Detalle de Orden de Laboratorio</title>
+
+
+    <style>
+
+        :root {
+            --fondo: #f4f7fb;
+            --tarjeta: #ffffff;
+            --principal: #0f4c81;
+            --principal-hover: #0b3b65;
+            --texto: #1e293b;
+            --secundario: #64748b;
+            --borde: #dbe3ec;
+
+            --pendiente-fondo: #fff7ed;
+            --pendiente-texto: #9a3412;
+
+            --proceso-fondo: #eff6ff;
+            --proceso-texto: #1d4ed8;
+
+            --completada-fondo: #dcfce7;
+            --completada-texto: #166534;
+
+            --cancelada-fondo: #fee2e2;
+            --cancelada-texto: #991b1b;
+
+            --externa-fondo: #f5f3ff;
+            --externa-texto: #6d28d9;
+
+            --interna-fondo: #ecfeff;
+            --interna-texto: #155e75;
+
+            --advertencia-fondo: #fff7ed;
+            --advertencia-texto: #9a3412;
+        }
+
+
+        * {
+            box-sizing: border-box;
+        }
+
+
+        body {
+            margin: 0;
+
+            font-family:
+                    Arial,
+                    Helvetica,
+                    sans-serif;
+
+            background: var(--fondo);
+
+            color: var(--texto);
+        }
+
+
+        /* =================================================
+           ENCABEZADO
+           ================================================= */
+
+        .encabezado {
+            background: var(--principal);
+            color: white;
+
+            padding: 20px 30px;
+        }
+
+
+        .encabezado-contenido {
+            max-width: 1300px;
+
+            margin: auto;
+
+            display: flex;
+
+            justify-content: space-between;
+            align-items: center;
+
+            gap: 20px;
+        }
+
+
+        .marca h1 {
+            margin: 0;
+
+            font-size: 24px;
+        }
+
+
+        .marca p {
+            margin: 5px 0 0;
+
+            opacity: .85;
+        }
+
+
+        .usuario {
+            text-align: right;
+        }
+
+
+        .usuario strong {
+            display: block;
+        }
+
+
+        .usuario span {
+            font-size: 13px;
+
+            opacity: .9;
+        }
+
+
+        /* =================================================
+           CONTENEDOR
+           ================================================= */
+
+        .contenedor {
+            max-width: 1300px;
+
+            margin: 30px auto;
+
+            padding: 0 20px 40px;
+        }
+
+
+        .titulo {
+            margin-bottom: 22px;
+        }
+
+
+        .titulo h2 {
+            margin: 0 0 6px;
+
+            color: var(--principal);
+        }
+
+
+        .titulo p {
+            margin: 0;
+
+            color: var(--secundario);
+        }
+
+
+        /* =================================================
+           TARJETA
+           ================================================= */
+
+        .tarjeta {
+            background: var(--tarjeta);
+
+            border: 1px solid var(--borde);
+
+            border-radius: 14px;
+
+            box-shadow:
+                    0 4px 12px
+                    rgba(15, 23, 42, .05);
+
+            margin-bottom: 22px;
+
+            overflow: hidden;
+        }
+
+
+        .tarjeta-encabezado {
+            padding: 20px 24px;
+
+            border-bottom:
+                    1px solid var(--borde);
+        }
+
+
+        .tarjeta-encabezado h3 {
+            margin: 0 0 5px;
+
+            color: var(--principal);
+        }
+
+
+        .tarjeta-encabezado p {
+            margin: 0;
+
+            color: var(--secundario);
+
+            font-size: 14px;
+        }
+
+
+        .tarjeta-contenido {
+            padding: 24px;
+        }
+
+
+        /* =================================================
+           RESUMEN
+           ================================================= */
+
+        .resumen {
+            display: grid;
+
+            grid-template-columns:
+                    repeat(
+                            auto-fit,
+                            minmax(220px, 1fr)
+                    );
+
+            gap: 16px;
+        }
+
+
+        .dato {
+            padding: 15px;
+
+            border: 1px solid var(--borde);
+
+            border-radius: 10px;
+
+            background: #f8fafc;
+        }
+
+
+        .dato strong {
+            display: block;
+
+            margin-bottom: 6px;
+
+            color: var(--secundario);
+
+            font-size: 12px;
+
+            text-transform: uppercase;
+        }
+
+
+        .numero-orden {
+            color: var(--principal);
+
+            font-weight: bold;
+        }
+
+
+        .monto {
+            color: #166534;
+
+            font-size: 19px;
+
+            font-weight: bold;
+        }
+
+
+        /* =================================================
+           BADGES
+           ================================================= */
+
+        .badge {
+            display: inline-block;
+
+            padding: 6px 10px;
+
+            border-radius: 999px;
+
+            font-size: 12px;
+
+            font-weight: bold;
+        }
+
+
+        .estado-pendiente {
+            background: var(--pendiente-fondo);
+
+            color: var(--pendiente-texto);
+        }
+
+
+        .estado-proceso {
+            background: var(--proceso-fondo);
+
+            color: var(--proceso-texto);
+        }
+
+
+        .estado-completada {
+            background: var(--completada-fondo);
+
+            color: var(--completada-texto);
+        }
+
+
+        .estado-cancelada {
+            background: var(--cancelada-fondo);
+
+            color: var(--cancelada-texto);
+        }
+
+
+        .tipo-externa {
+            background: var(--externa-fondo);
+
+            color: var(--externa-texto);
+        }
+
+
+        .tipo-interna {
+            background: var(--interna-fondo);
+
+            color: var(--interna-texto);
+        }
+
+
+        /* =================================================
+           AVISOS
+           ================================================= */
+
+        .aviso {
+            padding: 15px 17px;
+
+            border-radius: 10px;
+
+            margin-bottom: 22px;
+        }
+
+
+        .aviso-externa {
+            background: var(--externa-fondo);
+
+            color: var(--externa-texto);
+
+            border: 1px solid #ddd6fe;
+        }
+
+
+        .aviso-pendiente {
+            background: var(--advertencia-fondo);
+
+            color: var(--advertencia-texto);
+
+            border: 1px solid #fed7aa;
+        }
+
+
+        /* =================================================
+           OBSERVACIONES
+           ================================================= */
+
+        .observaciones {
+            min-height: 60px;
+
+            padding: 15px;
+
+            border: 1px solid var(--borde);
+
+            border-radius: 10px;
+
+            background: #f8fafc;
+
+            white-space: pre-wrap;
+        }
+
+
+        /* =================================================
+           TABLA EXÁMENES
+           ================================================= */
+
+        .tabla-contenedor {
+            overflow-x: auto;
+        }
+
+
+        table {
+            width: 100%;
+
+            border-collapse: collapse;
+
+            min-width: 800px;
+        }
+
+
+        thead {
+            background: #f8fafc;
+        }
+
+
+        th,
+        td {
+            padding: 14px 12px;
+
+            text-align: left;
+
+            border-bottom:
+                    1px solid var(--borde);
+        }
+
+
+        th {
+            color: var(--secundario);
+
+            font-size: 12px;
+
+            text-transform: uppercase;
+        }
+
+
+        td {
+            font-size: 14px;
+        }
+
+
+        tbody tr:hover {
+            background: #f8fafc;
+        }
+
+
+        .precio {
+            font-weight: bold;
+        }
+
+
+        /* =================================================
+           BOTONES
+           ================================================= */
+
+        .acciones {
+            display: flex;
+
+            justify-content: space-between;
+
+            gap: 12px;
+
+            flex-wrap: wrap;
+        }
+
+
+        .boton {
+            display: inline-block;
+
+            border: none;
+
+            border-radius: 9px;
+
+            padding: 11px 17px;
+
+            text-decoration: none;
+
+            font-size: 14px;
+
+            font-weight: bold;
+
+            cursor: pointer;
+        }
+
+
+        .boton-principal {
+            background: var(--principal);
+
+            color: white;
+        }
+
+
+        .boton-principal:hover {
+            background: var(--principal-hover);
+        }
+
+
+        .boton-secundario {
+            background: #e2e8f0;
+
+            color: #334155;
+        }
+
+
+        @media (max-width: 700px) {
+
+            .encabezado-contenido {
+                flex-direction: column;
+
+                align-items: flex-start;
+            }
+
+
+            .usuario {
+                text-align: left;
+            }
+
+
+            .acciones {
+                flex-direction: column;
+            }
+
+
+            .acciones .boton {
+                text-align: center;
+
+                width: 100%;
+            }
+        }
+
+    </style>
+
+</head>
+
+
+<body>
+
+
+<!-- =====================================================
+     ENCABEZADO
+     ===================================================== -->
+
+<header class="encabezado">
+
+    <div class="encabezado-contenido">
+
+
+        <div class="marca">
+
+            <h1>
+                SANTOS
+            </h1>
+
+            <p>
+                CU-09 · Gestión de Laboratorio
+            </p>
+
+        </div>
+
+
+        <div class="usuario">
+
+            <strong th:text="${laboratorista.nombreCompleto}">
+                Laboratorista
+            </strong>
+
+            <span th:if="${esSupervisor}">
+                Supervisor de Laboratorio
+            </span>
+
+            <span th:unless="${esSupervisor}">
+                Personal de Laboratorio
+            </span>
+
+        </div>
+
+
+    </div>
+
+</header>
+
+
+
+<main class="contenedor">
+
+
+    <!-- =================================================
+         TÍTULO
+         ================================================= -->
+
+    <div class="titulo">
+
+        <h2>
+            Detalle de Orden de Laboratorio
+        </h2>
+
+        <p>
+            Información completa de la orden seleccionada.
+        </p>
+
+    </div>
+
+
+
+    <!-- =================================================
+         ORDEN EXTERNA
+         ================================================= -->
+
+    <div class="aviso aviso-externa"
+         th:if="${detalle.ordenExterna}">
+
+        <strong>
+            Orden externa.
+        </strong>
+
+        Esta orden se muestra como referencia,
+        pero no debe procesarse dentro del laboratorio interno.
+
+    </div>
+
+
+
+    <!-- =================================================
+         PENDIENTE DE PAGO
+         ================================================= -->
+
+    <div class="aviso aviso-pendiente"
+         th:if="${!detalle.ordenExterna
+                  and detalle.estado == 'PENDIENTE'}">
+
+        <strong>
+            Orden pendiente.
+        </strong>
+
+        El pago debe estar completado antes de proceder
+        con la toma de muestras.
+
+    </div>
+
+
+
+    <!-- =================================================
+         RESUMEN
+         ================================================= -->
+
+    <section class="tarjeta">
+
+
+        <div class="tarjeta-encabezado">
+
+            <h3>
+                Resumen de la orden
+            </h3>
+
+            <p>
+                Datos generales registrados por el Médico.
+            </p>
+
+        </div>
+
+
+        <div class="tarjeta-contenido">
+
+            <div class="resumen">
+
+
+                <!-- NÚMERO -->
+
+                <div class="dato">
+
+                    <strong>
+                        Número de orden
+                    </strong>
+
+                    <span class="numero-orden"
+                          th:text="${detalle.numeroOrden}">
+
+                        LAB-00000000
+
+                    </span>
+
+                </div>
+
+
+
+                <!-- PACIENTE -->
+
+                <div class="dato">
+
+                    <strong>
+                        Paciente
+                    </strong>
+
+                    <span th:text="${detalle.nombrePaciente}">
+                        Paciente
+                    </span>
+
+                </div>
+
+
+
+                <!-- MÉDICO -->
+
+                <div class="dato">
+
+                    <strong>
+                        Médico solicitante
+                    </strong>
+
+                    <span th:text="${detalle.nombreMedico}">
+                        Médico
+                    </span>
+
+                </div>
+
+
+
+                <!-- ESTADO -->
+
+                <div class="dato">
+
+                    <strong>
+                        Estado
+                    </strong>
+
+
+                    <span th:if="${detalle.estado == 'PENDIENTE'}"
+                          class="badge estado-pendiente">
+
+                        Pendiente
+
+                    </span>
+
+
+                    <span th:if="${detalle.estado == 'EN_PROCESO'}"
+                          class="badge estado-proceso">
+
+                        En proceso
+
+                    </span>
+
+
+                    <span th:if="${detalle.estado == 'COMPLETADA'}"
+                          class="badge estado-completada">
+
+                        Completada
+
+                    </span>
+
+
+                    <span th:if="${detalle.estado == 'CANCELADA'}"
+                          class="badge estado-cancelada">
+
+                        Cancelada
+
+                    </span>
+
+                </div>
+
+
+
+                <!-- TIPO -->
+
+                <div class="dato">
+
+                    <strong>
+                        Tipo de orden
+                    </strong>
+
+
+                    <span th:if="${detalle.ordenExterna}"
+                          class="badge tipo-externa">
+
+                        Externa
+
+                    </span>
+
+
+                    <span th:unless="${detalle.ordenExterna}"
+                          class="badge tipo-interna">
+
+                        Interna
+
+                    </span>
+
+                </div>
+
+
+
+                <!-- FECHA -->
+
+                <div class="dato">
+
+                    <strong>
+                        Fecha de creación
+                    </strong>
+
+                    <span th:text="${#temporals.format(
+                                        detalle.fechaHoraCreacion,
+                                        'dd/MM/yyyy HH:mm'
+                                   )}">
+                        Fecha
+                    </span>
+
+                </div>
+
+
+
+                <!-- MONTO -->
+
+                <div class="dato">
+
+                    <strong>
+                        Monto total
+                    </strong>
+
+                    <span class="monto"
+                          th:text="${'Q ' + detalle.montoTotal}">
+                        Q 0.00
+                    </span>
+
+                </div>
+
+
+            </div>
+
+        </div>
+
+    </section>
+
+
+
+    <!-- =================================================
+         OBSERVACIONES
+         ================================================= -->
+
+    <section class="tarjeta">
+
+
+        <div class="tarjeta-encabezado">
+
+            <h3>
+                Observaciones
+            </h3>
+
+            <p>
+                Indicaciones registradas por el Médico.
+            </p>
+
+        </div>
+
+
+        <div class="tarjeta-contenido">
+
+
+            <div class="observaciones"
+                 th:if="${detalle.observaciones != null
+                          and !detalle.observaciones.isBlank()}"
+                 th:text="${detalle.observaciones}">
+            </div>
+
+
+            <div class="observaciones"
+                 th:unless="${detalle.observaciones != null
+                              and !detalle.observaciones.isBlank()}">
+
+                Sin observaciones registradas.
+
+            </div>
+
+
+        </div>
+
+    </section>
+
+
+
+    <!-- =================================================
+         EXÁMENES
+         ================================================= -->
+
+    <section class="tarjeta">
+
+
+        <div class="tarjeta-encabezado">
+
+            <h3>
+                Exámenes solicitados
+            </h3>
+
+            <p>
+                Exámenes que forman parte de esta orden.
+            </p>
+
+        </div>
+
+
+        <div class="tabla-contenedor">
+
+
+            <table>
+
+
+                <thead>
+
+                <tr>
+
+                    <th>
+                        Examen
+                    </th>
+
+                    <th>
+                        Unidad
+                    </th>
+
+                    <th>
+                        Rango de referencia
+                    </th>
+
+                    <th>
+                        Precio
+                    </th>
+
+                    <th>Acción</th>
+
+                </tr>
+
+                </thead>
+
+
+                <tbody>
+
+
+                <tr th:each="examen : ${detalle.examenes}">
+
+
+                    <!-- EXAMEN -->
+
+                    <td>
+
+                        <strong th:text="${examen.nombreExamen}">
+                            Examen
+                        </strong>
+
+                    </td>
+
+
+
+                    <!-- UNIDAD -->
+
+                    <td>
+
+                        <span th:if="${examen.unidad != null
+                                     and !examen.unidad.isBlank()}"
+                              th:text="${examen.unidad}">
+                            Unidad
+                        </span>
+
+
+                        <span th:unless="${examen.unidad != null
+                                         and !examen.unidad.isBlank()}">
+
+                            No definida
+
+                        </span>
+
+                    </td>
+
+
+
+                    <!-- RANGO -->
+
+                    <td>
+
+                        <span th:if="${examen.rangoReferencia != null
+                                     and !examen.rangoReferencia.isBlank()}"
+                              th:text="${examen.rangoReferencia}">
+                            Rango
+                        </span>
+
+
+                        <span th:unless="${examen.rangoReferencia != null
+                                         and !examen.rangoReferencia.isBlank()}">
+
+                            No definido
+
+                        </span>
+
+                    </td>
+
+
+
+                    <!-- PRECIO -->
+
+                    <td>
+
+                        <span class="precio"
+                              th:text="${'Q ' + examen.precioExamen}">
+                            Q 0.00
+                        </span>
+
+                    </td>
+
+                    <td>
+
+                        <!-- =================================================
+                             CU-09
+                             REGISTRAR / EDITAR RESULTADO
+                             ================================================= -->
+
+                        <a th:if="${detalle.estado == 'EN_PROCESO'
+               and !detalle.ordenExterna}"
+                           th:href="@{/interno/laboratorio/ordenes/{idOrden}/resultados/{idDetalle}
+                 (
+                    idOrden=${detalle.idOrden},
+                    idDetalle=${examen.idDetalle}
+                 )}"
+                           class="boton-resultado">
+
+                            Registrar resultado
+
+                        </a>
+
+                        <!-- =================================================
+     RNF-024
+     CONSULTAR RESULTADO PUBLICADO
+     ================================================= -->
+                        <!--
+                             Una orden COMPLETADA ya tiene todos sus resultados
+                             publicados.
+
+                             Solamente el Supervisor de Laboratorio puede abrir
+                             el resultado desde aquí para iniciar el proceso de
+                             corrección autorizada.
+
+                             Abrir el resultado NO lo hace editable.
+
+                             Primero deberá utilizar:
+                             "Autorizar corrección".
+                             ================================================= -->
+
+                        <a th:if="${detalle.estado == 'COMPLETADA'
+           and !detalle.ordenExterna
+           and esSupervisor}"
+                           th:href="@{/interno/laboratorio/ordenes/{idOrden}/resultados/{idDetalle}
+             (
+                idOrden=${detalle.idOrden},
+                idDetalle=${examen.idDetalle}
+             )}"
+                           class="boton boton-principal">
+
+                            Ver resultado
+
+                        </a>
+
+
+                        <!-- ORDEN TODAVÍA PENDIENTE -->
+
+                        <span th:if="${detalle.estado == 'PENDIENTE'
+                  and !detalle.ordenExterna}"
+                              class="texto-pendiente">
+
+        Pendiente de pago
+
+    </span>
+
+
+                        <!-- ORDEN EXTERNA -->
+
+                        <span th:if="${detalle.ordenExterna}"
+                              class="texto-externa">
+
+        Laboratorio externo
+
+    </span>
+
+                    </td>
+
+
+                </tr>
+
+
+                </tbody>
+
+
+            </table>
+
+
+        </div>
+
+
+        <div class="tarjeta-contenido">
+
+            <div class="acciones">
+
+
+                <a th:href="@{/interno/laboratorio}"
+                   class="boton boton-secundario">
+
+                    Volver a órdenes
+
+                </a>
+
+
+                <!--
+                    IMPORTANTE:
+
+                    Todavía NO agregamos:
+
+                    - Iniciar procesamiento.
+                    - Registrar resultados.
+                    - Validar resultados.
+                    - Publicar resultados.
+
+                    Primero integraremos CU-16 y validaremos
+                    que el pago esté completado.
+                -->
+
+
+            </div>
+
+        </div>
+
+
+    </section>
+
+
+</main>
+
+
+</body>
+</html>

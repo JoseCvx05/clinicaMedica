@@ -22,12 +22,14 @@ import java.util.List;
  * =========================================================
  *
  * CU-08 - FA01.
+ * CU-09 - FA01 Orden externa.
  *
  * Responsabilidades:
  *
  * - Mostrar el formulario de orden.
  * - Mostrar catálogo de exámenes.
  * - Recibir únicamente IDs de exámenes.
+ * - Recibir indicador de orden externa.
  * - Delegar TODA la lógica al Service.
  * - Mostrar mensajes de éxito/error.
  *
@@ -39,6 +41,9 @@ import java.util.List;
  *
  * por lo que quedan protegidas por la configuración
  * existente para ROLE_MEDICO.
+ *
+ * La seguridad real de propiedad de cita, consulta,
+ * Médico y sucursal se vuelve a validar en el Service.
  *
  * =========================================================
  */
@@ -124,6 +129,26 @@ public class OrdenLaboratorioController {
             );
 
 
+            /*
+             * CU-09 - FA01.
+             *
+             * Si venimos por primera vez al formulario,
+             * la orden se considera interna por defecto.
+             *
+             * Si regresamos después de un error,
+             * permitimos conservar el valor enviado.
+             */
+            if (!model.containsAttribute(
+                    "ordenExterna"
+            )) {
+
+                model.addAttribute(
+                        "ordenExterna",
+                        false
+                );
+            }
+
+
             return "medico/orden-laboratorio";
 
         } catch (
@@ -167,6 +192,22 @@ public class OrdenLaboratorioController {
             )
             String observaciones,
 
+            /*
+             * CU-09 - FA01
+             *
+             * Checkbox marcado:
+             * true
+             *
+             * Checkbox no marcado:
+             * el navegador no envía el parámetro,
+             * por lo que utilizamos false.
+             */
+            @RequestParam(
+                    name = "ordenExterna",
+                    defaultValue = "false"
+            )
+            boolean ordenExterna,
+
             RedirectAttributes redirectAttributes
     ) {
 
@@ -186,12 +227,24 @@ public class OrdenLaboratorioController {
 
                                     idsExamenes,
 
-                                    observaciones
+                                    observaciones,
+
+                                    ordenExterna
                             );
 
 
             // =============================================
-            // MENSAJE EXACTO FA01
+            // MENSAJE DE ÉXITO
+            // =============================================
+            //
+            // El Service decide qué mensaje corresponde:
+            //
+            // - Orden interna:
+            //   conserva mensaje exacto CU-08.
+            //
+            // - Orden externa:
+            //   utiliza el mensaje correspondiente a FA01.
+            //
             // =============================================
 
             redirectAttributes
@@ -222,6 +275,10 @@ public class OrdenLaboratorioController {
                 | IllegalStateException ex
         ) {
 
+            // =============================================
+            // CONSERVAR DATOS ÚTILES DEL FORMULARIO
+            // =============================================
+
             redirectAttributes
                     .addFlashAttribute(
                             "mensajeError",
@@ -229,15 +286,37 @@ public class OrdenLaboratorioController {
                     );
 
 
+            redirectAttributes
+                    .addFlashAttribute(
+                            "ordenExterna",
+                            ordenExterna
+                    );
+
+
+            redirectAttributes
+                    .addFlashAttribute(
+                            "observacionesIngresadas",
+                            observaciones
+                    );
+
+
+            redirectAttributes
+                    .addFlashAttribute(
+                            "idsExamenesSeleccionados",
+                            idsExamenes
+                    );
+
+
             /*
              * Regresamos al formulario.
              *
-             * Al volver a entrar:
+             * Al volver:
              *
-             * - vuelve a validar Médico;
-             * - vuelve a validar cita;
-             * - vuelve a validar consulta;
-             * - vuelve a leer catálogo desde PostgreSQL.
+             * - valida nuevamente el Médico;
+             * - valida nuevamente la cita;
+             * - valida nuevamente la consulta;
+             * - vuelve a leer el catálogo desde PostgreSQL;
+             * - no confía en información enviada desde HTML.
              */
             return "redirect:/interno/medico/citas/"
                     + idCita

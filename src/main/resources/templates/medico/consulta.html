@@ -14,6 +14,168 @@
     <!-- Base compartida con el panel médico + estilos propios de la consulta -->
     <link rel="stylesheet" th:href="@{/css/panel-medico.css}" href="/css/panel-medico.css">
     <link rel="stylesheet" th:href="@{/css/consulta-medica.css}" href="/css/consulta-medica.css">
+
+    <style>
+
+        /* =====================================================
+           CU-09 - RESULTADOS DE LABORATORIO
+           ===================================================== */
+
+        .laboratorio-panel {
+            margin-top: 24px;
+            margin-bottom: 24px;
+        }
+
+        .laboratorio-encabezado {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 16px;
+            margin-bottom: 18px;
+        }
+
+        .laboratorio-encabezado h2 {
+            margin: 0;
+        }
+
+        .laboratorio-encabezado p {
+            margin: 4px 0 0;
+            color: #64748b;
+            font-size: 14px;
+        }
+
+        .laboratorio-lista {
+            display: grid;
+            gap: 14px;
+        }
+
+        .resultado-laboratorio {
+            border: 1px solid #dbe4ea;
+            border-radius: 14px;
+            padding: 18px;
+            background: #ffffff;
+        }
+
+        .resultado-laboratorio.fuera-rango {
+            border-color: #fecaca;
+            background: #fff7f7;
+        }
+
+        .resultado-superior {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 16px;
+            margin-bottom: 14px;
+        }
+
+        .resultado-superior h3 {
+            margin: 0;
+            font-size: 17px;
+            color: #17324d;
+        }
+
+        .numero-orden {
+            display: block;
+            margin-top: 5px;
+            color: #64748b;
+            font-size: 13px;
+        }
+
+        .estado-publicado {
+            display: inline-flex;
+            align-items: center;
+            padding: 6px 10px;
+            border-radius: 999px;
+            background: #dcfce7;
+            color: #166534;
+            font-size: 12px;
+            font-weight: 700;
+            white-space: nowrap;
+        }
+
+        .estado-fuera-rango {
+            display: inline-flex;
+            align-items: center;
+            padding: 6px 10px;
+            border-radius: 999px;
+            background: #fee2e2;
+            color: #b91c1c;
+            font-size: 12px;
+            font-weight: 700;
+            margin-left: 6px;
+        }
+
+        .resultado-datos {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 12px;
+        }
+
+        .resultado-dato {
+            padding: 12px;
+            border-radius: 10px;
+            background: #f8fafc;
+        }
+
+        .resultado-dato span {
+            display: block;
+            color: #64748b;
+            font-size: 12px;
+            margin-bottom: 5px;
+        }
+
+        .resultado-dato strong {
+            color: #1e293b;
+            font-size: 14px;
+            overflow-wrap: anywhere;
+        }
+
+        .resultado-dato.resultado-valor strong {
+            font-size: 18px;
+            color: #0f766e;
+        }
+
+        .resultado-laboratorio.fuera-rango
+        .resultado-dato.resultado-valor strong {
+            color: #b91c1c;
+        }
+
+        .resultado-notas {
+            margin-top: 14px;
+            padding: 12px;
+            border-radius: 10px;
+            background: #f8fafc;
+            color: #475569;
+            font-size: 14px;
+        }
+
+        .laboratorio-vacio {
+            padding: 18px;
+            border: 1px dashed #cbd5e1;
+            border-radius: 12px;
+            color: #64748b;
+            background: #f8fafc;
+            text-align: center;
+        }
+
+        @media (max-width: 900px) {
+            .resultado-datos {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+        }
+
+        @media (max-width: 600px) {
+            .resultado-superior {
+                flex-direction: column;
+            }
+
+            .resultado-datos {
+                grid-template-columns: 1fr;
+            }
+        }
+
+    </style>
 </head>
 
 <body>
@@ -169,6 +331,213 @@
         </section>
 
     </div>
+
+    <!-- =====================================================
+     CU-09 - RESULTADOS DE LABORATORIO PUBLICADOS
+     ===================================================== -->
+
+    <section class="panel-tarjeta laboratorio-panel"
+             th:if="${expediente != null}"
+             aria-labelledby="t-laboratorio">
+
+        <div class="laboratorio-encabezado">
+
+            <div>
+                <h2 id="t-laboratorio">
+                    Resultados de laboratorio
+                </h2>
+
+                <p>
+                    Se muestran únicamente resultados
+                    validados y publicados por Laboratorio.
+                </p>
+            </div>
+
+        </div>
+
+
+        <!-- =================================================
+             EXISTEN RESULTADOS PUBLICADOS
+             ================================================= -->
+
+        <div class="laboratorio-lista"
+             th:if="${expediente.resultadosLaboratorio() != null
+                  and !expediente.resultadosLaboratorio().isEmpty()}">
+
+
+            <article class="resultado-laboratorio"
+                     th:each="resultado : ${expediente.resultadosLaboratorio()}"
+                     th:classappend="${resultado.fueraRango()}
+                        ? ' fuera-rango'
+                        : ''">
+
+
+                <!-- =========================================
+                     ENCABEZADO DEL RESULTADO
+                     ========================================= -->
+
+                <div class="resultado-superior">
+
+                    <div>
+
+                        <h3 th:text="${resultado.nombreExamen()}">
+                            Nombre del examen
+                        </h3>
+
+                        <span class="numero-orden">
+
+                        Orden:
+
+                        <strong
+                                th:text="${resultado.numeroOrden()}">
+                            LAB-0000
+                        </strong>
+
+                    </span>
+
+                    </div>
+
+
+                    <div>
+
+                    <span class="estado-publicado">
+                        Publicado
+                    </span>
+
+                        <span class="estado-fuera-rango"
+                              th:if="${resultado.fueraRango()}">
+                        ⚠ Fuera de rango
+                    </span>
+
+                    </div>
+
+                </div>
+
+
+                <!-- =========================================
+                     DATOS DEL RESULTADO
+                     ========================================= -->
+
+                <div class="resultado-datos">
+
+
+                    <div class="resultado-dato resultado-valor">
+
+                    <span>
+                        Resultado
+                    </span>
+
+                        <strong>
+
+                        <span th:text="${resultado.valorResultado()}">
+                            0
+                        </span>
+
+                            <span
+                                    th:if="${resultado.unidadResultado() != null
+                                         and !resultado.unidadResultado().isBlank()}"
+                                    th:text="${' ' + resultado.unidadResultado()}">
+                            unidad
+                        </span>
+
+                        </strong>
+
+                    </div>
+
+
+                    <div class="resultado-dato">
+
+                    <span>
+                        Rango de referencia
+                    </span>
+
+                        <strong
+                                th:text="${resultado.rangoReferencia() != null
+                                    ? resultado.rangoReferencia()
+                                    : 'No especificado'}">
+                            Rango
+                        </strong>
+
+                    </div>
+
+
+                    <div class="resultado-dato">
+
+                    <span>
+                        Fecha del resultado
+                    </span>
+
+                        <strong
+                                th:text="${resultado.fechaResultado() != null
+                                    ? #temporals.format(
+                                        resultado.fechaResultado(),
+                                        'dd/MM/yyyy HH:mm'
+                                      )
+                                    : 'No registrada'}">
+                            Fecha
+                        </strong>
+
+                    </div>
+
+
+                    <div class="resultado-dato">
+
+                    <span>
+                        Fecha de publicación
+                    </span>
+
+                        <strong
+                                th:text="${resultado.fechaHoraPublicacion() != null
+                                    ? #temporals.format(
+                                        resultado.fechaHoraPublicacion(),
+                                        'dd/MM/yyyy HH:mm'
+                                      )
+                                    : 'No registrada'}">
+                            Fecha
+                        </strong>
+
+                    </div>
+
+                </div>
+
+
+                <!-- =========================================
+                     NOTAS
+                     ========================================= -->
+
+                <div class="resultado-notas"
+                     th:if="${resultado.notasResultado() != null
+                          and !resultado.notasResultado().isBlank()}">
+
+                    <strong>
+                        Notas:
+                    </strong>
+
+                    <span th:text="${resultado.notasResultado()}">
+                    Notas del laboratorio
+                </span>
+
+                </div>
+
+            </article>
+
+        </div>
+
+
+        <!-- =================================================
+             SIN RESULTADOS PUBLICADOS
+             ================================================= -->
+
+        <div class="laboratorio-vacio"
+             th:if="${expediente.resultadosLaboratorio() == null
+                  or expediente.resultadosLaboratorio().isEmpty()}">
+
+            No existen resultados de laboratorio publicados
+            para esta consulta.
+
+        </div>
+
+    </section>
 
 
     <!-- FORMULARIO -->

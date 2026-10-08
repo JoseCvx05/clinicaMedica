@@ -1,0 +1,132 @@
+/* ==========================================================================
+   SANTOS · Cita registrada
+   Mismo sistema visual que el resto del portal. Solo presentación.
+   ========================================================================== */
+
+:root {
+    --lienzo: #F4F7FA;
+    --superficie: #FFFFFF;
+    --tinta: #0F2233;
+    --tinta-suave: #4A5E70;
+    --tinta-tenue: #7A8B9A;
+    --linea: rgba(15, 34, 51, 0.08);
+    --azul: #1B5FA6;
+    --azul-hover: #154E8A;
+    --verde: #1F7A4D;
+    --verde-tinte: #E6F4EC;
+    --salida: cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+
+body {
+    margin: 0;
+    min-height: 100vh;
+    min-height: 100dvh;
+    font-family: 'Plus Jakarta Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
+    font-size: 16px;
+    line-height: 1.6;
+    color: var(--tinta);
+    background:
+            radial-gradient(60% 45% at 10% 0%, rgba(11, 140, 134, 0.10), transparent 70%),
+            radial-gradient(55% 45% at 95% 100%, rgba(27, 95, 166, 0.10), transparent 70%),
+            var(--lienzo);
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+}
+
+h1, p { margin: 0; }
+a { text-decoration: none; }
+svg { display: block; fill: none; stroke: currentColor; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
+:focus-visible { outline: 3px solid rgba(27, 95, 166, 0.35); outline-offset: 2px; border-radius: 10px; }
+
+.pagina { display: grid; place-content: center; justify-items: center; gap: 20px; min-height: 100vh; min-height: 100dvh; padding: 32px 16px; }
+
+.marca { display: flex; align-items: center; gap: 12px; font-weight: 800; letter-spacing: 0.06em; }
+.marca-simbolo { display: grid; place-items: center; width: 40px; height: 40px; color: #fff; background: var(--azul); border-radius: 12px; }
+.marca-simbolo svg { width: 20px; height: 20px; fill: currentColor; stroke: none; }
+.marca small { font-size: 13px; font-weight: 500; letter-spacing: 0; color: var(--tinta-tenue); }
+
+.tarjeta-resultado {
+    width: min(560px, 100%);
+    padding: clamp(28px, 6vw, 52px);
+    text-align: center;
+    background: var(--superficie);
+    border: 1px solid var(--linea);
+    border-radius: 24px;
+    box-shadow: 0 2px 4px rgba(15, 34, 51, 0.04), 0 30px 60px -32px rgba(15, 34, 51, 0.26);
+    animation: sube 560ms var(--salida) both;
+}
+
+.icono-exito {
+    display: grid;
+    place-items: center;
+    width: 76px;
+    height: 76px;
+    margin: 0 auto 24px;
+    color: var(--verde);
+    background: var(--verde-tinte);
+    border-radius: 50%;
+    box-shadow: 0 0 0 10px rgba(31, 122, 77, 0.07);
+    animation: pop 520ms 160ms var(--salida) both;
+}
+.icono-exito svg { width: 36px; height: 36px; stroke-width: 2; }
+
+.tarjeta-resultado h1 { font-size: clamp(1.75rem, 4vw, 2.25rem); font-weight: 800; line-height: 1.1; letter-spacing: -0.035em; }
+
+.alerta-exito {
+    margin-top: 18px;
+    padding: 14px 18px;
+    font-size: 15.5px;
+    font-weight: 500;
+    color: var(--verde);
+    background: var(--verde-tinte);
+    border-radius: 14px;
+    text-wrap: pretty;
+}
+.alerta-exito:empty { display: none; }
+
+.numero-cita {
+    display: inline-flex;
+    align-items: baseline;
+    gap: 10px;
+    margin-top: 22px;
+    padding: 12px 20px;
+    font-size: 14.5px;
+    color: var(--tinta-suave);
+    background: var(--lienzo);
+    border-radius: 14px;
+}
+.numero-cita strong { font-size: 22px; font-weight: 800; letter-spacing: -0.02em; color: var(--tinta); font-variant-numeric: tabular-nums; }
+
+.acciones { margin-top: 32px; }
+
+.btn-primary {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    min-height: 52px;
+    padding: 0 28px;
+    font-size: 16px;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    color: #fff;
+    background: var(--azul);
+    border-radius: 16px;
+    box-shadow: 0 10px 22px -12px rgba(27, 95, 166, 0.75);
+    transition: transform 160ms var(--salida), background-color 160ms var(--salida);
+    -webkit-tap-highlight-color: transparent;
+}
+.btn-primary svg { width: 20px; height: 20px; }
+.btn-primary:active { transform: scale(0.97); transition-duration: 90ms; }
+@media (hover: hover) { .btn-primary:hover { background: var(--azul-hover); } }
+
+@keyframes sube { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
+@keyframes pop { from { opacity: 0; transform: scale(0.8); } to { opacity: 1; transform: none; } }
+
+@media (max-width: 480px) { .btn-primary { width: 100%; } }
+
+@media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation-duration: 0.01ms !important; animation-delay: 0ms !important; transition-duration: 0.01ms !important; }
+}

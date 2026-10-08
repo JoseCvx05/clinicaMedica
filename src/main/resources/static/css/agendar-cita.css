@@ -1,0 +1,237 @@
+/* ==========================================================================
+   SANTOS · Asistente de agendamiento de citas
+   Se carga DESPUÉS de Bootstrap 5.3: redefine sus variables y componentes.
+   Bootstrap se mantiene porque agendar-cita.js genera botones y alertas con
+   sus clases (btn, d-none, etc.). Solo presentación.
+   ========================================================================== */
+
+:root {
+    --santos-lienzo: #F4F7FA;
+    --santos-tinta: #0F2233;
+    --santos-linea: rgba(15, 34, 51, 0.08);
+    --santos-azul: #1B5FA6;
+    --santos-azul-hover: #154E8A;
+    --santos-azul-tinte: #E8F0FA;
+    --santos-turquesa: #0B8C86;
+    --santos-turquesa-tinte: #E2F4F2;
+    --salida: cubic-bezier(0.23, 1, 0.32, 1);
+
+    --bs-font-sans-serif: 'Plus Jakarta Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
+    --bs-body-color: #0F2233;
+    --bs-body-bg: #F4F7FA;
+    --bs-primary: #1B5FA6;
+    --bs-primary-rgb: 27, 95, 166;
+    --bs-secondary-rgb: 74, 94, 112;
+    --bs-secondary-color: #4A5E70;
+    --bs-danger-rgb: 179, 48, 58;
+    --bs-success-rgb: 31, 122, 77;
+    --bs-light-rgb: 244, 247, 250;
+    --bs-border-color: rgba(15, 34, 51, 0.1);
+    --bs-link-color: #1B5FA6;
+}
+
+body {
+    font-family: var(--bs-font-sans-serif);
+    background: radial-gradient(60% 40% at 8% 0%, rgba(11, 140, 134, 0.09), transparent 70%),
+    radial-gradient(50% 40% at 100% 100%, rgba(27, 95, 166, 0.09), transparent 70%),
+    var(--santos-lienzo);
+    background-attachment: fixed;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+}
+
+h1, h2, h3, .h3, .h5 { letter-spacing: -0.03em; text-wrap: balance; }
+p { text-wrap: pretty; }
+:focus-visible { outline: 3px solid rgba(27, 95, 166, 0.35); outline-offset: 2px; }
+
+/* ---------- Contenedor y marca ---------- */
+.wizard-container { max-width: 960px; }
+
+.wizard-brand { display: flex; align-items: center; gap: 12px; margin-bottom: 20px; font-weight: 800; letter-spacing: 0.06em; }
+.wizard-brand-simbolo {
+    display: grid;
+    place-items: center;
+    width: 40px;
+    height: 40px;
+    color: #fff;
+    background: var(--santos-azul);
+    border-radius: 12px;
+}
+.wizard-brand-simbolo svg { display: block; width: 20px; height: 20px; fill: currentColor; }
+.wizard-brand small { font-size: 13px; font-weight: 500; letter-spacing: 0; color: #7A8B9A; }
+
+.wizard-card,
+.wizard-card.shadow-sm {
+    border: 1px solid var(--santos-linea);
+    border-radius: 24px;
+    box-shadow: 0 2px 4px rgba(15, 34, 51, 0.04), 0 30px 60px -32px rgba(15, 34, 51, 0.26) !important;
+    animation: sube 520ms var(--salida) both;
+}
+.wizard-card h1 { font-weight: 800 !important; letter-spacing: -0.035em; }
+.wizard-card h1 .bi { vertical-align: -2px; }
+
+/* ---------- Progreso ---------- */
+.wizard-progress { display: flex; justify-content: space-between; position: relative; margin-bottom: 40px; }
+.wizard-progress::before { content: ""; position: absolute; top: 19px; left: 10%; right: 10%; height: 2px; background: var(--santos-linea); z-index: 0; }
+
+.wizard-step { position: relative; z-index: 1; width: 20%; text-align: center; }
+
+.wizard-circle {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    margin: auto;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    color: #7A8B9A;
+    background: #fff;
+    border: 2px solid #DDE5EC;
+    border-radius: 50%;
+    transition: background-color 240ms var(--salida), border-color 240ms var(--salida), color 240ms var(--salida), box-shadow 240ms var(--salida);
+}
+.wizard-step.completed .wizard-circle { color: #fff; background: var(--santos-azul); border-color: var(--santos-azul); font-size: 0; }
+.wizard-step.completed .wizard-circle::after { content: "\2713"; font-size: 17px; line-height: 1; }
+.wizard-step.current .wizard-circle {
+    color: var(--santos-azul);
+    background: var(--santos-azul-tinte);
+    border-color: var(--santos-azul);
+    box-shadow: 0 0 0 5px rgba(27, 95, 166, 0.12);
+}
+
+.wizard-label { display: block; margin-top: 10px; font-size: 0.82rem; font-weight: 500; color: #7A8B9A; }
+.wizard-step.completed .wizard-label { color: var(--bs-secondary-color); }
+.wizard-step.current .wizard-label { color: var(--santos-azul); font-weight: 700; }
+
+/* ---------- Opciones (sucursal, especialidad, médico) ---------- */
+.option-card {
+    position: relative;
+    padding: 20px 56px 20px 20px;
+    cursor: pointer;
+    background: #fff;
+    border: 1.5px solid var(--santos-linea);
+    border-radius: 18px;
+    transition: border-color 180ms var(--salida), background-color 180ms var(--salida),
+    box-shadow 180ms var(--salida), transform 180ms var(--salida);
+    -webkit-tap-highlight-color: transparent;
+}
+.option-card::after {
+    content: "";
+    position: absolute;
+    top: 50%;
+    right: 20px;
+    width: 22px;
+    height: 22px;
+    margin-top: -11px;
+    border: 2px solid #CBD5DE;
+    border-radius: 50%;
+    transition: background-color 180ms var(--salida), border-color 180ms var(--salida), box-shadow 180ms var(--salida);
+}
+.option-card:active { transform: scale(0.985); }
+.option-card .bi { display: grid; place-items: center; width: 48px; height: 48px; flex: none; font-size: 1.4rem !important; color: var(--santos-turquesa) !important; background: var(--santos-turquesa-tinte); border-radius: 14px; }
+
+@media (hover: hover) {
+    .option-card:hover { border-color: rgba(27, 95, 166, 0.45); background: #FAFCFF; transform: translateY(-2px); box-shadow: 0 18px 36px -24px rgba(15, 34, 51, 0.3); }
+}
+
+.form-check-input:checked + .option-card { border-color: var(--santos-azul); background: var(--santos-azul-tinte); box-shadow: 0 0 0 4px rgba(27, 95, 166, 0.1); }
+.form-check-input:checked + .option-card::after { background: var(--santos-azul) radial-gradient(circle, #fff 0 3px, transparent 4px); border-color: var(--santos-azul); }
+.form-check-input:focus-visible + .option-card { outline: 3px solid rgba(27, 95, 166, 0.35); outline-offset: 2px; }
+
+/* ---------- Horarios ---------- */
+.horario-btn {
+    min-width: 108px;
+    font-variant-numeric: tabular-nums;
+    font-weight: 600;
+    background: #fff;
+    color: var(--santos-azul);
+    border: 1.5px solid rgba(27, 95, 166, 0.28);
+    border-radius: 12px;
+    transition: background-color 160ms var(--salida), border-color 160ms var(--salida), color 160ms var(--salida), transform 90ms var(--salida);
+}
+.horario-btn:active { transform: scale(0.96); }
+@media (hover: hover) { .horario-btn:hover { background: var(--santos-azul-tinte); border-color: var(--santos-azul); color: var(--santos-azul); } }
+.horario-btn.seleccionado, .horario-btn.seleccionado:hover { background: var(--santos-azul); color: #fff; border-color: var(--santos-azul); box-shadow: 0 8px 18px -10px rgba(27, 95, 166, 0.7); }
+
+/* ---------- Botones ---------- */
+.btn {
+    --bs-btn-border-radius: 12px;
+    --bs-btn-padding-y: 0.7rem;
+    --bs-btn-font-weight: 600;
+    letter-spacing: -0.01em;
+    transition: transform 160ms var(--salida), background-color 160ms var(--salida), border-color 160ms var(--salida), color 160ms var(--salida);
+}
+.btn:active { transform: scale(0.97); }
+.btn:disabled, .btn.disabled { transform: none; }
+
+.btn-primary {
+    --bs-btn-bg: #1B5FA6; --bs-btn-border-color: #1B5FA6;
+    --bs-btn-hover-bg: #154E8A; --bs-btn-hover-border-color: #154E8A;
+    --bs-btn-active-bg: #11426F; --bs-btn-active-border-color: #11426F;
+    --bs-btn-disabled-bg: #1B5FA6; --bs-btn-disabled-border-color: #1B5FA6; --bs-btn-disabled-opacity: 0.45;
+    --bs-btn-focus-shadow-rgb: 27, 95, 166;
+    box-shadow: 0 8px 18px -10px rgba(27, 95, 166, 0.7);
+}
+.btn-primary:disabled { box-shadow: none; }
+
+.btn-outline-primary {
+    --bs-btn-color: #1B5FA6; --bs-btn-border-color: rgba(27, 95, 166, 0.35);
+    --bs-btn-hover-bg: #E8F0FA; --bs-btn-hover-color: #1B5FA6; --bs-btn-hover-border-color: #1B5FA6;
+    --bs-btn-active-bg: #1B5FA6; --bs-btn-active-border-color: #1B5FA6;
+}
+.btn-outline-secondary {
+    --bs-btn-color: #4A5E70; --bs-btn-border-color: rgba(15, 34, 51, 0.16);
+    --bs-btn-hover-bg: #fff; --bs-btn-hover-color: #0F2233; --bs-btn-hover-border-color: rgba(15, 34, 51, 0.35);
+    --bs-btn-active-bg: #E8EEF3; --bs-btn-active-color: #0F2233; --bs-btn-active-border-color: rgba(15, 34, 51, 0.35);
+    background: #fff;
+}
+
+/* ---------- Formularios ---------- */
+.form-label { font-size: 0.92rem; }
+.form-control, .form-select {
+    min-height: 48px;
+    background-color: var(--santos-lienzo);
+    border: 1.5px solid transparent;
+    border-radius: 14px;
+    transition: border-color 160ms var(--salida), box-shadow 160ms var(--salida), background-color 160ms var(--salida);
+}
+.form-control-lg, .form-select-lg { min-height: 54px; font-size: 1.05rem; }
+textarea.form-control { padding: 14px 16px; }
+.form-control:focus, .form-select:focus { background-color: #fff; border-color: var(--santos-azul); box-shadow: 0 0 0 4px rgba(27, 95, 166, 0.14); }
+.form-control.bg-light { background-color: var(--santos-lienzo) !important; }
+.form-text { color: #7A8B9A; }
+.form-control::file-selector-button { margin-right: 12px; padding: 0.4rem 0.9rem; font-weight: 600; color: var(--santos-azul); background: var(--santos-azul-tinte); border: 0; border-radius: 8px; }
+
+/* ---------- Avisos ---------- */
+.alert { border: 0; border-radius: 16px; padding: 16px 18px; }
+.alert-info { color: #1B5FA6; background: #E8F0FA; }
+.alert-success { color: #1F7A4D; background: #E6F4EC; }
+.alert-danger { color: #B3303A; background: #FCEBEC; }
+.alert .bi { flex: none; }
+
+/* ---------- Resumen y temporizador ---------- */
+.card.bg-light { background: var(--santos-lienzo) !important; border-radius: 18px; }
+.card.bg-light small { font-size: 0.8rem; font-weight: 600; color: #7A8B9A !important; }
+#contadorReserva { font-variant-numeric: tabular-nums; letter-spacing: -0.02em; }
+#mensajeHorarios { padding: 14px 16px !important; background: var(--santos-lienzo); border-radius: 14px; font-size: 0.95rem; }
+#mensajeHorarios:empty { display: none; }
+
+@keyframes sube { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
+
+/* ---------- Responsivo ---------- */
+@media (max-width: 575.98px) {
+    .wizard-container { padding-top: 1.25rem !important; padding-bottom: 1.5rem !important; }
+    .wizard-progress { margin-bottom: 28px; }
+    .wizard-progress::before { left: 12%; right: 12%; }
+    .wizard-circle { width: 34px; height: 34px; font-size: 0.9rem; }
+    .wizard-progress::before { top: 16px; }
+    .wizard-label { display: none; }
+    .wizard-step.current .wizard-label { display: block; position: absolute; left: 50%; transform: translateX(-50%); white-space: nowrap; }
+    .wizard-progress { padding-bottom: 22px; }
+    .wizard-card .btn { padding-left: 1rem; padding-right: 1rem; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+}

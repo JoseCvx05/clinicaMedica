@@ -10,6 +10,10 @@ import com.proyecto.clinicamedica.entity.ConsultaMedica;
 import com.proyecto.clinicamedica.entity.EstadoCita;
 import com.proyecto.clinicamedica.entity.SignosVitales;
 import com.proyecto.clinicamedica.entity.Usuario;
+import com.proyecto.clinicamedica.entity.DetalleOrdenLaboratorio;
+import com.proyecto.clinicamedica.entity.OrdenLaboratorio;
+import com.proyecto.clinicamedica.entity.ResultadoLaboratorio;
+import com.proyecto.clinicamedica.entity.FirmaDocumentoClinico;
 
 import com.proyecto.clinicamedica.model.EstadoConsultaMedica;
 
@@ -18,6 +22,8 @@ import com.proyecto.clinicamedica.repository.CitaRepository;
 import com.proyecto.clinicamedica.repository.ConsultaMedicaRepository;
 import com.proyecto.clinicamedica.repository.EstadoCitaRepository;
 import com.proyecto.clinicamedica.repository.SignosVitalesRepository;
+import com.proyecto.clinicamedica.repository.ResultadoLaboratorioRepository;
+
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -28,7 +34,8 @@ import java.time.OffsetDateTime;
 import java.time.ZoneId;
 import java.util.LinkedHashMap;
 import java.util.Map;
-import com.proyecto.clinicamedica.entity.FirmaDocumentoClinico;
+import java.util.List;
+
 
 /**
  * =========================================================
@@ -132,6 +139,9 @@ public class ConsultaMedicaService {
 
     private final FirmaDigitalMedicaService
             firmaDigitalMedicaService;
+
+    private final ResultadoLaboratorioRepository
+            resultadoLaboratorioRepository;
     // =====================================================
     // CONSTRUCTOR
     // =====================================================
@@ -157,6 +167,9 @@ public class ConsultaMedicaService {
             AuditoriaService auditoriaService,
 
             FirmaDigitalMedicaService firmaDigitalMedicaService,
+
+            ResultadoLaboratorioRepository
+                    resultadoLaboratorioRepository,
 
             @Value("${cita.zona-horaria:America/Guatemala}")
             String zonaHoraria
@@ -196,6 +209,9 @@ public class ConsultaMedicaService {
 
         this.firmaDigitalMedicaService =
                 firmaDigitalMedicaService;
+
+        this.resultadoLaboratorioRepository =
+                resultadoLaboratorioRepository;
     }
 
 
@@ -550,6 +566,41 @@ public class ConsultaMedicaService {
         Cie10 cie10 =
                 consulta.getCie10();
 
+        // =================================================
+// CU-09
+// RESULTADOS DE LABORATORIO PUBLICADOS
+// =================================================
+//
+// El Repository limita:
+//
+// - La cita consultada.
+// - El Médico autenticado.
+// - Solo resultados publicados.
+//
+// Por lo tanto:
+//
+// Guardado sin publicar -> NO visible.
+// Validado sin publicar -> NO visible.
+// Publicado -> SÍ visible.
+//
+// =================================================
+
+        List<ResultadoLaboratorioExpediente>
+                resultadosLaboratorio =
+
+                resultadoLaboratorioRepository
+                        .listarPublicadosParaMedicoPorCita(
+
+                                idCita,
+
+                                medico.getId()
+                        )
+                        .stream()
+                        .map(
+                                this::convertirResultadoLaboratorio
+                        )
+                        .toList();
+
 
         return new ExpedienteConsulta(
 
@@ -606,7 +657,9 @@ public class ConsultaMedicaService {
 
                 convertirSignos(
                         signos
-                )
+                ),
+
+                resultadosLaboratorio
         );
     }
 
@@ -1960,6 +2013,77 @@ public class ConsultaMedicaService {
 
 
     // =====================================================
+// CU-09
+// CONVERTIR RESULTADO PUBLICADO PARA EXPEDIENTE
+// =====================================================
+
+    private ResultadoLaboratorioExpediente
+    convertirResultadoLaboratorio(
+            ResultadoLaboratorio resultado
+    ) {
+
+        if (resultado == null) {
+
+            throw new IllegalStateException(
+                    "Se encontró un resultado de laboratorio inválido."
+            );
+        }
+
+
+        DetalleOrdenLaboratorio detalle =
+                resultado
+                        .getDetalleOrdenLaboratorio();
+
+
+        if (detalle == null) {
+
+            throw new IllegalStateException(
+                    "El resultado de laboratorio no posee un examen asociado."
+            );
+        }
+
+
+        OrdenLaboratorio orden =
+                detalle
+                        .getOrdenLaboratorio();
+
+
+        if (orden == null
+                || orden.getId() == null) {
+
+            throw new IllegalStateException(
+                    "El resultado de laboratorio no posee una orden válida."
+            );
+        }
+
+
+        return new ResultadoLaboratorioExpediente(
+
+                resultado.getId(),
+
+                orden.getId(),
+
+                orden.getNumeroOrden(),
+
+                detalle.getNombreExamen(),
+
+                resultado.getValorResultado(),
+
+                resultado.getUnidadResultado(),
+
+                detalle.getRangoReferencia(),
+
+                resultado.estaFueraDeRango(),
+
+                resultado.getNotasResultado(),
+
+                resultado.getFechaResultado(),
+
+                resultado.getFechaHoraPublicacion()
+        );
+    }
+
+    // =====================================================
     // SIGNOS PARA EXPEDIENTE
     // =====================================================
 
@@ -2328,8 +2452,8 @@ public class ConsultaMedicaService {
     }
 
     // =====================================================
-    // EXPEDIENTE
-    // =====================================================
+// EXPEDIENTE
+// =====================================================
 
     public record ExpedienteConsulta(
 
@@ -2375,15 +2499,51 @@ public class ConsultaMedicaService {
 
             OffsetDateTime fechaHoraFin,
 
-            SignosVitalesExpediente signosVitales
+            SignosVitalesExpediente signosVitales,
+
+            List<ResultadoLaboratorioExpediente>
+            resultadosLaboratorio
 
     ) {
     }
 
 
-    // =====================================================
-    // SIGNOS DEL EXPEDIENTE
-    // =====================================================
+// =====================================================
+// CU-09
+// RESULTADO DE LABORATORIO PARA EXPEDIENTE MÉDICO
+// =====================================================
+
+    public record ResultadoLaboratorioExpediente(
+
+            Integer idResultadoLaboratorio,
+
+            Integer idOrdenLaboratorio,
+
+            String numeroOrden,
+
+            String nombreExamen,
+
+            String valorResultado,
+
+            String unidadResultado,
+
+            String rangoReferencia,
+
+            boolean fueraRango,
+
+            String notasResultado,
+
+            OffsetDateTime fechaResultado,
+
+            OffsetDateTime fechaHoraPublicacion
+
+    ) {
+    }
+
+
+// =====================================================
+// SIGNOS DEL EXPEDIENTE
+// =====================================================
 
     public record SignosVitalesExpediente(
 
@@ -2411,5 +2571,4 @@ public class ConsultaMedicaService {
 
     ) {
     }
-
 }

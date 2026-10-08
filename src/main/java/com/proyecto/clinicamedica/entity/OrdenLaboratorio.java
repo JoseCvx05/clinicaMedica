@@ -29,6 +29,7 @@ import java.util.UUID;
  * =========================================================
  *
  * CU-08 - FA01 Orden de Laboratorio.
+ * CU-09 - Gestión de Laboratorio.
  *
  * Representa la cabecera de una orden generada por
  * un Médico después de finalizar la consulta médica.
@@ -39,7 +40,12 @@ import java.util.UUID;
  * - Consulta médica.
  * - Médico solicitante.
  *
- * Los exámenes se almacenarán posteriormente en:
+ * CU-09 permite distinguir entre:
+ *
+ * - Orden interna.
+ * - Orden externa.
+ *
+ * Los exámenes se almacenan en:
  *
  * detalle_orden_laboratorio
  *
@@ -149,6 +155,29 @@ public class OrdenLaboratorio {
             length = 5000
     )
     private String observaciones;
+
+
+    // =====================================================
+    // CU-09 - FA01
+    // ORDEN EXTERNA
+    // =====================================================
+    //
+    // false:
+    // La orden será procesada dentro de la clínica.
+    //
+    // true:
+    // El paciente realizará los exámenes en un
+    // laboratorio externo.
+    //
+    // El valor por defecto es false para mantener
+    // compatibilidad con las órdenes ya existentes.
+    // =====================================================
+
+    @Column(
+            name = "orden_externa",
+            nullable = false
+    )
+    private boolean ordenExterna = false;
 
 
     // =====================================================
@@ -527,10 +556,41 @@ public class OrdenLaboratorio {
     }
 
 
+    public boolean estaEnProceso() {
+
+        return estado
+                == EstadoOrdenLaboratorio.EN_PROCESO;
+    }
+
+
     public boolean estaCompletada() {
 
         return estado
                 == EstadoOrdenLaboratorio.COMPLETADA;
+    }
+
+
+    public boolean estaCancelada() {
+
+        return estado
+                == EstadoOrdenLaboratorio.CANCELADA;
+    }
+
+
+    // =====================================================
+    // CU-09
+    // TIPO DE ORDEN
+    // =====================================================
+
+    public boolean esOrdenExterna() {
+
+        return ordenExterna;
+    }
+
+
+    public boolean esOrdenInterna() {
+
+        return !ordenExterna;
     }
 
 
@@ -621,6 +681,26 @@ public class OrdenLaboratorio {
 
         this.observaciones =
                 observaciones;
+    }
+
+
+    // =====================================================
+    // CU-09
+    // ORDEN EXTERNA
+    // =====================================================
+
+    public boolean isOrdenExterna() {
+
+        return ordenExterna;
+    }
+
+
+    public void setOrdenExterna(
+            boolean ordenExterna
+    ) {
+
+        this.ordenExterna =
+                ordenExterna;
     }
 
 

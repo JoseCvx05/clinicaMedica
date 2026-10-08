@@ -9,7 +9,14 @@
     <meta name="viewport"
           content="width=device-width, initial-scale=1.0">
 
-    <title>Iniciar sesión | Clínica Médica</title>
+    <meta name="theme-color" content="#1B5FA6">
+
+    <title>Iniciar sesión | SANTOS Clínica médica</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
+          rel="stylesheet">
 
     <link rel="stylesheet"
           th:href="@{/css/login.css}"
@@ -33,9 +40,17 @@
 
             <a th:href="@{/}"
                href="/"
-               class="brand">
+               class="brand"
+               aria-label="SANTOS, volver al portal">
 
-                Clínica Médica
+                <span class="brand-simbolo" aria-hidden="true">
+                    <svg viewBox="0 0 24 24"><path d="M9 3h6v6h6v6h-6v6H9v-6H3V9h6z"/></svg>
+                </span>
+
+                <span class="brand-texto">
+                    SANTOS
+                    <small>Clínica médica</small>
+                </span>
 
             </a>
 
@@ -183,8 +198,6 @@
 
             Volver al portal
         </a>
-
-        </div>
 
     </section>
 

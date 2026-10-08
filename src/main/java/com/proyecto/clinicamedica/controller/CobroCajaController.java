@@ -8,6 +8,9 @@ import com.proyecto.clinicamedica.model.caja.TipoCobroCaja;
 import com.proyecto.clinicamedica.service.CobroCajaPagoService;
 import com.proyecto.clinicamedica.service.CobroCajaService;
 import com.proyecto.clinicamedica.service.ComprobanteCajaService;
+import com.proyecto.clinicamedica.dto.caja.CobroLaboratorioDTO;
+import com.proyecto.clinicamedica.service.CobroLaboratorioService;
+import com.proyecto.clinicamedica.service.ComprobanteLaboratorioService;
 
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -65,6 +68,11 @@ public class CobroCajaController {
     private static final String VISTA_COMPROBANTE =
             "caja/comprobante";
 
+    private static final String VISTA_COBRO_LABORATORIO =
+            "caja/cobro-laboratorio";
+
+    private static final String VISTA_COMPROBANTE_LABORATORIO =
+            "caja/comprobante-laboratorio";
 
     // =====================================================
     // DEPENDENCIAS
@@ -80,6 +88,11 @@ public class CobroCajaController {
             comprobanteCajaService;
 
 
+    private final CobroLaboratorioService
+            cobroLaboratorioService;
+
+    private final ComprobanteLaboratorioService
+            comprobanteLaboratorioService;
     // =====================================================
     // CONSTRUCTOR
     // =====================================================
@@ -90,7 +103,12 @@ public class CobroCajaController {
 
             CobroCajaPagoService cobroCajaPagoService,
 
-            ComprobanteCajaService comprobanteCajaService
+            ComprobanteCajaService comprobanteCajaService,
+
+            CobroLaboratorioService cobroLaboratorioService,
+
+            ComprobanteLaboratorioService
+                    comprobanteLaboratorioService
     ) {
 
         this.cobroCajaService =
@@ -101,8 +119,13 @@ public class CobroCajaController {
 
         this.comprobanteCajaService =
                 comprobanteCajaService;
-    }
 
+        this.cobroLaboratorioService =
+                cobroLaboratorioService;
+
+        this.comprobanteLaboratorioService =
+                comprobanteLaboratorioService;
+    }
 
     // =====================================================
     // PANTALLA PRINCIPAL DE CAJA
@@ -382,6 +405,7 @@ public class CobroCajaController {
 
         } catch (RuntimeException ex) {
 
+            ex.printStackTrace();
             /*
              * No exponemos detalles técnicos al Cajero.
              */
@@ -400,6 +424,277 @@ public class CobroCajaController {
                 return "redirect:/interno/caja/cita/"
                         + idCita;
             }
+
+
+            return "redirect:/interno/caja";
+        }
+    }
+    // =====================================================
+// CU-09 / CU-16
+// MOSTRAR ORDEN DE LABORATORIO PARA COBRO
+// =====================================================
+
+    @GetMapping(
+            "/laboratorio/{idOrdenLaboratorio}"
+    )
+    public String mostrarCobroLaboratorio(
+
+            @PathVariable("idOrdenLaboratorio")
+            Integer idOrdenLaboratorio,
+
+            Model model,
+
+            RedirectAttributes redirectAttributes
+    ) {
+
+        try {
+
+            // =============================================
+            // OBTENER CONTEXTO SEGURO
+            // =============================================
+
+            CobroLaboratorioService.ContextoCobroLaboratorio contexto =
+                    cobroLaboratorioService
+                            .obtenerContextoCobro(
+                                    idOrdenLaboratorio
+                            );
+
+
+            // =============================================
+            // FORMULARIO
+            // =============================================
+
+            CobroLaboratorioDTO cobro =
+                    new CobroLaboratorioDTO();
+
+
+            cobro.setIdOrdenLaboratorio(
+                    idOrdenLaboratorio
+            );
+
+
+            /*
+             * La llave se genera en servidor.
+             *
+             * Si el usuario hace doble clic en el mismo
+             * formulario se conserva el mismo UUID.
+             */
+            cobro.setIdempotencyKey(
+                    UUID.randomUUID()
+            );
+
+
+            // =============================================
+            // MODELO
+            // =============================================
+
+            model.addAttribute(
+                    "contextoLaboratorio",
+                    contexto
+            );
+
+
+            model.addAttribute(
+                    "cobroLaboratorio",
+                    cobro
+            );
+
+
+            model.addAttribute(
+                    "tiposCobro",
+                    TipoCobroCaja.values()
+            );
+
+
+            return VISTA_COBRO_LABORATORIO;
+
+
+        } catch (
+                IllegalArgumentException
+                | IllegalStateException ex
+        ) {
+
+            redirectAttributes
+                    .addFlashAttribute(
+                            "mensajeError",
+                            ex.getMessage()
+                    );
+
+
+            return "redirect:/interno/caja";
+        }
+    }
+
+
+// =====================================================
+// CU-09 / CU-16
+// REGISTRAR PAGO DE LABORATORIO
+// =====================================================
+
+    @PostMapping(
+            "/laboratorio/cobrar"
+    )
+    public String cobrarLaboratorio(
+
+            @ModelAttribute("cobroLaboratorio")
+            CobroLaboratorioDTO formulario,
+
+            RedirectAttributes redirectAttributes
+    ) {
+
+        Integer idOrdenLaboratorio =
+                formulario != null
+                        ? formulario.getIdOrdenLaboratorio()
+                        : null;
+
+
+        try {
+
+            CobroLaboratorioService.ResultadoCobroLaboratorio resultado =
+                    cobroLaboratorioService
+                            .registrarPago(
+                                    formulario
+                            );
+
+
+            // =============================================
+            // PAGO APROBADO
+            // =============================================
+
+            if (resultado.exitoso()) {
+
+                redirectAttributes
+                        .addFlashAttribute(
+                                "mensajeExito",
+                                resultado.mensaje()
+                        );
+
+
+                if (resultado.detalle() != null) {
+
+                    redirectAttributes
+                            .addFlashAttribute(
+                                    "detallePago",
+                                    resultado.detalle()
+                            );
+                }
+
+
+                /*
+                 * Esta ruta será implementada en el siguiente
+                 * paso con un comprobante específico para
+                 * laboratorio.
+                 */
+                return "redirect:/interno/caja/laboratorio/comprobante/"
+                        + resultado.numeroTransaccion();
+            }
+
+
+            // =============================================
+            // RECHAZO / ERROR
+            // =============================================
+
+            redirectAttributes
+                    .addFlashAttribute(
+                            "mensajeError",
+                            resultado.mensaje()
+                    );
+
+
+            if (idOrdenLaboratorio != null
+                    && idOrdenLaboratorio > 0) {
+
+                return "redirect:/interno/caja/laboratorio/"
+                        + idOrdenLaboratorio;
+            }
+
+
+            return "redirect:/interno/caja";
+
+
+        } catch (RuntimeException ex) {
+
+            /*
+             * No exponemos excepciones técnicas al Cajero.
+             */
+
+            redirectAttributes
+                    .addFlashAttribute(
+                            "mensajeError",
+                            "No fue posible registrar el pago "
+                                    + "de laboratorio. Verifique la orden "
+                                    + "e intente nuevamente."
+                    );
+
+
+            if (idOrdenLaboratorio != null
+                    && idOrdenLaboratorio > 0) {
+
+                return "redirect:/interno/caja/laboratorio/"
+                        + idOrdenLaboratorio;
+            }
+
+
+            return "redirect:/interno/caja";
+        }
+    }
+
+    // =====================================================
+// CU-09 / CU-16
+// COMPROBANTE DE PAGO DE LABORATORIO
+// =====================================================
+
+    @GetMapping(
+            "/laboratorio/comprobante/{numeroTransaccion}"
+    )
+    public String mostrarComprobanteLaboratorio(
+
+            @PathVariable("numeroTransaccion")
+            String numeroTransaccion,
+
+            Model model,
+
+            RedirectAttributes redirectAttributes
+    ) {
+
+        try {
+
+            // =============================================
+            // OBTENER COMPROBANTE SEGURO
+            // =============================================
+
+            ComprobanteLaboratorioService
+                    .ComprobanteLaboratorio comprobante =
+
+                    comprobanteLaboratorioService
+                            .obtener(
+                                    numeroTransaccion
+                            );
+
+
+            // =============================================
+            // MODELO
+            // =============================================
+
+            model.addAttribute(
+                    "comprobanteLaboratorio",
+                    comprobante
+            );
+
+
+            return VISTA_COMPROBANTE_LABORATORIO;
+
+
+        } catch (
+                IllegalArgumentException
+                | IllegalStateException ex
+        ) {
+
+            redirectAttributes
+                    .addFlashAttribute(
+                            "mensajeError",
+                            ex.getMessage()
+                    );
 
 
             return "redirect:/interno/caja";

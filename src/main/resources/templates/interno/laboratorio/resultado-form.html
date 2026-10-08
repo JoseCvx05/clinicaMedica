@@ -1,0 +1,1427 @@
+<!DOCTYPE html>
+<html lang="es"
+      xmlns:th="http://www.thymeleaf.org">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>
+        Resultado de Laboratorio
+    </title>
+
+    <style>
+
+        :root {
+            --fondo: #f4f7fb;
+            --tarjeta: #ffffff;
+            --principal: #0f4c81;
+            --principal-hover: #0b3b65;
+            --texto: #1e293b;
+            --secundario: #64748b;
+            --borde: #dbe3ec;
+
+            --verde-fondo: #dcfce7;
+            --verde-texto: #166534;
+
+            --rojo-fondo: #fee2e2;
+            --rojo-texto: #991b1b;
+
+            --amarillo-fondo: #fef3c7;
+            --amarillo-texto: #92400e;
+
+            --azul-fondo: #eff6ff;
+            --azul-texto: #1d4ed8;
+
+            --morado-fondo: #f3e8ff;
+            --morado-texto: #7e22ce;
+            --morado-boton: #7e22ce;
+            --morado-hover: #6b21a8;
+        }
+
+
+        * {
+            box-sizing: border-box;
+        }
+
+
+        body {
+            margin: 0;
+
+            font-family:
+                    Arial,
+                    Helvetica,
+                    sans-serif;
+
+            background: var(--fondo);
+
+            color: var(--texto);
+        }
+
+
+        /* =================================================
+           ENCABEZADO
+           ================================================= */
+
+        .encabezado {
+            background: var(--principal);
+
+            color: white;
+
+            padding: 20px 30px;
+        }
+
+
+        .encabezado-contenido {
+            max-width: 1050px;
+
+            margin: auto;
+
+            display: flex;
+
+            justify-content: space-between;
+            align-items: center;
+
+            gap: 20px;
+        }
+
+
+        .encabezado h1 {
+            margin: 0;
+
+            font-size: 24px;
+        }
+
+
+        .encabezado p {
+            margin: 5px 0 0;
+
+            opacity: .85;
+        }
+
+
+        /* =================================================
+           CONTENEDOR
+           ================================================= */
+
+        .contenedor {
+            max-width: 1050px;
+
+            margin: 30px auto;
+
+            padding: 0 20px 40px;
+        }
+
+
+        /* =================================================
+           MENSAJES
+           ================================================= */
+
+        .mensaje {
+            padding: 14px 16px;
+
+            margin-bottom: 18px;
+
+            border-radius: 10px;
+
+            border: 1px solid transparent;
+        }
+
+
+        .mensaje-exito {
+            background: var(--verde-fondo);
+
+            color: var(--verde-texto);
+
+            border-color: #bbf7d0;
+        }
+
+
+        .mensaje-error {
+            background: var(--rojo-fondo);
+
+            color: var(--rojo-texto);
+
+            border-color: #fecaca;
+        }
+
+
+        .mensaje-alerta {
+            background: var(--amarillo-fondo);
+
+            color: var(--amarillo-texto);
+
+            border-color: #fde68a;
+        }
+
+
+        /* =================================================
+           TARJETA
+           ================================================= */
+
+        .tarjeta {
+            background: var(--tarjeta);
+
+            border: 1px solid var(--borde);
+
+            border-radius: 14px;
+
+            box-shadow:
+                    0 5px 15px
+                    rgba(15, 23, 42, .06);
+
+            overflow: hidden;
+        }
+
+
+        .tarjeta-encabezado {
+            padding: 22px 26px;
+
+            border-bottom:
+                    1px solid var(--borde);
+        }
+
+
+        .tarjeta-encabezado h2 {
+            margin: 0 0 5px;
+
+            color: var(--principal);
+        }
+
+
+        .tarjeta-encabezado p {
+            margin: 0;
+
+            color: var(--secundario);
+        }
+
+
+        .contenido {
+            padding: 26px;
+        }
+
+
+        /* =================================================
+           RESUMEN DEL EXAMEN
+           ================================================= */
+
+        .resumen {
+            display: grid;
+
+            grid-template-columns:
+                    repeat(
+                            2,
+                            minmax(0, 1fr)
+                    );
+
+            gap: 14px;
+
+            margin-bottom: 25px;
+        }
+
+
+        .dato {
+            padding: 14px;
+
+            background: #f8fafc;
+
+            border: 1px solid var(--borde);
+
+            border-radius: 10px;
+        }
+
+
+        .dato strong {
+            display: block;
+
+            margin-bottom: 5px;
+
+            color: var(--secundario);
+
+            font-size: 11px;
+
+            text-transform: uppercase;
+        }
+
+
+        .orden {
+            color: var(--principal);
+
+            font-weight: bold;
+        }
+
+
+        .rango {
+            color: var(--azul-texto);
+
+            font-weight: bold;
+        }
+
+
+        /* =================================================
+           FORMULARIO
+           ================================================= */
+
+        .grid-formulario {
+            display: grid;
+
+            grid-template-columns:
+                    repeat(
+                            2,
+                            minmax(0, 1fr)
+                    );
+
+            gap: 18px;
+        }
+
+
+        .campo {
+            margin-bottom: 5px;
+        }
+
+
+        .campo-completo {
+            grid-column: 1 / -1;
+        }
+
+
+        label {
+            display: block;
+
+            margin-bottom: 7px;
+
+            font-size: 13px;
+
+            font-weight: bold;
+        }
+
+
+        input[type="text"],
+        input[type="datetime-local"],
+        textarea {
+            width: 100%;
+
+            padding: 11px 12px;
+
+            border: 1px solid var(--borde);
+
+            border-radius: 9px;
+
+            font-size: 14px;
+
+            background: white;
+        }
+
+
+        textarea {
+            min-height: 110px;
+
+            resize: vertical;
+        }
+
+
+        input:focus,
+        textarea:focus {
+            outline: none;
+
+            border-color: var(--principal);
+        }
+
+
+        input[readonly],
+        textarea[readonly] {
+            background: #f1f5f9;
+
+            color: #475569;
+
+            cursor: not-allowed;
+        }
+
+
+        .ayuda {
+            margin-top: 6px;
+
+            color: var(--secundario);
+
+            font-size: 12px;
+        }
+
+
+        /* =================================================
+           FUERA DE RANGO
+           ================================================= */
+
+        .fuera-rango {
+            padding: 16px;
+
+            border: 1px solid #fecaca;
+
+            background: #fff7f7;
+
+            border-radius: 10px;
+        }
+
+
+        .checkbox-linea {
+            display: flex;
+
+            align-items: center;
+
+            gap: 10px;
+        }
+
+
+        .checkbox-linea input {
+            width: 18px;
+            height: 18px;
+        }
+
+
+        .checkbox-linea label {
+            margin: 0;
+
+            color: var(--rojo-texto);
+        }
+
+
+        .alerta-rango {
+            margin-top: 12px;
+
+            padding: 12px;
+
+            border-radius: 8px;
+
+            background: var(--rojo-fondo);
+
+            color: var(--rojo-texto);
+
+            font-weight: bold;
+        }
+
+
+        /* =================================================
+           ESTADOS
+           ================================================= */
+
+        .estado {
+            display: inline-block;
+
+            padding: 6px 10px;
+
+            border-radius: 999px;
+
+            font-size: 12px;
+
+            font-weight: bold;
+        }
+
+
+        .estado-pendiente {
+            background: #e2e8f0;
+
+            color: #475569;
+        }
+
+
+        .estado-validado {
+            background: var(--azul-fondo);
+
+            color: var(--azul-texto);
+        }
+
+
+        .estado-publicado {
+            background: var(--verde-fondo);
+
+            color: var(--verde-texto);
+        }
+
+
+        /* =================================================
+           VALIDACIÓN DE SUPERVISOR
+           ================================================= */
+
+        .bloque-supervisor {
+            margin-top: 24px;
+
+            padding: 18px;
+
+            border-radius: 12px;
+
+            border: 1px solid #d8b4fe;
+
+            background: var(--morado-fondo);
+        }
+
+
+        .bloque-supervisor h3 {
+            margin: 0 0 7px;
+
+            color: var(--morado-texto);
+
+            font-size: 17px;
+        }
+
+
+        .bloque-supervisor p {
+            margin: 0 0 15px;
+
+            color: #581c87;
+
+            font-size: 13px;
+
+            line-height: 1.5;
+        }
+
+
+
+
+        /* =================================================
+           RESULTADO VALIDADO
+           ================================================= */
+
+        .bloque-validado {
+            margin-top: 24px;
+
+            padding: 18px;
+
+            border-radius: 12px;
+
+            border: 1px solid #bfdbfe;
+
+            background: var(--azul-fondo);
+
+            color: var(--azul-texto);
+        }
+
+        /* =================================================
+   PUBLICACIÓN DEL RESULTADO
+   ================================================= */
+
+        .bloque-publicacion {
+            margin-top: 24px;
+            padding: 18px;
+            border-radius: 12px;
+            border: 1px solid #bbf7d0;
+            background: #f0fdf4;
+        }
+
+        .bloque-publicacion h3 {
+            margin: 0 0 7px;
+            color: #166534;
+            font-size: 17px;
+        }
+
+        .bloque-publicacion p {
+            margin: 0 0 15px;
+            color: #166534;
+            font-size: 13px;
+            line-height: 1.5;
+        }
+
+        .boton-publicar {
+            background: #15803d;
+            color: white;
+        }
+
+        .boton-publicar:hover {
+            background: #166534;
+        }
+
+        /* =================================================
+   RNF-024
+   CORRECCIÓN DE RESULTADO PUBLICADO
+   ================================================= */
+
+        .bloque-correccion {
+            margin-top: 24px;
+            padding: 18px;
+            border-radius: 12px;
+            border: 1px solid #fecaca;
+            background: #fff7f7;
+        }
+
+
+        .bloque-correccion h3 {
+            margin: 0 0 7px;
+            color: #991b1b;
+            font-size: 17px;
+        }
+
+
+        .bloque-correccion p {
+            margin: 0 0 15px;
+            color: #7f1d1d;
+            font-size: 13px;
+            line-height: 1.5;
+        }
+
+
+        .bloque-correccion textarea {
+            margin-bottom: 14px;
+            min-height: 90px;
+        }
+
+
+        .boton-correccion {
+            background: #b91c1c;
+            color: white;
+        }
+
+
+        .boton-correccion:hover {
+            background: #991b1b;
+        }
+
+
+        .bloque-validado strong {
+            display: block;
+
+            margin-bottom: 5px;
+        }
+
+
+        /* =================================================
+           ACCIONES
+           ================================================= */
+
+        .acciones {
+            display: flex;
+
+            justify-content: space-between;
+
+            align-items: center;
+
+            gap: 12px;
+
+            margin-top: 25px;
+        }
+
+
+        .acciones-derecha {
+            display: flex;
+
+            gap: 10px;
+
+            align-items: center;
+        }
+
+
+        .boton {
+            border: none;
+
+            border-radius: 9px;
+
+            padding: 12px 18px;
+
+            font-size: 14px;
+
+            font-weight: bold;
+
+            text-decoration: none;
+
+            cursor: pointer;
+
+            display: inline-block;
+        }
+
+
+        .boton-volver {
+            background: #e2e8f0;
+
+            color: #334155;
+        }
+
+
+        .boton-guardar {
+            background: var(--principal);
+
+            color: white;
+        }
+
+
+        .boton-guardar:hover {
+            background: var(--principal-hover);
+        }
+
+
+        .boton-validar {
+            background: var(--morado-boton);
+
+            color: white;
+        }
+
+
+        .boton-validar:hover {
+            background: var(--morado-hover);
+        }
+
+
+        .boton:disabled {
+            opacity: .55;
+
+            cursor: not-allowed;
+        }
+
+
+        @media (max-width: 700px) {
+
+            .resumen,
+            .grid-formulario {
+                grid-template-columns: 1fr;
+            }
+
+
+            .campo-completo {
+                grid-column: auto;
+            }
+
+
+            .acciones {
+                flex-direction: column;
+
+                align-items: stretch;
+            }
+
+
+            .acciones-derecha {
+                flex-direction: column;
+            }
+
+
+            .acciones .boton,
+            .acciones-derecha .boton {
+                width: 100%;
+
+                text-align: center;
+            }
+        }
+
+    </style>
+
+</head>
+
+
+<body>
+
+
+<!-- =====================================================
+     ENCABEZADO
+     ===================================================== -->
+
+<header class="encabezado">
+
+    <div class="encabezado-contenido">
+
+        <div>
+
+            <h1>
+                SANTOS
+            </h1>
+
+            <p>
+                Laboratorio · Registro de Resultados
+            </p>
+
+        </div>
+
+    </div>
+
+</header>
+
+
+
+<main class="contenedor">
+
+
+    <!-- =================================================
+         MENSAJES
+         ================================================= -->
+
+    <div class="mensaje mensaje-exito"
+         th:if="${mensajeExito != null}"
+         th:text="${mensajeExito}">
+    </div>
+
+
+    <div class="mensaje mensaje-error"
+         th:if="${mensajeError != null}"
+         th:text="${mensajeError}">
+    </div>
+
+
+    <div class="mensaje mensaje-alerta"
+         th:if="${mensajeAlerta != null}"
+         th:text="${mensajeAlerta}">
+    </div>
+
+
+
+    <!-- =================================================
+         TARJETA
+         ================================================= -->
+
+    <section class="tarjeta">
+
+
+        <div class="tarjeta-encabezado">
+
+            <h2>
+                Resultado de laboratorio
+            </h2>
+
+            <p th:if="${!contextoResultado.validadoSupervisor
+                       and !contextoResultado.publicado}">
+                Registre el resultado y posteriormente deberá ser
+                revisado por un Supervisor de Laboratorio.
+            </p>
+
+            <p th:if="${contextoResultado.validadoSupervisor
+                       and !contextoResultado.publicado}">
+                El resultado fue validado por un Supervisor de Laboratorio.
+            </p>
+
+            <p th:if="${contextoResultado.publicado}">
+                El resultado se encuentra publicado.
+            </p>
+
+        </div>
+
+
+        <div class="contenido">
+
+
+            <!-- =================================================
+                 RESUMEN
+                 ================================================= -->
+
+            <div class="resumen">
+
+
+                <div class="dato">
+
+                    <strong>
+                        Orden
+                    </strong>
+
+                    <span class="orden"
+                          th:text="${contextoResultado.numeroOrden}">
+                        LAB-000000
+                    </span>
+
+                </div>
+
+
+                <div class="dato">
+
+                    <strong>
+                        Examen
+                    </strong>
+
+                    <span th:text="${contextoResultado.nombreExamen}">
+                        Examen
+                    </span>
+
+                </div>
+
+
+                <div class="dato">
+
+                    <strong>
+                        Unidad de referencia
+                    </strong>
+
+                    <span th:text="${contextoResultado.unidadReferencia != null
+                                   and !contextoResultado.unidadReferencia.isBlank()
+                                   ? contextoResultado.unidadReferencia
+                                   : 'No especificada'}">
+                    </span>
+
+                </div>
+
+
+                <div class="dato">
+
+                    <strong>
+                        Rango de referencia
+                    </strong>
+
+                    <span class="rango"
+                          th:text="${contextoResultado.rangoReferencia != null
+                                   and !contextoResultado.rangoReferencia.isBlank()
+                                   ? contextoResultado.rangoReferencia
+                                   : 'No especificado'}">
+                    </span>
+
+                </div>
+
+
+                <div class="dato">
+
+                    <strong>
+                        Validación
+                    </strong>
+
+                    <span class="estado estado-validado"
+                          th:if="${contextoResultado.validadoSupervisor}">
+                        Validado por supervisor
+                    </span>
+
+                    <span class="estado estado-pendiente"
+                          th:unless="${contextoResultado.validadoSupervisor}">
+                        Pendiente de validación
+                    </span>
+
+                </div>
+
+
+                <div class="dato">
+
+                    <strong>
+                        Publicación
+                    </strong>
+
+                    <span class="estado estado-publicado"
+                          th:if="${contextoResultado.publicado}">
+                        Publicado
+                    </span>
+
+                    <span class="estado estado-pendiente"
+                          th:unless="${contextoResultado.publicado}">
+                        No publicado
+                    </span>
+
+                </div>
+
+
+            </div>
+
+
+
+            <!-- =================================================
+                 FORMULARIO PARA GUARDAR RESULTADO
+                 ================================================= -->
+
+            <form th:action="@{/interno/laboratorio/resultados/guardar}"
+                  th:object="${resultadoLaboratorio}"
+                  method="post">
+
+
+                <!-- ID ORDEN -->
+
+                <input type="hidden"
+                       th:field="*{idOrdenLaboratorio}">
+
+
+                <!-- ID DETALLE -->
+
+                <input type="hidden"
+                       th:field="*{idDetalleOrdenLaboratorio}">
+
+
+
+                <div class="grid-formulario">
+
+
+                    <!-- =========================================
+                         VALOR
+                         ========================================= -->
+
+                    <div class="campo">
+
+                        <label for="valorResultado">
+                            Valor Resultado *
+                        </label>
+
+                        <input type="text"
+                               id="valorResultado"
+                               th:field="*{valorResultado}"
+                               maxlength="255"
+                               required
+                               th:readonly="${contextoResultado.validadoSupervisor
+                                             or contextoResultado.publicado}"
+                               placeholder="Ej. 180">
+
+                        <div class="ayuda">
+                            Ingrese el valor reportado por el examen.
+                        </div>
+
+                    </div>
+
+
+
+                    <!-- =========================================
+                         UNIDAD
+                         ========================================= -->
+
+                    <div class="campo">
+
+                        <label for="unidadResultado">
+                            Unidad *
+                        </label>
+
+                        <input type="text"
+                               id="unidadResultado"
+                               th:field="*{unidadResultado}"
+                               maxlength="100"
+                               required
+                               th:readonly="${contextoResultado.validadoSupervisor
+                                             or contextoResultado.publicado}"
+                               placeholder="Ej. mg/dL">
+
+                        <div class="ayuda">
+                            Puede conservar la unidad sugerida
+                            o registrar la utilizada por el laboratorio.
+                        </div>
+
+                    </div>
+
+
+
+                    <!-- =========================================
+                         FECHA
+                         ========================================= -->
+
+                    <div class="campo campo-completo">
+
+                        <label for="fechaResultado">
+                            Fecha Resultado *
+                        </label>
+
+                        <input type="datetime-local"
+                               id="fechaResultado"
+                               th:field="*{fechaResultado}"
+                               required
+                               th:readonly="${contextoResultado.validadoSupervisor
+                                             or contextoResultado.publicado}">
+
+                    </div>
+
+
+
+                    <!-- =========================================
+                         FUERA DE RANGO
+                         ========================================= -->
+
+                    <div class="campo campo-completo fuera-rango">
+
+
+                        <div class="checkbox-linea">
+
+                            <input type="checkbox"
+                                   id="fueraRango"
+                                   th:field="*{fueraRango}"
+                                   th:disabled="${contextoResultado.validadoSupervisor
+                                                or contextoResultado.publicado}">
+
+                            <label for="fueraRango">
+                                Fuera de Rango
+                            </label>
+
+                        </div>
+
+
+                        <div class="ayuda">
+
+                            Marque esta opción cuando el resultado
+                            se encuentre fuera del rango de referencia.
+
+                        </div>
+
+
+                        <div id="alertaFueraRango"
+                             class="alerta-rango"
+                             th:style="${resultadoLaboratorio.fueraRango}
+                                      ? ''
+                                      : 'display:none;'">
+
+                            Fuera de rango
+
+                            <span th:if="${contextoResultado.rangoReferencia != null
+                                         and !contextoResultado.rangoReferencia.isBlank()}">
+
+                                (
+
+                                <span th:text="${contextoResultado.rangoReferencia}">
+                                </span>
+
+                                )
+
+                            </span>
+
+                        </div>
+
+
+                    </div>
+
+
+
+                    <!-- =========================================
+                         NOTAS
+                         ========================================= -->
+
+                    <div class="campo campo-completo">
+
+                        <label for="notasResultado">
+                            Notas Resultado
+                        </label>
+
+                        <textarea id="notasResultado"
+                                  th:field="*{notasResultado}"
+                                  maxlength="5000"
+                                  th:readonly="${contextoResultado.validadoSupervisor
+                                                or contextoResultado.publicado}"
+                                  placeholder="Observaciones adicionales del resultado...">
+                        </textarea>
+
+                    </div>
+
+
+                </div>
+
+
+
+                <!-- =================================================
+                     ACCIONES DEL RESULTADO
+                     ================================================= -->
+
+                <div class="acciones">
+
+
+                    <a th:href="@{/interno/laboratorio/ordenes/{id}
+                                  (id=${contextoResultado.idOrdenLaboratorio})}"
+                       class="boton boton-volver">
+
+                        Volver a la orden
+
+                    </a>
+
+
+                    <!--
+                        Solo puede guardar mientras:
+
+                        - No esté validado.
+                        - No esté publicado.
+                    -->
+
+                    <button type="submit"
+                            class="boton boton-guardar"
+                            th:if="${!contextoResultado.validadoSupervisor
+                                   and !contextoResultado.publicado}">
+
+                        Guardar resultado
+
+                    </button>
+
+
+                </div>
+
+
+            </form>
+
+
+
+            <!-- =================================================
+                 RESULTADO YA VALIDADO
+                 ================================================= -->
+
+            <div class="bloque-validado"
+                 th:if="${contextoResultado.validadoSupervisor
+                          and !contextoResultado.publicado}">
+
+                <strong>
+                    Resultado validado por Supervisor de Laboratorio
+                </strong>
+
+                Este resultado ya fue revisado y no puede modificarse
+                mediante el flujo normal. Está listo para la etapa
+                de publicación.
+
+            </div>
+
+            <!-- =================================================
+     CU-09
+     PUBLICAR RESULTADO
+     ================================================= -->
+            <!--
+                 La publicación solamente aparece cuando:
+
+                 - Existe un resultado guardado.
+                 - Ya fue validado por Supervisor.
+                 - Todavía no ha sido publicado.
+
+                 IMPORTANTE:
+
+                 El botón no constituye la seguridad real.
+
+                 ResultadoLaboratorioService vuelve a comprobar:
+
+                 - Laboratorista autenticado.
+                 - Sucursal.
+                 - Orden interna.
+                 - Estado EN_PROCESO.
+                 - Pago aprobado.
+                 - Validación de supervisor.
+                 - Que no exista publicación previa.
+                 ================================================= -->
+
+            <div class="bloque-publicacion"
+                 th:if="${contextoResultado.idResultadoLaboratorio != null
+              and contextoResultado.validadoSupervisor
+              and !contextoResultado.publicado}">
+
+                <h3>
+                    Publicar resultado
+                </h3>
+
+                <p>
+                    El resultado ya fue validado por un Supervisor de Laboratorio.
+                    Al publicarlo quedará disponible como resultado definitivo
+                    y ya no podrá modificarse mediante el flujo normal.
+                </p>
+
+
+                <form th:action="@{/interno/laboratorio/resultados/{id}/publicar
+                      (id=${contextoResultado.idResultadoLaboratorio})}"
+                      method="post">
+
+                    <button type="submit"
+                            class="boton boton-publicar">
+
+                        Publicar resultado
+
+                    </button>
+
+                </form>
+
+            </div>
+
+
+            <!-- =================================================
+     RNF-024
+     AUTORIZAR CORRECCIÓN DE RESULTADO PUBLICADO
+     ================================================= -->
+            <!--
+                 Este bloque solamente se muestra cuando:
+
+                 1. El usuario actual es Supervisor de Laboratorio.
+                 2. Existe un resultado guardado.
+                 3. El resultado ya está PUBLICADO.
+
+                 La seguridad real NO depende del HTML.
+
+                 ResultadoLaboratorioService vuelve a validar:
+
+                 - Usuario autenticado.
+                 - Rol Laboratorista.
+                 - supervisorLaboratorio = true.
+                 - Resultado publicado.
+                 - Orden válida.
+                 - Pago aprobado.
+                 - Estado válido.
+                 - Motivo obligatorio.
+
+                 Al autorizar:
+
+                 publicado = false
+                 validadoSupervisor = false
+                 correccionAutorizada = true
+
+                 Si la orden estaba COMPLETADA:
+                 vuelve a EN_PROCESO.
+                 ================================================= -->
+
+            <div class="bloque-correccion"
+                 th:if="${esSupervisor
+              and contextoResultado.idResultadoLaboratorio != null
+              and contextoResultado.publicado}">
+
+                <h3>
+                    Autorizar corrección
+                </h3>
+
+                <p>
+                    Este resultado ya fue publicado y normalmente es inmutable.
+                    Utilice esta opción únicamente cuando sea necesario corregir
+                    información y exista autorización de Supervisor de Laboratorio.
+                </p>
+
+
+                <form th:action="@{/interno/laboratorio/resultados/{id}/autorizar-correccion
+                      (id=${contextoResultado.idResultadoLaboratorio})}"
+                      method="post"
+                      onsubmit="return confirm(
+              '¿Confirma que desea autorizar la corrección de este resultado publicado?'
+          );">
+                    <input type="hidden"
+                           th:name="${_csrf.parameterName}"
+                           th:value="${_csrf.token}">
+
+
+                    <div class="campo">
+
+                        <label for="motivoCorreccion">
+                            Motivo de la corrección *
+                        </label>
+
+
+                        <textarea id="motivoCorreccion"
+                                  name="motivo"
+                                  maxlength="1000"
+                                  required
+                                  placeholder="Explique por qué debe corregirse este resultado..."></textarea>
+
+
+                        <div class="ayuda">
+                            El motivo es obligatorio y quedará registrado
+                            como parte de la autorización de corrección.
+                        </div>
+
+                    </div>
+
+
+                    <button type="submit"
+                            class="boton boton-correccion">
+
+                        Autorizar corrección
+
+                    </button>
+
+                </form>
+
+            </div>
+
+
+
+            <!-- =================================================
+                 VALIDACIÓN POR SUPERVISOR
+                 ================================================= -->
+            <!--
+                 IMPORTANTE:
+
+                 Este formulario está FUERA del formulario de guardado.
+
+                 No usamos formularios anidados porque HTML no los
+                 permite correctamente.
+
+                 El botón solo se muestra cuando:
+
+                 1. El usuario actual es supervisor.
+                 2. Ya existe un resultado guardado.
+                 3. Todavía no fue validado.
+                 4. Todavía no fue publicado.
+
+                 La seguridad definitiva NO depende de este th:if.
+
+                 ResultadoLaboratorioService vuelve a comprobar
+                 supervisorLaboratorio = true.
+                 ================================================= -->
+
+            <div class="bloque-supervisor"
+                 th:if="${esSupervisor
+                          and contextoResultado.idResultadoLaboratorio != null
+                          and !contextoResultado.validadoSupervisor
+                          and !contextoResultado.publicado}">
+
+                <h3>
+                    Validación de Supervisor
+                </h3>
+
+                <p>
+                    Revise cuidadosamente el valor, unidad, fecha,
+                    indicador de fuera de rango y notas antes de
+                    autorizar este resultado.
+                </p>
+
+
+                <form th:action="@{/interno/laboratorio/resultados/{id}/validar
+                                  (id=${contextoResultado.idResultadoLaboratorio})}"
+                      method="post">
+
+                    <button type="submit"
+                            class="boton boton-validar">
+
+                        Validar resultado
+
+                    </button>
+
+                </form>
+
+            </div>
+
+
+
+            <!-- =================================================
+                 SUPERVISOR PERO SIN RESULTADO GUARDADO
+                 ================================================= -->
+
+            <div class="mensaje mensaje-alerta"
+                 style="margin-top: 24px; margin-bottom: 0;"
+                 th:if="${esSupervisor
+                          and contextoResultado.idResultadoLaboratorio == null}">
+
+                Primero debe existir un resultado guardado
+                antes de realizar la validación de supervisor.
+
+            </div>
+
+
+        </div>
+
+    </section>
+
+
+</main>
+
+
+
+<script>
+
+    document.addEventListener(
+        "DOMContentLoaded",
+        function () {
+
+            const checkbox =
+                document.getElementById(
+                    "fueraRango"
+                );
+
+            const alerta =
+                document.getElementById(
+                    "alertaFueraRango"
+                );
+
+
+            if (!checkbox || !alerta) {
+
+                return;
+            }
+
+
+            function actualizarAlerta() {
+
+                alerta.style.display =
+                    checkbox.checked
+                        ? "block"
+                        : "none";
+            }
+
+
+            checkbox.addEventListener(
+                "change",
+                actualizarAlerta
+            );
+
+
+            actualizarAlerta();
+        }
+    );
+
+</script>
+
+
+</body>
+</html>

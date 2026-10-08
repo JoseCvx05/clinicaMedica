@@ -323,8 +323,14 @@ public class OrdenLaboratorioService {
 
 
     // =====================================================
-    // CREAR ORDEN
-    // =====================================================
+// CREAR ORDEN
+// COMPATIBILIDAD CU-08
+// =====================================================
+//
+// El flujo anterior continúa funcionando.
+// Si no recibe ordenExterna, siempre será interna.
+//
+// =====================================================
 
     @Transactional
     public ResultadoOrden crearOrden(
@@ -334,6 +340,36 @@ public class OrdenLaboratorioService {
             List<Integer> idsExamenes,
 
             String observaciones
+    ) {
+
+        return crearOrden(
+
+                idCita,
+
+                idsExamenes,
+
+                observaciones,
+
+                false
+        );
+    }
+
+
+// =====================================================
+// CREAR ORDEN
+// CU-08 + CU-09 FA01
+// =====================================================
+
+    @Transactional
+    public ResultadoOrden crearOrden(
+
+            Integer idCita,
+
+            List<Integer> idsExamenes,
+
+            String observaciones,
+
+            boolean ordenExterna
     ) {
 
         validarId(
@@ -459,6 +495,16 @@ public class OrdenLaboratorioService {
         );
 
 
+// =================================================
+// CU-09 - FA01
+// TIPO DE ORDEN
+// =================================================
+
+        orden.setOrdenExterna(
+                ordenExterna
+        );
+
+
         orden.setEstado(
                 OrdenLaboratorio
                         .EstadoOrdenLaboratorio
@@ -576,7 +622,7 @@ public class OrdenLaboratorioService {
         // =================================================
 
         String contenidoCanonico =
-                construirContenidoCanonico(
+                construirContenidoCanonicoV2(
 
                         orden,
 
@@ -720,14 +766,35 @@ public class OrdenLaboratorioService {
                 );
 
 
-        String mensaje =
-                "Orden de laboratorio generada exitosamente. "
-                        + "Número de orden: "
-                        + orden.getNumeroOrden()
-                        + ". Exámenes: "
-                        + listaExamenes
-                        + ". El paciente debe dirigirse "
-                        + "al área de laboratorio.";
+        String mensaje;
+
+
+        if (orden.isOrdenExterna()) {
+
+            mensaje =
+                    "Orden de laboratorio externa generada exitosamente. "
+                            + "Número de orden: "
+                            + orden.getNumeroOrden()
+                            + ". Exámenes: "
+                            + listaExamenes
+                            + ". El paciente realizará los exámenes "
+                            + "en un laboratorio externo.";
+
+        } else {
+
+            /*
+             * Mensaje original CU-08.
+             * No lo modificamos.
+             */
+            mensaje =
+                    "Orden de laboratorio generada exitosamente. "
+                            + "Número de orden: "
+                            + orden.getNumeroOrden()
+                            + ". Exámenes: "
+                            + listaExamenes
+                            + ". El paciente debe dirigirse "
+                            + "al área de laboratorio.";
+        }
 
 
         return new ResultadoOrden(
@@ -1405,6 +1472,36 @@ public class OrdenLaboratorioService {
     // =====================================================
     // NORMALIZACIÓN CANÓNICA
     // =====================================================
+    // =====================================================
+// CONTENIDO CANÓNICO RNF-031 - V2
+// CU-09
+// =====================================================
+//
+// Mantiene todo el contenido original de V1
+// y protege adicionalmente si la orden es externa.
+//
+// =====================================================
+
+    private String construirContenidoCanonicoV2(
+
+            OrdenLaboratorio orden,
+
+            List<DetalleOrdenLaboratorio> detalles
+    ) {
+
+        String contenidoV1 =
+                construirContenidoCanonico(
+
+                        orden,
+
+                        detalles
+                );
+
+
+        return contenidoV1
+                + "\nORDEN_EXTERNA="
+                + orden.isOrdenExterna();
+    }
 
     private String valorCanonico(
             String valor
@@ -1510,6 +1607,12 @@ public class OrdenLaboratorioService {
         nuevo.put(
                 "estado",
                 orden.getEstado().name()
+        );
+
+
+        nuevo.put(
+                "ordenExterna",
+                orden.isOrdenExterna()
         );
 
 

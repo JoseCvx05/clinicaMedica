@@ -9,6 +9,8 @@
     <meta name="viewport"
           content="width=device-width, initial-scale=1">
 
+    <meta name="theme-color" content="#1B5FA6">
+
     <title th:text="${citaWizard.esSeguimiento
             ? 'Agendar cita de seguimiento'
             : (modoWalkIn
@@ -17,131 +19,21 @@
         Agendar cita
     </title>
 
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
+          rel="stylesheet">
+
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
           rel="stylesheet">
 
     <link rel="stylesheet"
           href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
 
-
-    <style>
-
-        body {
-            background-color: #f5f7fb;
-        }
-
-        .wizard-container {
-            max-width: 950px;
-        }
-
-        .wizard-card {
-            border: 0;
-            border-radius: 18px;
-        }
-
-
-        /* ================================================
-           PROGRESO
-           ================================================ */
-
-        .wizard-progress {
-            display: flex;
-            justify-content: space-between;
-            position: relative;
-            margin-bottom: 40px;
-        }
-
-        .wizard-progress::before {
-            content: "";
-            position: absolute;
-            top: 18px;
-            left: 8%;
-            right: 8%;
-            height: 3px;
-            background: #dee2e6;
-            z-index: 0;
-        }
-
-        .wizard-step {
-            position: relative;
-            z-index: 1;
-            width: 20%;
-            text-align: center;
-        }
-
-        .wizard-circle {
-            width: 38px;
-            height: 38px;
-            margin: auto;
-            border-radius: 50%;
-
-            display: flex;
-            align-items: center;
-            justify-content: center;
-
-            background: #dee2e6;
-            color: #6c757d;
-
-            font-weight: 700;
-        }
-
-        .wizard-step.completed .wizard-circle,
-        .wizard-step.current .wizard-circle {
-            background: #0d6efd;
-            color: white;
-        }
-
-        .wizard-label {
-            display: block;
-            margin-top: 8px;
-            font-size: .82rem;
-            color: #6c757d;
-        }
-
-        .wizard-step.current .wizard-label {
-            color: #0d6efd;
-            font-weight: 700;
-        }
-
-
-        /* ================================================
-           OPCIONES
-           ================================================ */
-
-        .option-card {
-            border: 2px solid #e9ecef;
-            border-radius: 14px;
-            padding: 18px;
-            cursor: pointer;
-            transition: .15s ease;
-        }
-
-        .option-card:hover {
-            border-color: #86b7fe;
-            background: #f8fbff;
-        }
-
-        .form-check-input:checked + .option-card {
-            border-color: #0d6efd;
-            background: #eef5ff;
-        }
-
-
-        /* ================================================
-           HORARIOS
-           ================================================ */
-
-        .horario-btn {
-            min-width: 110px;
-        }
-
-        .horario-btn.seleccionado {
-            background: #0d6efd;
-            color: white;
-            border-color: #0d6efd;
-        }
-
-    </style>
+    <!-- Tema SANTOS: debe cargarse después de Bootstrap -->
+    <link rel="stylesheet"
+          th:href="@{/css/agendar-cita.css}"
+          href="/css/agendar-cita.css">
 
 </head>
 
@@ -150,15 +42,21 @@
 
 <div class="container py-5 wizard-container">
 
+    <!-- MARCA -->
+    <div class="wizard-brand">
+        <span class="wizard-brand-simbolo" aria-hidden="true">
+            <svg viewBox="0 0 24 24"><path d="M9 3h6v6h6v6h-6v6H9v-6H3V9h6z"/></svg>
+        </span>
+        <span>SANTOS</span>
+        <small>Clínica médica</small>
+    </div>
+
     <div class="card shadow-sm wizard-card">
 
         <div class="card-body p-4 p-md-5">
 
 
-            <!-- =================================================
-                 ENCABEZADO
-                 ================================================= -->
-
+            <!-- ENCABEZADO -->
             <div class="mb-4">
 
                 <h1 class="h3 fw-bold mb-2">
@@ -175,7 +73,6 @@
 
                 </h1>
 
-
                 <p class="text-secondary mb-0"
                    th:text="${citaWizard.esSeguimiento
                         ? 'Seleccione un horario disponible del mismo Médico y complete los datos del seguimiento.'
@@ -187,36 +84,24 @@
             </div>
 
 
-            <!-- =================================================
-                 AVISO WALK-IN
-                 ================================================= -->
-
+            <!-- AVISO WALK-IN -->
             <div class="alert alert-info d-flex align-items-center"
                  th:if="${modoWalkIn}">
 
                 <i class="bi bi-person-walking fs-4 me-3"></i>
 
                 <div>
-
-                    <strong>
-                        Agendamiento desde recepción
-                    </strong>
-
+                    <strong>Agendamiento desde recepción</strong>
                     <div>
                         La cita será registrada como Walk-in
                         para el paciente seleccionado.
                     </div>
-
                 </div>
 
             </div>
 
 
-            <!-- =================================================
-                 CU-08 FA02
-                 AVISO DE SEGUIMIENTO
-                 ================================================= -->
-
+            <!-- CU-08 FA02: AVISO DE SEGUIMIENTO -->
             <div class="alert alert-success d-flex align-items-start"
                  th:if="${citaWizard.esSeguimiento}">
 
@@ -224,9 +109,7 @@
 
                 <div>
 
-                    <strong>
-                        Cita de seguimiento
-                    </strong>
+                    <strong>Cita de seguimiento</strong>
 
                     <div class="mt-1">
                         El paciente, Médico, especialidad y sucursal
@@ -242,12 +125,8 @@
             </div>
 
 
-            <!-- =================================================
-                 PROGRESO
-                 ================================================= -->
-
+            <!-- PROGRESO -->
             <div class="wizard-progress">
-
 
                 <div class="wizard-step"
                      th:classappend="${citaWizard.pasoActual.numero > 1}
@@ -255,17 +134,9 @@
                         : (${citaWizard.pasoActual.numero == 1}
                             ? ' current'
                             : '')">
-
-                    <div class="wizard-circle">
-                        1
-                    </div>
-
-                    <span class="wizard-label">
-                        Sucursal
-                    </span>
-
+                    <div class="wizard-circle">1</div>
+                    <span class="wizard-label">Sucursal</span>
                 </div>
-
 
                 <div class="wizard-step"
                      th:classappend="${citaWizard.pasoActual.numero > 2}
@@ -273,17 +144,9 @@
                         : (${citaWizard.pasoActual.numero == 2}
                             ? ' current'
                             : '')">
-
-                    <div class="wizard-circle">
-                        2
-                    </div>
-
-                    <span class="wizard-label">
-                        Especialidad
-                    </span>
-
+                    <div class="wizard-circle">2</div>
+                    <span class="wizard-label">Especialidad</span>
                 </div>
-
 
                 <div class="wizard-step"
                      th:classappend="${citaWizard.pasoActual.numero > 3}
@@ -291,17 +154,9 @@
                         : (${citaWizard.pasoActual.numero == 3}
                             ? ' current'
                             : '')">
-
-                    <div class="wizard-circle">
-                        3
-                    </div>
-
-                    <span class="wizard-label">
-                        Médico
-                    </span>
-
+                    <div class="wizard-circle">3</div>
+                    <span class="wizard-label">Médico</span>
                 </div>
-
 
                 <div class="wizard-step"
                      th:classappend="${citaWizard.pasoActual.numero > 4}
@@ -309,40 +164,22 @@
                         : (${citaWizard.pasoActual.numero == 4}
                             ? ' current'
                             : '')">
-
-                    <div class="wizard-circle">
-                        4
-                    </div>
-
-                    <span class="wizard-label">
-                        Fecha / Hora
-                    </span>
-
+                    <div class="wizard-circle">4</div>
+                    <span class="wizard-label">Fecha / Hora</span>
                 </div>
-
 
                 <div class="wizard-step"
                      th:classappend="${citaWizard.pasoActual.numero == 5}
                         ? ' current'
                         : ''">
-
-                    <div class="wizard-circle">
-                        5
-                    </div>
-
-                    <span class="wizard-label">
-                        Confirmar
-                    </span>
-
+                    <div class="wizard-circle">5</div>
+                    <span class="wizard-label">Confirmar</span>
                 </div>
 
             </div>
 
 
-            <!-- =================================================
-                 MENSAJE GENERAL
-                 ================================================= -->
-
+            <!-- MENSAJE GENERAL -->
             <div class="alert alert-danger"
                  th:if="${mensajeError != null}"
                  th:text="${mensajeError}">
@@ -352,39 +189,28 @@
             <!-- =================================================
                  PASO 1 - SUCURSAL
                  ================================================= -->
-
             <section th:if="${citaWizard.pasoActual.name() == 'SUCURSAL'}">
 
-                <h2 class="h5 fw-bold mb-2">
-                    Seleccione una sucursal
-                </h2>
+                <h2 class="h5 fw-bold mb-2">Seleccione una sucursal</h2>
 
                 <p class="text-secondary mb-4">
                     Elija la sede en la que se realizará la atención.
                 </p>
 
-
                 <form th:action="${rutaBaseCitas + '/agendar/sucursal'}"
                       method="post">
 
-
                     <div class="row g-3">
-
 
                         <div class="col-md-6"
                              th:each="sucursal : ${sucursales}">
 
-
                             <input class="form-check-input d-none"
                                    type="radio"
                                    name="idSucursal"
-
                                    th:id="${'sucursal-' + sucursal.id}"
-
                                    th:value="${sucursal.id}"
-
                                    th:checked="${citaWizard.idSucursal == sucursal.id}">
-
 
                             <label class="option-card d-block h-100"
                                    th:for="${'sucursal-' + sucursal.id}">
@@ -394,16 +220,13 @@
                                     <i class="bi bi-hospital fs-3 text-primary me-3"></i>
 
                                     <div>
-
                                         <div class="fw-bold"
                                              th:text="${sucursal.nombre}">
                                             Sucursal
                                         </div>
-
                                         <small class="text-secondary">
                                             Seleccionar sede
                                         </small>
-
                                     </div>
 
                                 </div>
@@ -414,13 +237,11 @@
 
                     </div>
 
-
                     <div class="text-danger mt-3"
                          th:if="${errores != null
                                   and errores.tieneError('idSucursal')}"
                          th:text="${errores.obtenerMensaje('idSucursal')}">
                     </div>
-
 
                     <div class="d-flex justify-content-end mt-4">
 
@@ -443,39 +264,28 @@
             <!-- =================================================
                  PASO 2 - ESPECIALIDAD
                  ================================================= -->
-
             <section th:if="${citaWizard.pasoActual.name() == 'ESPECIALIDAD'}">
 
-                <h2 class="h5 fw-bold mb-2">
-                    Seleccione una especialidad
-                </h2>
+                <h2 class="h5 fw-bold mb-2">Seleccione una especialidad</h2>
 
                 <p class="text-secondary mb-4">
                     Seleccione el tipo de atención médica que necesita.
                 </p>
 
-
                 <form th:action="${rutaBaseCitas + '/agendar/especialidad'}"
                       method="post">
 
-
                     <div class="row g-3">
-
 
                         <div class="col-md-6"
                              th:each="especialidad : ${especialidades}">
 
-
                             <input class="form-check-input d-none"
                                    type="radio"
                                    name="idEspecialidad"
-
                                    th:id="${'especialidad-' + especialidad.id}"
-
                                    th:value="${especialidad.id}"
-
                                    th:checked="${citaWizard.idEspecialidad == especialidad.id}">
-
 
                             <label class="option-card d-block h-100"
                                    th:for="${'especialidad-' + especialidad.id}">
@@ -497,21 +307,17 @@
 
                     </div>
 
-
                     <div class="text-danger mt-3"
                          th:if="${errores != null
                                   and errores.tieneError('idEspecialidad')}"
                          th:text="${errores.obtenerMensaje('idEspecialidad')}">
                     </div>
 
-
                     <div class="d-flex justify-content-between mt-4">
 
                         <button type="submit"
                                 class="btn btn-outline-secondary"
-
                                 th:formaction="${rutaBaseCitas + '/agendar/volver'}"
-
                                 name="paso"
                                 value="1">
 
@@ -520,7 +326,6 @@
                             Volver
 
                         </button>
-
 
                         <button type="submit"
                                 class="btn btn-primary px-4">
@@ -541,40 +346,29 @@
             <!-- =================================================
                  PASO 3 - MÉDICO
                  ================================================= -->
-
             <section th:if="${citaWizard.pasoActual.name() == 'MEDICO'}">
 
-                <h2 class="h5 fw-bold mb-2">
-                    Seleccione un médico
-                </h2>
+                <h2 class="h5 fw-bold mb-2">Seleccione un médico</h2>
 
                 <p class="text-secondary mb-4">
                     Médicos disponibles para la sucursal y
                     especialidad seleccionadas.
                 </p>
 
-
                 <form th:action="${rutaBaseCitas + '/agendar/medico'}"
                       method="post">
 
-
                     <div class="row g-3">
-
 
                         <div class="col-md-6"
                              th:each="medico : ${medicos}">
 
-
                             <input class="form-check-input d-none"
                                    type="radio"
                                    name="idMedico"
-
                                    th:id="${'medico-' + medico.id}"
-
                                    th:value="${medico.id}"
-
                                    th:checked="${citaWizard.idMedico == medico.id}">
-
 
                             <label class="option-card d-block h-100"
                                    th:for="${'medico-' + medico.id}">
@@ -584,16 +378,13 @@
                                     <i class="bi bi-person-badge fs-3 text-primary me-3"></i>
 
                                     <div>
-
                                         <div class="fw-bold"
                                              th:text="${medico.nombre}">
                                             Médico
                                         </div>
-
                                         <small class="text-secondary">
                                             Médico disponible
                                         </small>
-
                                     </div>
 
                                 </div>
@@ -604,21 +395,17 @@
 
                     </div>
 
-
                     <div class="text-danger mt-3"
                          th:if="${errores != null
                                   and errores.tieneError('idMedico')}"
                          th:text="${errores.obtenerMensaje('idMedico')}">
                     </div>
 
-
                     <div class="d-flex justify-content-between mt-4">
 
                         <button type="submit"
                                 class="btn btn-outline-secondary"
-
                                 th:formaction="${rutaBaseCitas + '/agendar/volver'}"
-
                                 name="paso"
                                 value="2">
 
@@ -627,7 +414,6 @@
                             Volver
 
                         </button>
-
 
                         <button type="submit"
                                 class="btn btn-primary px-4">
@@ -648,7 +434,6 @@
             <!-- =================================================
                  PASO 4 - FECHA Y HORA
                  ================================================= -->
-
             <section th:if="${citaWizard.pasoActual.name() == 'FECHA_HORA'}">
 
                 <h2 class="h5 fw-bold mb-2"
@@ -664,53 +449,38 @@
                         : 'Los horarios se consultan en tiempo real.'}">
                 </p>
 
-
                 <div class="row g-4">
 
-
                     <!-- FECHA -->
-
                     <div class="col-md-5">
 
                         <label for="fechaCita"
                                class="form-label fw-semibold">
-
                             Fecha
-
                         </label>
-
 
                         <input type="date"
                                id="fechaCita"
                                class="form-control form-control-lg">
 
-
                         <div class="form-text">
-
                             Seleccione un día para consultar
                             los horarios disponibles.
-
                         </div>
 
                     </div>
 
-
                     <!-- HORARIOS -->
-
                     <div class="col-md-7">
 
                         <label class="form-label fw-semibold">
                             Horarios disponibles
                         </label>
 
-
                         <div id="mensajeHorarios"
                              class="text-secondary py-3">
-
                             Seleccione una fecha.
-
                         </div>
-
 
                         <div id="contenedorHorarios"
                              class="d-flex flex-wrap gap-2">
@@ -720,23 +490,16 @@
 
                 </div>
 
-
                 <div class="alert alert-danger mt-3 d-none"
                      id="errorDisponibilidad">
                 </div>
-
 
                 <form th:action="${rutaBaseCitas + '/agendar/horario'}"
                       method="post"
                       id="formHorario">
 
-
-                    <!-- =========================================
-                         CU-08 FA02
-                         TIPO DE SEGUIMIENTO
-                         SELECCIONADO ANTES DE RESERVAR HORARIO
-                         ========================================= -->
-
+                    <!-- CU-08 FA02: TIPO DE SEGUIMIENTO
+                         SELECCIONADO ANTES DE RESERVAR HORARIO -->
                     <div class="mb-4"
                          th:if="${citaWizard.esSeguimiento}">
 
@@ -745,12 +508,9 @@
 
                             Tipo de seguimiento
 
-                            <span class="text-danger">
-                                *
-                            </span>
+                            <span class="text-danger">*</span>
 
                         </label>
-
 
                         <select id="tipoSeguimientoHorario"
                                 name="tipoSeguimiento"
@@ -761,26 +521,19 @@
                                 Seleccione el tipo de seguimiento
                             </option>
 
-
                             <option value="MONITOREO_TRATAMIENTO"
                                     th:selected="${citaWizard.tipoSeguimiento
                                             == 'MONITOREO_TRATAMIENTO'}">
-
                                 Monitoreo de Tratamiento
-
                             </option>
-
 
                             <option value="REVISION_RESULTADOS_LABORATORIO"
                                     th:selected="${citaWizard.tipoSeguimiento
                                             == 'REVISION_RESULTADOS_LABORATORIO'}">
-
                                 Revisión de Resultados de Laboratorio
-
                             </option>
 
                         </select>
-
 
                         <div class="form-text">
                             Seleccione el motivo principal de la cita de seguimiento.
@@ -788,26 +541,20 @@
 
                     </div>
 
-
                     <input type="hidden"
                            name="fechaHoraInicio"
                            id="fechaHoraInicio">
-
 
                     <input type="hidden"
                            name="fechaHoraFin"
                            id="fechaHoraFin">
 
-
                     <div class="d-flex justify-content-between mt-4">
-
 
                         <button type="submit"
                                 class="btn btn-outline-secondary"
                                 th:if="${!citaWizard.esSeguimiento}"
-
                                 th:formaction="${rutaBaseCitas + '/agendar/volver'}"
-
                                 name="paso"
                                 value="3">
 
@@ -817,10 +564,8 @@
 
                         </button>
 
-
                         <div th:if="${citaWizard.esSeguimiento}">
                         </div>
-
 
                         <button type="submit"
                                 id="btnContinuarHorario"
@@ -833,7 +578,6 @@
 
                         </button>
 
-
                     </div>
 
                 </form>
@@ -844,9 +588,7 @@
             <!-- =================================================
                  PASO 5 - CONFIRMACIÓN
                  ================================================= -->
-
             <section th:if="${citaWizard.pasoActual.name() == 'CONFIRMACION'}">
-
 
                 <div class="d-flex justify-content-between
                             align-items-start mb-4">
@@ -868,7 +610,6 @@
 
                     </div>
 
-
                     <div class="text-end">
 
                         <small class="text-secondary d-block">
@@ -877,9 +618,7 @@
 
                         <span id="contadorReserva"
                               class="fw-bold fs-4 text-danger">
-
                             05:00
-
                         </span>
 
                     </div>
@@ -887,79 +626,48 @@
                 </div>
 
 
-                <!-- =============================================
-                     RESUMEN
-                     ============================================= -->
-
+                <!-- RESUMEN -->
                 <div class="card bg-light border-0 mb-4">
 
                     <div class="card-body">
 
                         <div class="row g-3">
 
-
                             <div class="col-md-6">
-
-                                <small class="text-secondary">
-                                    Sucursal
-                                </small>
-
+                                <small class="text-secondary">Sucursal</small>
                                 <div class="fw-semibold"
                                      th:text="${nombreSucursal}">
                                     Sucursal
                                 </div>
-
                             </div>
 
-
                             <div class="col-md-6">
-
-                                <small class="text-secondary">
-                                    Especialidad
-                                </small>
-
+                                <small class="text-secondary">Especialidad</small>
                                 <div class="fw-semibold"
                                      th:text="${nombreEspecialidad}">
                                     Especialidad
                                 </div>
-
                             </div>
 
-
                             <div class="col-md-6">
-
-                                <small class="text-secondary">
-                                    Médico
-                                </small>
-
+                                <small class="text-secondary">Médico</small>
                                 <div class="fw-semibold"
                                      th:text="${nombreMedico}">
                                     Médico
                                 </div>
-
                             </div>
 
-
                             <div class="col-md-6">
-
-                                <small class="text-secondary">
-                                    Fecha y hora
-                                </small>
-
+                                <small class="text-secondary">Fecha y hora</small>
                                 <div class="fw-semibold"
                                      th:text="${#temporals.format(
                                                 citaWizard.fechaHoraInicio,
                                                 'dd/MM/yyyy hh:mm a'
                                              )}">
                                 </div>
-
                             </div>
 
-
-                            <!-- =====================================
-                                 WALK-IN
-                                 ===================================== -->
-
+                            <!-- WALK-IN -->
                             <div class="col-12"
                                  th:if="${modoWalkIn}">
 
@@ -978,12 +686,7 @@
 
                             </div>
 
-
-                            <!-- =====================================
-                                 CU-08 FA02
-                                 SEGUIMIENTO
-                                 ===================================== -->
-
+                            <!-- CU-08 FA02: SEGUIMIENTO -->
                             <div class="col-12"
                                  th:if="${citaWizard.esSeguimiento}">
 
@@ -1003,7 +706,6 @@
 
                             </div>
 
-
                         </div>
 
                     </div>
@@ -1011,28 +713,19 @@
                 </div>
 
 
-                <!-- =============================================
-                     CONFIRMACIÓN
-                     ============================================= -->
-
+                <!-- CONFIRMACIÓN -->
                 <form th:action="${rutaBaseCitas + '/agendar/confirmar'}"
                       method="post"
                       enctype="multipart/form-data">
 
-
-                    <!-- =========================================
-                         CU-08 FA02
-                         TIPO DE SEGUIMIENTO YA SELECCIONADO
-                         SOLO LECTURA EN CONFIRMACIÓN
-                         ========================================= -->
-
+                    <!-- CU-08 FA02: TIPO DE SEGUIMIENTO YA SELECCIONADO
+                         (SOLO LECTURA EN CONFIRMACIÓN) -->
                     <div class="mb-3"
                          th:if="${citaWizard.esSeguimiento}">
 
                         <label class="form-label fw-semibold">
                             Tipo de seguimiento
                         </label>
-
 
                         <div class="form-control bg-light">
 
@@ -1041,14 +734,12 @@
                                 Monitoreo de Tratamiento
                             </span>
 
-
                             <span th:if="${citaWizard.tipoSeguimiento
                                     == 'REVISION_RESULTADOS_LABORATORIO'}">
                                 Revisión de Resultados de Laboratorio
                             </span>
 
                         </div>
-
 
                         <!-- Conserva el valor para el POST final -->
                         <input type="hidden"
@@ -1057,12 +748,7 @@
 
                     </div>
 
-
-                    <!-- =========================================
-                         CU-08 FA02
-                         PRIORIDAD
-                         ========================================= -->
-
+                    <!-- CU-08 FA02: PRIORIDAD -->
                     <div class="mb-3"
                          th:if="${citaWizard.esSeguimiento}">
 
@@ -1071,12 +757,9 @@
 
                             Prioridad
 
-                            <span class="text-danger">
-                                *
-                            </span>
+                            <span class="text-danger">*</span>
 
                         </label>
-
 
                         <select id="prioridad"
                                 name="prioridad"
@@ -1086,29 +769,20 @@
                             <option value="Normal"
                                     th:selected="${citaWizard.prioridad == null
                                             or citaWizard.prioridad == 'Normal'}">
-
                                 Normal
-
                             </option>
-
 
                             <option value="Emergencia"
                                     th:selected="${citaWizard.prioridad
                                             == 'Emergencia'}">
-
                                 Emergencia
-
                             </option>
 
                         </select>
 
                     </div>
 
-
-                    <!-- =========================================
-                         MOTIVO
-                         ========================================= -->
-
+                    <!-- MOTIVO -->
                     <div class="mb-3">
 
                         <label for="motivoConsulta"
@@ -1117,17 +791,12 @@
                             <span th:text="${citaWizard.esSeguimiento
                                     ? 'Motivo del seguimiento'
                                     : 'Motivo de la consulta'}">
-
                                 Motivo de la consulta
-
                             </span>
 
-                            <span class="text-danger">
-                                *
-                            </span>
+                            <span class="text-danger">*</span>
 
                         </label>
-
 
                         <textarea id="motivoConsulta"
                                   name="motivoConsulta"
@@ -1138,11 +807,9 @@
                                   th:text="${citaWizard.motivoConsulta}">
                         </textarea>
 
-
                         <div class="form-text">
                             Entre 10 y 2000 caracteres.
                         </div>
-
 
                         <div class="text-danger mt-1"
                              th:if="${errores != null
@@ -1152,12 +819,7 @@
 
                     </div>
 
-
-                    <!-- =========================================
-                         DOCUMENTO OPCIONAL
-                         SOLO CU-03 / WALK-IN
-                         ========================================= -->
-
+                    <!-- DOCUMENTO OPCIONAL (SOLO CU-03 / WALK-IN) -->
                     <div class="mb-4"
                          th:if="${!citaWizard.esSeguimiento}">
 
@@ -1172,13 +834,11 @@
 
                         </label>
 
-
                         <input type="file"
                                id="documento"
                                name="documento"
                                class="form-control"
                                accept="application/pdf,.pdf">
-
 
                         <div class="form-text">
                             PDF válido, no encriptado y máximo 2 MB.
@@ -1186,19 +846,12 @@
 
                     </div>
 
-
-                    <!-- =========================================
-                         BOTONES
-                         ========================================= -->
-
+                    <!-- BOTONES -->
                     <div class="d-flex justify-content-between">
-
 
                         <button type="submit"
                                 class="btn btn-outline-secondary"
-
                                 th:formaction="${rutaBaseCitas + '/agendar/volver'}"
-
                                 name="paso"
                                 value="4">
 
@@ -1208,7 +861,6 @@
 
                         </button>
 
-
                         <button type="submit"
                                 class="btn btn-primary px-4">
 
@@ -1217,27 +869,19 @@
                             <span th:text="${citaWizard.esSeguimiento
                                     ? 'Agendar seguimiento'
                                     : 'Confirmar cita'}">
-
                                 Confirmar cita
-
                             </span>
 
                         </button>
-
 
                     </div>
 
                 </form>
 
-
-                <!-- =============================================
-                     DATOS PARA TEMPORIZADOR
-                     ============================================= -->
-
+                <!-- DATOS PARA TEMPORIZADOR -->
                 <input type="hidden"
                        id="fechaExpiracionReserva"
                        th:value="${citaWizard.fechaExpiracionReserva}">
-
 
             </section>
 
@@ -1249,10 +893,7 @@
 </div>
 
 
-<!-- =========================================================
-     SCRIPTS
-     ========================================================= -->
-
+<!-- SCRIPTS -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js">
 </script>
 

@@ -18,6 +18,13 @@ import java.util.UUID;
  *
  * CU-04 - Pago en Línea con Tarjeta.
  * CU-06 - Cobro de Consulta en Caja.
+ * CU-09 - Gestión de Laboratorio.
+ * CU-16 - Cobro de Servicios.
+ *
+ * Un pago siempre conserva su relación con la Cita.
+ *
+ * Para pagos de laboratorio también puede quedar asociado
+ * específicamente a una OrdenLaboratorio.
  *
  * IMPORTANTE:
  *
@@ -124,6 +131,34 @@ public class Pago {
             nullable = false
     )
     private Cita cita;
+
+
+    // =====================================================
+    // CU-09 / CU-16
+    // ORDEN DE LABORATORIO
+    // =====================================================
+    //
+    // NULL:
+    //
+    // El pago corresponde solamente a la cita/consulta.
+    //
+    // CON VALOR:
+    //
+    // El pago corresponde específicamente a una orden
+    // de laboratorio.
+    //
+    // Esta relación es opcional para mantener compatibilidad
+    // con todos los pagos existentes de CU-04 y CU-06.
+    //
+    // =====================================================
+
+    @ManyToOne(
+            fetch = FetchType.LAZY
+    )
+    @JoinColumn(
+            name = "id_orden_laboratorio"
+    )
+    private OrdenLaboratorio ordenLaboratorio;
 
 
     // =====================================================
@@ -252,7 +287,7 @@ public class Pago {
 
     /**
      * EN_LINEA -> CU-04
-     * CAJA     -> CU-06
+     * CAJA     -> CU-06 / CU-16
      */
     @Column(
             name = "canal_pago",
@@ -262,7 +297,7 @@ public class Pago {
 
 
     // =====================================================
-    // CU-06 - CAJERO
+    // CU-06 / CU-16 - CAJERO
     // =====================================================
 
     /**
@@ -367,8 +402,8 @@ public class Pago {
          * Los pagos existentes fueron implementados
          * originalmente como pagos en línea.
          *
-         * CU-06 establecerá explícitamente CAJA antes
-         * de guardar el pago.
+         * CU-06 / CU-16 establecerán explícitamente
+         * CAJA antes de guardar pagos presenciales.
          */
         if (canalPago == null
                 || canalPago.isBlank()) {
@@ -417,6 +452,25 @@ public class Pago {
 
         this.cita =
                 cita;
+    }
+
+
+    // =====================================================
+    // ORDEN DE LABORATORIO
+    // =====================================================
+
+    public OrdenLaboratorio getOrdenLaboratorio() {
+
+        return ordenLaboratorio;
+    }
+
+
+    public void setOrdenLaboratorio(
+            OrdenLaboratorio ordenLaboratorio
+    ) {
+
+        this.ordenLaboratorio =
+                ordenLaboratorio;
     }
 
 

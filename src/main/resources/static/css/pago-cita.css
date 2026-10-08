@@ -1,0 +1,129 @@
+/* ==========================================================================
+   SANTOS · Pago de consulta
+   Se carga DESPUÉS de Bootstrap 5.3: redefine sus variables y componentes.
+   Bootstrap se mantiene porque el script de la vista alterna las clases
+   text-success / text-warning / text-danger y el backend usa is-invalid,
+   invalid-feedback y alert-*. Solo presentación.
+   ========================================================================== */
+
+:root {
+    --santos-lienzo: #F4F7FA;
+    --santos-linea: rgba(15, 34, 51, 0.08);
+    --santos-azul: #1B5FA6;
+    --santos-azul-tinte: #E8F0FA;
+    --santos-turquesa: #0B8C86;
+    --santos-turquesa-tinte: #E2F4F2;
+    --salida: cubic-bezier(0.23, 1, 0.32, 1);
+
+    --bs-font-sans-serif: 'Plus Jakarta Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
+    --bs-body-color: #0F2233;
+    --bs-body-bg: #F4F7FA;
+    --bs-primary: #1B5FA6;
+    --bs-primary-rgb: 27, 95, 166;
+    --bs-secondary-rgb: 74, 94, 112;
+    --bs-secondary-color: #4A5E70;
+    --bs-success-rgb: 31, 122, 77;
+    --bs-warning-rgb: 160, 100, 0;
+    --bs-danger-rgb: 179, 48, 58;
+    --bs-light-rgb: 244, 247, 250;
+    --bs-border-color: rgba(15, 34, 51, 0.1);
+}
+
+body {
+    font-family: var(--bs-font-sans-serif);
+    background: radial-gradient(60% 40% at 8% 0%, rgba(11, 140, 134, 0.09), transparent 70%),
+    radial-gradient(50% 40% at 100% 100%, rgba(27, 95, 166, 0.09), transparent 70%),
+    var(--santos-lienzo);
+    background-attachment: fixed;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+}
+
+h1, h2, .h3, .h5 { letter-spacing: -0.03em; text-wrap: balance; }
+:focus-visible { outline: 3px solid rgba(27, 95, 166, 0.35); outline-offset: 2px; }
+
+.pago-container { max-width: 1060px; }
+
+/* ---------- Marca ---------- */
+.pago-brand { display: flex; align-items: center; gap: 12px; font-weight: 800; letter-spacing: 0.06em; }
+.pago-brand-simbolo { display: grid; place-items: center; width: 40px; height: 40px; color: #fff; background: var(--santos-azul); border-radius: 12px; }
+.pago-brand-simbolo svg { display: block; width: 20px; height: 20px; fill: currentColor; }
+.pago-brand small { font-size: 13px; font-weight: 500; letter-spacing: 0; color: #7A8B9A; }
+
+/* ---------- Tarjetas ---------- */
+.card-pago, .card-pago.shadow-sm {
+    border: 1px solid var(--santos-linea);
+    border-radius: 24px;
+    box-shadow: 0 2px 4px rgba(15, 34, 51, 0.04), 0 30px 60px -32px rgba(15, 34, 51, 0.24) !important;
+    animation: sube 520ms var(--salida) both;
+}
+.col-lg-7 .card-pago { animation-delay: 90ms; }
+.card-pago h2 { font-weight: 800 !important; }
+.card-pago .bi-calendar-check { display: grid; place-items: center; width: 48px; height: 48px; flex: none; font-size: 1.4rem !important; color: var(--santos-turquesa) !important; background: var(--santos-turquesa-tinte); border-radius: 14px; }
+
+.resumen-item { padding: 14px 0; border-bottom: 1px solid var(--santos-linea); }
+.resumen-item:last-child { border-bottom: 0; }
+.resumen-item small { font-size: 0.8rem; font-weight: 600; color: #7A8B9A !important; }
+.resumen-item strong { font-weight: 600; }
+
+.card-pago .bg-light { background: var(--santos-lienzo) !important; border: 1px dashed rgba(15, 34, 51, 0.2); border-radius: 16px !important; }
+.card-pago .bg-light .h4 { font-size: 1.7rem; letter-spacing: -0.03em; font-variant-numeric: tabular-nums; }
+
+/* ---------- Temporizador ---------- */
+.temporizador { font-size: 2rem; font-weight: 800; letter-spacing: -0.02em; line-height: 1.2; font-variant-numeric: tabular-nums; }
+.temporizador-critico { animation: parpadeo 1s infinite; }
+@keyframes parpadeo { 50% { opacity: 0.55; } }
+
+/* ---------- Formulario ---------- */
+.form-label { font-size: 0.92rem; }
+.form-control {
+    min-height: 54px;
+    background-color: var(--santos-lienzo);
+    border: 1.5px solid transparent;
+    border-radius: 14px;
+    font-weight: 500;
+    font-variant-numeric: tabular-nums;
+    transition: border-color 160ms var(--salida), box-shadow 160ms var(--salida), background-color 160ms var(--salida);
+}
+.form-control::placeholder { font-weight: 400; color: #8A99A6; }
+.form-control:focus { background-color: #fff; border-color: var(--santos-azul); box-shadow: 0 0 0 4px rgba(27, 95, 166, 0.14); }
+.form-control.is-invalid { background-color: #FCEBEC; background-image: none; border-color: #B3303A; padding-right: 1rem; }
+.form-control.is-invalid:focus { box-shadow: 0 0 0 4px rgba(179, 48, 58, 0.14); }
+.invalid-feedback { font-size: 0.86rem; font-weight: 500; color: #B3303A; }
+
+.campo-seguro { position: relative; }
+.campo-seguro .form-control { padding-right: 52px; }
+.campo-seguro .icono { position: absolute; right: 18px; top: 47px; font-size: 1.15rem; color: #7A8B9A; pointer-events: none; }
+
+/* ---------- Avisos ---------- */
+.alert { border: 0; border-radius: 16px; padding: 16px 18px; }
+.alert-warning { color: #8A5A00; background: #FFF3DC; }
+.alert-danger { color: #B3303A; background: #FCEBEC; }
+.alert-light { color: #4A5E70; background: var(--santos-lienzo); border: 0 !important; }
+.nota-seguridad { font-size: 0.88rem; }
+.nota-seguridad .bi { color: #1F7A4D !important; }
+
+/* ---------- Botón de pago ---------- */
+.btn { --bs-btn-border-radius: 16px; --bs-btn-font-weight: 700; letter-spacing: -0.01em; transition: transform 160ms var(--salida), background-color 160ms var(--salida), border-color 160ms var(--salida), opacity 160ms var(--salida); }
+.btn:active { transform: scale(0.98); }
+.btn:disabled { transform: none; }
+.btn-primary {
+    --bs-btn-bg: #1B5FA6; --bs-btn-border-color: #1B5FA6;
+    --bs-btn-hover-bg: #154E8A; --bs-btn-hover-border-color: #154E8A;
+    --bs-btn-active-bg: #11426F; --bs-btn-active-border-color: #11426F;
+    --bs-btn-disabled-bg: #1B5FA6; --bs-btn-disabled-border-color: #1B5FA6; --bs-btn-disabled-opacity: 0.55;
+    min-height: 56px;
+    box-shadow: 0 10px 22px -12px rgba(27, 95, 166, 0.75);
+}
+.btn-primary:disabled { box-shadow: none; }
+
+@keyframes sube { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
+
+@media (max-width: 575.98px) {
+    .card-pago .card-body { padding: 1.5rem !important; }
+    .temporizador { font-size: 1.75rem; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+}

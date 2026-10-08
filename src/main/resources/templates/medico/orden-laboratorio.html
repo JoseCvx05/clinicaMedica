@@ -28,6 +28,10 @@
             --exito-fondo: #dcfce7;
             --error: #991b1b;
             --error-fondo: #fee2e2;
+            --advertencia: #854d0e;
+            --advertencia-fondo: #fffbeb;
+            --externa: #7c3aed;
+            --externa-fondo: #f5f3ff;
         }
 
 
@@ -311,6 +315,78 @@
         }
 
 
+        /* =================================================
+           CU-09 - ORDEN EXTERNA
+           ================================================= */
+
+        .tipo-orden {
+            display: flex;
+            align-items: flex-start;
+            gap: 14px;
+            border: 1px solid var(--borde);
+            border-radius: 12px;
+            padding: 18px;
+            background: #f8fafc;
+            transition: .2s ease;
+            cursor: pointer;
+        }
+
+
+        .tipo-orden.externa-activa {
+            border-color: var(--externa);
+            background: var(--externa-fondo);
+        }
+
+
+        .tipo-orden-checkbox {
+            width: 22px;
+            height: 22px;
+            margin-top: 2px;
+            cursor: pointer;
+        }
+
+
+        .tipo-orden-info {
+            flex: 1;
+        }
+
+
+        .tipo-orden-info strong {
+            display: block;
+            margin-bottom: 6px;
+            font-size: 16px;
+        }
+
+
+        .tipo-orden-info p {
+            margin: 0;
+            color: var(--secundario);
+            line-height: 1.5;
+        }
+
+
+        .indicador-tipo {
+            margin-top: 14px;
+            border-radius: 10px;
+            padding: 13px 15px;
+            font-weight: bold;
+        }
+
+
+        .indicador-interna {
+            background: #eff6ff;
+            color: #1e40af;
+            border: 1px solid #bfdbfe;
+        }
+
+
+        .indicador-externa {
+            background: var(--externa-fondo);
+            color: var(--externa);
+            border: 1px solid #ddd6fe;
+        }
+
+
         .acciones {
             display: flex;
             justify-content: flex-end;
@@ -357,9 +433,9 @@
 
         .advertencia {
             margin-top: 20px;
-            background: #fffbeb;
+            background: var(--advertencia-fondo);
             border: 1px solid #fde68a;
-            color: #854d0e;
+            color: var(--advertencia);
             border-radius: 10px;
             padding: 14px;
         }
@@ -525,6 +601,74 @@
 
 
         <!-- =============================================
+             CU-09 FA01
+             TIPO DE ORDEN
+             ============================================= -->
+
+        <section class="tarjeta">
+
+            <div class="tarjeta-encabezado">
+
+                <h2>
+                    Tipo de orden
+                </h2>
+
+                <p>
+                    Indique si los exámenes serán realizados
+                    dentro o fuera de la clínica.
+                </p>
+
+            </div>
+
+
+            <div class="tarjeta-contenido">
+
+
+                <label class="tipo-orden"
+                       id="contenedor-orden-externa">
+
+
+                    <input type="checkbox"
+                           id="ordenExterna"
+                           name="ordenExterna"
+                           value="true"
+                           class="tipo-orden-checkbox"
+                           th:checked="${ordenExterna == true}">
+
+
+                    <div class="tipo-orden-info">
+
+                        <strong>
+                            Orden externa
+                        </strong>
+
+                        <p>
+                            Marque esta opción únicamente si el paciente
+                            realizará los exámenes en un laboratorio externo
+                            a la clínica.
+                        </p>
+
+                    </div>
+
+                </label>
+
+
+                <div id="indicador-tipo"
+                     class="indicador-tipo indicador-interna">
+
+                    Orden interna:
+                    el paciente será atendido por el laboratorio
+                    de la clínica.
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+
+        <!-- =============================================
              CATÁLOGO
              ============================================= -->
 
@@ -586,7 +730,11 @@
                             <input type="checkbox"
                                    class="examen-checkbox"
                                    name="idsExamenes"
-                                   th:value="${examen.idExamen}">
+                                   th:value="${examen.idExamen}"
+                                   th:checked="${idsExamenesSeleccionados != null
+                                               and idsExamenesSeleccionados.contains(
+                                                   examen.idExamen
+                                               )}">
 
 
                             <div class="examen-info">
@@ -713,7 +861,10 @@
                     <textarea id="observaciones"
                               name="observaciones"
                               maxlength="5000"
-                              placeholder="Ejemplo: realizar en ayunas, prioridad clínica, indicaciones especiales..."></textarea>
+                              placeholder="Ejemplo: realizar en ayunas, prioridad clínica, indicaciones especiales..."
+                              th:text="${observacionesIngresadas != null
+                                       ? observacionesIngresadas
+                                       : ''}"></textarea>
 
 
                     <div class="ayuda">
@@ -815,6 +966,24 @@
                 );
 
 
+            const ordenExterna =
+                document.getElementById(
+                    "ordenExterna"
+                );
+
+
+            const contenedorOrdenExterna =
+                document.getElementById(
+                    "contenedor-orden-externa"
+                );
+
+
+            const indicadorTipo =
+                document.getElementById(
+                    "indicador-tipo"
+                );
+
+
             // =============================================
             // ACTUALIZAR SELECCIÓN
             // =============================================
@@ -878,6 +1047,56 @@
 
 
             // =============================================
+            // CU-09
+            // TIPO DE ORDEN
+            // =============================================
+
+            function actualizarTipoOrden() {
+
+                if (ordenExterna.checked) {
+
+                    contenedorOrdenExterna
+                        .classList
+                        .add(
+                            "externa-activa"
+                        );
+
+
+                    indicadorTipo.className =
+                        "indicador-tipo indicador-externa";
+
+
+                    indicadorTipo.textContent =
+                        "Orden externa: el paciente realizará "
+                        + "los exámenes en un laboratorio externo.";
+
+                } else {
+
+                    contenedorOrdenExterna
+                        .classList
+                        .remove(
+                            "externa-activa"
+                        );
+
+
+                    indicadorTipo.className =
+                        "indicador-tipo indicador-interna";
+
+
+                    indicadorTipo.textContent =
+                        "Orden interna: el paciente será atendido "
+                        + "por el laboratorio de la clínica.";
+                }
+            }
+
+
+            ordenExterna.addEventListener(
+                "change",
+                actualizarTipoOrden
+            );
+
+
+            // =============================================
             // CONTADOR DE OBSERVACIONES
             // =============================================
 
@@ -924,9 +1143,26 @@
                         }
 
 
+                        let mensajeConfirmacion;
+
+
+                        if (ordenExterna.checked) {
+
+                            mensajeConfirmacion =
+                                "¿Desea generar esta orden como EXTERNA "
+                                + "con los exámenes seleccionados?";
+
+                        } else {
+
+                            mensajeConfirmacion =
+                                "¿Desea generar la orden de laboratorio "
+                                + "con los exámenes seleccionados?";
+                        }
+
+
                         const confirmar =
                             window.confirm(
-                                "¿Desea generar la orden de laboratorio con los exámenes seleccionados?"
+                                mensajeConfirmacion
                             );
 
 
@@ -941,6 +1177,8 @@
             actualizarSeleccion();
 
             actualizarCaracteres();
+
+            actualizarTipoOrden();
         }
     );
 
