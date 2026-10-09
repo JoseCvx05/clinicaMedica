@@ -126,6 +126,12 @@ public class CobroLaboratorioService {
     private final ZoneId
             zonaHoraria;
 
+    private final HashService
+            hashService;
+
+    private final CifradoService
+            cifradoService;
+
 
     // =====================================================
     // CONSTRUCTOR
@@ -145,11 +151,13 @@ public class CobroLaboratorioService {
             FormaPagoRepository
                     formaPagoRepository,
 
-            UsuarioActualService
-                    usuarioActualService,
+            UsuarioActualService usuarioActualService,
 
-            List<ProcesadorCobroCaja>
-                    procesadores,
+            List<ProcesadorCobroCaja> procesadores,
+
+            HashService hashService,
+
+            CifradoService cifradoService,
 
             @Value("${cita.zona-horaria:America/Guatemala}")
             String zonaHoraria
@@ -173,9 +181,16 @@ public class CobroLaboratorioService {
         this.procesadores =
                 procesadores;
 
+        this.hashService =
+                hashService;
+
+        this.cifradoService =
+                cifradoService;
+
         this.zonaHoraria =
                 ZoneId.of(
                         zonaHoraria
+
                 );
     }
 
@@ -216,6 +231,418 @@ public class CobroLaboratorioService {
             BigDecimal precioExamen
 
     ) {
+    }
+
+    // =====================================================
+// CU-10
+// RESULTADO DE BÚSQUEDA DE ÓRDENES PENDIENTES
+// =====================================================
+
+    public record OrdenPendienteCobroLaboratorio(
+
+            Integer idOrdenLaboratorio,
+
+            String numeroOrden,
+
+            String nombrePaciente,
+
+            String dpiPaciente,
+
+            int cantidadExamenes,
+
+            OffsetDateTime fechaHoraCreacion,
+
+            BigDecimal montoTotal
+
+    ) {
+    }
+
+
+// =====================================================
+// CU-10
+// RESULTADO GENERAL DE LA BÚSQUEDA
+// =====================================================
+
+    public record ResultadoBusquedaLaboratorio(
+
+            List<OrdenPendienteCobroLaboratorio> ordenes,
+
+            String mensaje
+
+    ) {
+
+        public boolean tieneResultados() {
+
+            return ordenes != null
+                    && !ordenes.isEmpty();
+        }
+    }
+
+
+// =====================================================
+// CU-10
+// BUSCAR ÓRDENES PENDIENTES PARA COBRO
+// =====================================================
+//
+// Permite:
+//
+// - Buscar por DPI.
+// - Buscar por número de orden.
+//
+// Seguridad:
+//
+// - Cajero autenticado.
+// - Cajero activo.
+// - Sucursal obligatoria.
+// - Solo órdenes de la misma sucursal.
+// - Solo órdenes internas.
+// - Solo estado PENDIENTE.
+// - Nunca muestra una orden con pago aprobado previo.
+//
+// =====================================================
+
+    @Transactional(
+            readOnly = true
+    )
+    public ResultadoBusquedaLaboratorio buscarOrdenesPendientes(
+
+            String tipoBusqueda,
+
+            String valorBusqueda
+
+    ) {
+
+        // =================================================
+        // CAJERO
+        // =================================================
+
+        Usuario cajero =
+                usuarioActualService
+                        .obtenerUsuarioActual();
+
+
+        if (!esCajeroValido(
+                cajero
+        )) {
+
+            throw new IllegalStateException(
+                    "El usuario autenticado no tiene permisos "
+                            + "para consultar órdenes de laboratorio."
+            );
+        }
+
+
+        Integer idSucursal =
+                obtenerIdSucursal(
+                        cajero
+                );
+
+
+        // =================================================
+        // CRITERIO
+        // =================================================
+
+        String tipo =
+                tipoBusqueda == null
+                        ? ""
+                        : tipoBusqueda
+                        .trim()
+                        .toUpperCase();
+
+
+        String valor =
+                valorBusqueda == null
+                        ? ""
+                        : valorBusqueda.trim();
+
+
+        List<OrdenLaboratorio> ordenes;
+
+
+        // =================================================
+        // BUSCAR POR DPI
+        // =================================================
+
+        if ("DPI".equals(
+                tipo
+        )) {
+
+            validarDpiBusqueda(
+                    valor
+            );
+
+
+            // =============================================
+            // DPI PROTEGIDO
+            // =============================================
+
+            String dpiHash =
+                    hashService
+                            .generarHash(
+                                    valor
+                            );
+
+
+            ordenes =
+                    ordenLaboratorioRepository
+                            .findByCita_Paciente_DpiHashAndCita_Sucursal_IdAndEstadoAndOrdenExternaFalseOrderByFechaHoraCreacionDesc(
+
+                                    dpiHash,
+
+                                    idSucursal,
+
+                                    OrdenLaboratorio
+                                            .EstadoOrdenLaboratorio
+                                            .PENDIENTE
+                            );
+
+
+            // =================================================
+            // BUSCAR POR NÚMERO DE ORDEN
+            // =================================================
+
+        } else if ("ORDEN".equals(
+                tipo
+        )) {
+
+            if (valor.isBlank()) {
+
+                throw new IllegalArgumentException(
+                        "Debe ingresar el número de orden de laboratorio."
+                );
+            }
+
+
+            OrdenLaboratorio orden =
+                    ordenLaboratorioRepository
+                            .findByNumeroOrdenAndCita_Sucursal_IdAndEstadoAndOrdenExternaFalse(
+
+                                    valor,
+
+                                    idSucursal,
+
+                                    OrdenLaboratorio
+                                            .EstadoOrdenLaboratorio
+                                            .PENDIENTE
+                            )
+                            .orElse(
+                                    null
+                            );
+
+
+            ordenes =
+                    orden == null
+                            ? List.of()
+                            : List.of(
+                            orden
+                    );
+
+
+        } else {
+
+            throw new IllegalArgumentException(
+                    "Debe seleccionar un criterio de búsqueda: "
+                            + "DPI o número de orden."
+            );
+        }
+
+
+        // =================================================
+        // PROTECCIÓN ADICIONAL
+        // PAGO APROBADO PREVIO
+        // =================================================
+        //
+        // Aunque una orden PENDIENTE normalmente no debería
+        // poseer un pago aprobado, lo comprobamos nuevamente.
+        //
+        // De esta forma una inconsistencia histórica tampoco
+        // permitiría presentar la orden para un segundo cobro.
+        // =================================================
+
+        List<OrdenPendienteCobroLaboratorio> resultados =
+                ordenes
+                        .stream()
+
+                        .filter(
+                                orden ->
+                                        !pagoRepository
+                                                .existsByOrdenLaboratorio_IdAndEstado(
+
+                                                        orden.getId(),
+
+                                                        Pago.ESTADO_APROBADO
+                                                )
+                        )
+
+                        .map(
+                                this::construirResumenBusqueda
+                        )
+
+                        .toList();
+
+
+        // =================================================
+        // FA01
+        // SIN RESULTADOS
+        // =================================================
+
+        if (resultados.isEmpty()) {
+
+            return new ResultadoBusquedaLaboratorio(
+
+                    List.of(),
+
+                    "No se encontraron órdenes de laboratorio "
+                            + "pendientes de pago. Verifique el DPI "
+                            + "o número de orden e intente de nuevo."
+            );
+        }
+
+
+        // =================================================
+        // RESULTADOS
+        // =================================================
+
+        return new ResultadoBusquedaLaboratorio(
+
+                List.copyOf(
+                        resultados
+                ),
+
+                null
+        );
+    }
+
+
+// =====================================================
+// CU-10
+// CONSTRUIR FILA DEL RESULTADO DE BÚSQUEDA
+// =====================================================
+
+    private OrdenPendienteCobroLaboratorio
+    construirResumenBusqueda(
+            OrdenLaboratorio orden
+    ) {
+
+        if (orden == null
+                || orden.getId() == null) {
+
+            throw new IllegalStateException(
+                    "No fue posible identificar una de las "
+                            + "órdenes de laboratorio encontradas."
+            );
+        }
+
+
+        if (orden.getCita() == null
+                || orden.getCita().getPaciente() == null) {
+
+            throw new IllegalStateException(
+                    "Una de las órdenes encontradas no posee "
+                            + "un paciente válido."
+            );
+        }
+
+
+        List<DetalleOrdenLaboratorio> detalles =
+                detalleOrdenLaboratorioRepository
+                        .findByOrdenLaboratorio_IdOrderByNombreExamenAsc(
+                                orden.getId()
+                        );
+
+
+        if (detalles == null
+                || detalles.isEmpty()) {
+
+            throw new IllegalStateException(
+                    "La orden de laboratorio no contiene "
+                            + "exámenes registrados."
+            );
+        }
+
+
+        BigDecimal montoTotal =
+                calcularMontoOrden(
+                        orden
+                );
+
+        Usuario paciente =
+                orden.getCita()
+                        .getPaciente();
+
+
+        String dpiPaciente =
+                paciente.getDpiCifrado() == null
+                        || paciente.getDpiCifrado().isBlank()
+
+                        ? ""
+
+                        : cifradoService
+                        .descifrar(
+                                paciente.getDpiCifrado()
+                        );
+
+
+        return new OrdenPendienteCobroLaboratorio(
+
+                orden.getId(),
+
+                orden.getNumeroOrden(),
+
+                orden.getCita()
+                        .getPaciente()
+                        .getNombreCompleto(),
+
+                dpiPaciente,
+
+                detalles.size(),
+
+                orden.getFechaHoraCreacion(),
+
+                montoTotal
+        );
+    }
+
+
+// =====================================================
+// RN-GLOBAL-001
+// VALIDAR DPI PARA BÚSQUEDA
+// =====================================================
+
+    private void validarDpiBusqueda(
+            String dpi
+    ) {
+
+        if (dpi == null
+                || dpi.isBlank()) {
+
+            throw new IllegalArgumentException(
+                    "El campo DPI es obligatorio. "
+                            + "Por favor, ingrese su número de DPI."
+            );
+        }
+
+
+        if (!dpi.matches(
+                "\\d+"
+        )) {
+
+            throw new IllegalArgumentException(
+                    "El DPI debe contener únicamente números. "
+                            + "No se permiten letras ni caracteres especiales."
+            );
+        }
+
+
+        if (dpi.length() != 13) {
+
+            throw new IllegalArgumentException(
+                    "El DPI debe contener exactamente 13 dígitos. "
+                            + "Usted ingresó "
+                            + dpi.length()
+                            + " dígitos."
+            );
+        }
     }
 
     // =====================================================
@@ -528,26 +955,19 @@ public class CobroLaboratorioService {
         }
 
 
+
         // =================================================
-        // 3. ¿MISMA SOLICITUD YA PROCESADA?
+        // 3. PREPARAR CONTROL DE IDEMPOTENCIA
+        // =================================================
+        //
+        // No se consultan pagos antes de verificar
+        // al Cajero y la sucursal correspondiente.
+        //
+        // La consulta de idempotencia se realizará
+        // después de bloquear la orden.
         // =================================================
 
-        Pago pagoExistente =
-                pagoRepository
-                        .findByIdempotencyKey(
-                                idempotencyKey
-                        )
-                        .orElse(
-                                null
-                        );
-
-
-        if (pagoExistente != null) {
-
-            return construirResultadoIdempotente(
-                    pagoExistente
-            );
-        }
+        Pago pagoExistente = null;
 
 
         // =================================================
@@ -624,12 +1044,38 @@ public class CobroLaboratorioService {
                         );
 
 
+
         if (pagoExistente != null) {
+
+            // =================================================
+            // CU-10 - SEGURIDAD DE IDEMPOTENCIA
+            // =================================================
+            //
+            // La clave utilizada debe corresponder
+            // a la misma orden de laboratorio.
+            //
+            // Evita recuperar una transacción
+            // perteneciente a otra orden.
+            // =================================================
+
+            if (pagoExistente.getOrdenLaboratorio() == null
+                    || !orden.getId().equals(
+                    pagoExistente
+                            .getOrdenLaboratorio()
+                            .getId()
+            )) {
+
+                return ResultadoCobroLaboratorio.error(
+                        "La clave de la transacción no corresponde "
+                                + "a la orden de laboratorio seleccionada."
+                );
+            }
 
             return construirResultadoIdempotente(
                     pagoExistente
             );
         }
+
 
 
         // =================================================
@@ -707,6 +1153,33 @@ public class CobroLaboratorioService {
 
 
         // =================================================
+        // CU-10 - VALIDACIÓN DE DECIMALES EN EFECTIVO
+        // =================================================
+        //
+        // El monto recibido puede tener como máximo
+        // 2 decimales, porque se trabaja con Quetzales.
+        //
+        // Evita que cantidades como Q74.999 sean
+        // redondeadas a Q75.00 y aprobadas.
+        //
+        // Esta validación se realiza en backend
+        // y no modifica las reglas del CU-06.
+        // =================================================
+
+        if (formulario.getTipoCobro() == TipoCobroCaja.EFECTIVO
+                && formulario.getMontoRecibido() != null
+                && formulario.getMontoRecibido()
+                .stripTrailingZeros()
+                .scale() > 2) {
+
+            return ResultadoCobroLaboratorio.error(
+                    "El monto recibido debe tener como máximo 2 decimales."
+            );
+        }
+
+
+
+        // =================================================
         // 11. FORMA DE PAGO
         // =================================================
 
@@ -777,6 +1250,38 @@ public class CobroLaboratorioService {
                 procesador.procesar(
                         solicitud
                 );
+
+
+        // =====================================================
+        // CU-10 - FA03
+        // VALIDACIÓN DE LOS ÚLTIMOS 4 DÍGITOS
+        // =====================================================
+        //
+        // El procesador de tarjetas valida en backend:
+        //
+        // - Campo obligatorio.
+        // - Exactamente 4 números.
+        //
+        // Aquí adaptamos el mensaje al CU-10
+        // sin modificar las reglas compartidas del CU-06.
+        // =====================================================
+
+        if (!procesamiento.aprobado()
+                && (
+                "ULTIMOS4_REQUERIDOS".equals(
+                        procesamiento.codigoResultado()
+                )
+                        ||
+                        "ULTIMOS4_INVALIDOS".equals(
+                                procesamiento.codigoResultado()
+                        )
+        )) {
+
+            return ResultadoCobroLaboratorio.error(
+                    "Ingrese los últimos 4 dígitos de la tarjeta."
+            );
+        }
+
 
 
         // =================================================

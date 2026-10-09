@@ -969,10 +969,10 @@
                             </label>
 
 
+
                             <input type="text"
                                    id="ultimos4Tarjeta"
                                    th:field="*{ultimos4Tarjeta}"
-                                   maxlength="4"
                                    inputmode="numeric"
                                    autocomplete="off"
                                    placeholder="1234">
@@ -984,14 +984,15 @@
                             </div>
 
 
+
                             <div id="mensajeTarjeta"
                                  class="mensaje mensaje-error oculto"
                                  style="margin-top: 12px;">
 
-                                Debe ingresar exactamente
-                                4 dígitos numéricos.
+                                Ingrese los últimos 4 dígitos de la tarjeta.
 
                             </div>
+
 
                         </div>
 
@@ -1150,6 +1151,8 @@
                 montoRecibido.required =
                     false;
 
+                ultimos4Tarjeta.setCustomValidity("");
+
                 ultimos4Tarjeta.required =
                     false;
 
@@ -1193,9 +1196,6 @@
                         .remove(
                             "oculto"
                         );
-
-                    ultimos4Tarjeta.required =
-                        true;
 
                     montoRecibido.value =
                         "";
@@ -1278,34 +1278,6 @@
             }
 
 
-            // =============================================
-            // SOLO 4 NÚMEROS
-            // =============================================
-
-            ultimos4Tarjeta.addEventListener(
-                "input",
-                function () {
-
-                    this.value =
-                        this.value
-                            .replace(
-                                /\D/g,
-                                ""
-                            )
-                            .slice(
-                                0,
-                                4
-                            );
-
-
-                    mensajeTarjeta
-                        .classList
-                        .add(
-                            "oculto"
-                        );
-                }
-            );
-
 
             montoRecibido.addEventListener(
                 "input",
@@ -1319,6 +1291,7 @@
             );
 
 
+
             // =============================================
             // VALIDACIÓN ANTES DEL ENVÍO
             // =============================================
@@ -1330,6 +1303,12 @@
                     const metodo =
                         tipoCobro.value;
 
+                    // =====================================
+                    // EFECTIVO
+                    // =====================================
+                    // Se conserva el cálculo visual.
+                    // El backend también valida el monto.
+                    // =====================================
 
                     if (metodo === "EFECTIVO") {
 
@@ -1338,13 +1317,10 @@
                                 montoRecibido.value
                             );
 
-
                         if (
                             montoRecibido.value === ""
                             ||
-                            Number.isNaN(
-                                recibido
-                            )
+                            Number.isNaN(recibido)
                             ||
                             recibido < montoTotal
                         ) {
@@ -1359,36 +1335,18 @@
                         }
                     }
 
-
-                    if (
-                        metodo === "VISA"
-                        ||
-                        metodo === "MASTERCARD"
-                        ||
-                        metodo === "DEBITO"
-                    ) {
-
-                        if (
-                            !/^\d{4}$/
-                                .test(
-                                    ultimos4Tarjeta.value
-                                )
-                        ) {
-
-                            event.preventDefault();
-
-                            mensajeTarjeta
-                                .classList
-                                .remove(
-                                    "oculto"
-                                );
-
-                            ultimos4Tarjeta.focus();
-
-                            return;
-                        }
-                    }
-
+                    // =====================================
+                    // TARJETAS - CU-10 FA03
+                    // =====================================
+                    // Visa, Mastercard y Débito:
+                    //
+                    // Los últimos 4 dígitos se validan
+                    // definitivamente en el backend
+                    // mediante ProcesadorCobroTarjeta
+                    // y CobroLaboratorioService.
+                    //
+                    // No bloqueamos aquí el envío.
+                    // =====================================
 
                     /*
                      * Evita doble clic.
@@ -1397,10 +1355,12 @@
                      * siendo el UUID de idempotencia
                      * validado en backend.
                      */
-                    boton.disabled =
-                        true;
+
+                    boton.disabled = true;
                 }
             );
+
+
 
 
             actualizarMetodo();

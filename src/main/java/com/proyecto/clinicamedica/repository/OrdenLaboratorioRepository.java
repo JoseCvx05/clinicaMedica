@@ -244,4 +244,49 @@ public interface OrdenLaboratorioRepository
             @Param("medico")
             String medico
     );
+
+    // =====================================================
+// CU-10
+// COBRO DE LABORATORIO EN CAJA
+// BUSCAR ORDEN PENDIENTE POR NÚMERO DE ORDEN
+// =====================================================
+//
+// Seguridad:
+//
+// - Solo misma sucursal del Cajero.
+// - Solo órdenes PENDIENTES.
+// - Solo órdenes internas.
+// - Las órdenes externas no se cobran en Caja.
+//
+// =====================================================
+
+    Optional<OrdenLaboratorio>
+    findByNumeroOrdenAndCita_Sucursal_IdAndEstadoAndOrdenExternaFalse(
+
+            String numeroOrden,
+
+            Integer idSucursal,
+
+            EstadoOrdenLaboratorio estado
+    );
+
+// =====================================================
+// CU-10
+// BUSCAR ÓRDENES PENDIENTES POR DPI PROTEGIDO
+// =====================================================
+//
+// El DPI no se guarda en texto plano.
+// La búsqueda se realiza mediante su hash.
+//
+// =====================================================
+
+    List<OrdenLaboratorio>
+    findByCita_Paciente_DpiHashAndCita_Sucursal_IdAndEstadoAndOrdenExternaFalseOrderByFechaHoraCreacionDesc(
+
+            String dpiHash,
+
+            Integer idSucursal,
+
+            EstadoOrdenLaboratorio estado
+    );
 }

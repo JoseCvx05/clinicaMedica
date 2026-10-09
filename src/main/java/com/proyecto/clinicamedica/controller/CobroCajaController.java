@@ -25,6 +25,12 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.util.UUID;
+import jakarta.servlet.http.HttpSession;
+
+import com.proyecto.clinicamedica.entity.OrdenLaboratorio;
+
+import java.util.List;
+import java.util.Optional;
 
 
 /**
@@ -73,6 +79,9 @@ public class CobroCajaController {
 
     private static final String VISTA_COMPROBANTE_LABORATORIO =
             "caja/comprobante-laboratorio";
+
+    private static final String VISTA_BUSQUEDA_LABORATORIO =
+            "caja/busqueda-laboratorio";
 
     // =====================================================
     // DEPENDENCIAS
@@ -125,6 +134,34 @@ public class CobroCajaController {
 
         this.comprobanteLaboratorioService =
                 comprobanteLaboratorioService;
+    }
+
+    // =====================================================
+// CU-10
+// OBTENER SUCURSAL DEL CAJERO
+// =====================================================
+
+    private Long obtenerIdSucursalCaja(
+            HttpSession session
+    ) {
+
+        Object idSucursalSesion =
+                session.getAttribute(
+                        "idSucursalUsuario"
+                );
+
+
+        if (!(idSucursalSesion instanceof Number numero)
+                || numero.longValue() <= 0) {
+
+            throw new IllegalStateException(
+                    "No fue posible identificar la sucursal "
+                            + "del Cajero autenticado."
+            );
+        }
+
+
+        return numero.longValue();
     }
 
     // =====================================================
@@ -636,6 +673,125 @@ public class CobroCajaController {
 
 
             return "redirect:/interno/caja";
+        }
+    }
+
+    // =====================================================
+    // CU-10
+    // PANTALLA DE BÚSQUEDA DE LABORATORIO
+    // =====================================================
+
+    @GetMapping("/laboratorio")
+    public String mostrarBusquedaLaboratorio(
+            Model model
+    ) {
+
+        // =============================================
+        // CRITERIO INICIAL
+        // =============================================
+
+        if (!model.containsAttribute("criterio")) {
+
+            model.addAttribute(
+                    "criterio",
+                    "DPI"
+            );
+        }
+
+        // =============================================
+        // LISTA INICIAL VACÍA
+        // =============================================
+
+        if (!model.containsAttribute("ordenesPendientes")) {
+
+            model.addAttribute(
+                    "ordenesPendientes",
+                    List.of()
+            );
+        }
+
+        return VISTA_BUSQUEDA_LABORATORIO;
+    }
+
+
+
+    // =====================================================
+    // CU-10
+    // BUSCAR ÓRDENES DE LABORATORIO PARA COBRO
+    // =====================================================
+
+    @PostMapping("/laboratorio/buscar")
+    public String buscarLaboratorio(
+
+            @RequestParam(
+                    name = "criterio",
+                    required = false
+            )
+            String criterio,
+
+            @RequestParam(
+                    name = "valor",
+                    required = false
+            )
+            String valor,
+
+            Model model
+    ) {
+
+        model.addAttribute(
+                "criterio",
+                criterio
+        );
+
+        model.addAttribute(
+                "valorBusqueda",
+                valor
+        );
+
+        try {
+
+            // El Service valida al Cajero y su sucursal.
+            // También filtra órdenes internas, pendientes
+            // y sin pago aprobado.
+
+            CobroLaboratorioService.ResultadoBusquedaLaboratorio resultado =
+                    cobroLaboratorioService
+                            .buscarOrdenesPendientes(
+                                    criterio,
+                                    valor
+                            );
+
+            model.addAttribute(
+                    "ordenesPendientes",
+                    resultado.ordenes()
+            );
+
+            if (!resultado.tieneResultados()) {
+
+                model.addAttribute(
+                        "mensajeError",
+                        resultado.mensaje()
+                );
+            }
+
+            return VISTA_BUSQUEDA_LABORATORIO;
+
+        } catch (
+                IllegalArgumentException
+                | IllegalStateException ex
+        ) {
+
+            model.addAttribute(
+                    "mensajeError",
+                    ex.getMessage()
+            );
+
+            model.addAttribute(
+                    "ordenesPendientes",
+                    List.of()
+            );
+
+            return VISTA_BUSQUEDA_LABORATORIO;
         }
     }
 
