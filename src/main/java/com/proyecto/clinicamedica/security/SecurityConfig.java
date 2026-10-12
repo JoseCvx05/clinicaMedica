@@ -368,6 +368,38 @@ public class SecurityConfig {
 
 
                                 // =========================
+                                // CU-11
+                                // DESPACHO DE MEDICAMENTOS
+                                // =========================
+                                //
+                                // Acceso exclusivo:
+                                // FARMACEUTICO
+                                //
+                                // Protege:
+                                // - Panel de Farmacia.
+                                // - Busqueda de recetas.
+                                // - Consulta de inventario.
+                                // - Registro de despachos.
+                                // - Sustitucion de medicamentos.
+                                // - Historial de despachos.
+                                //
+                                // Debe permanecer ANTES de:
+                                // /interno/**
+                                //
+                                // =========================
+
+                                .requestMatchers(
+                                        "/interno/farmacia",
+                                        "/interno/farmacia/**"
+                                )
+
+                                .hasRole(
+                                        "FARMACEUTICO"
+                                )
+
+
+
+                                // =========================
                                 // PORTAL INTERNO GENERAL
                                 // =========================
                                 //

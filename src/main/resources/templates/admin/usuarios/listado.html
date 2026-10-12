@@ -35,8 +35,9 @@
         <i class="bi bi-arrow-left me-1"></i>Volver
       </a>
 
-      <form th:action="@{/logout}" method="post" class="m-0">
-        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+
+      <form th:action="@{/logout-interno}" method="post" class="m-0">
+      <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
         <button type="submit" class="btn btn-outline-secondary rounded-pill px-3">
           <i class="bi bi-box-arrow-right me-1"></i>
           <span class="d-none d-sm-inline">Cerrar sesión</span>

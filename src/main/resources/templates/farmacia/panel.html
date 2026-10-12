@@ -1,0 +1,2569 @@
+
+<!DOCTYPE html>
+<html lang="es"
+      xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>Farmacia | SANTOS</title>
+
+    <style>
+        :root {
+            --principal: #103846;
+            --principal-oscuro: #082c38;
+            --acento: #0c9484;
+            --acento-oscuro: #08786c;
+            --fondo: #f2f6f8;
+            --blanco: #ffffff;
+            --texto: #243746;
+            --suave: #64748b;
+            --borde: #dce5ea;
+            --error: #a52834;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            background: var(--fondo);
+            color: var(--texto);
+            font-family: Arial, Helvetica, sans-serif;
+        }
+
+        .encabezado {
+            background: linear-gradient(
+                    120deg,
+                    var(--principal-oscuro),
+                    var(--principal)
+            );
+            padding: 25px 24px;
+            color: white;
+        }
+
+        .encabezado-contenido {
+            max-width: 1150px;
+            margin: auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .marca {
+            font-size: 25px;
+            font-weight: 800;
+            letter-spacing: 2px;
+        }
+
+        .marca span {
+            color: #71dfcf;
+        }
+
+        .subtitulo {
+            margin-top: 7px;
+            font-size: 13px;
+            color: #c9dce2;
+        }
+
+        .identidad {
+            padding: 13px 18px;
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, .17);
+            background: rgba(255, 255, 255, .09);
+            font-size: 13px;
+        }
+
+        .identidad strong {
+            display: block;
+            margin-bottom: 6px;
+        }
+
+        .contenedor {
+            max-width: 1150px;
+            margin: 30px auto;
+            padding: 0 20px 45px;
+        }
+
+        .bienvenida {
+            margin-bottom: 24px;
+        }
+
+        .bienvenida h1 {
+            color: var(--principal);
+            font-size: 27px;
+            margin: 0 0 9px;
+        }
+
+        .bienvenida p {
+            margin: 0;
+            color: var(--suave);
+            line-height: 1.6;
+            font-size: 14px;
+        }
+
+        .resumen {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin-bottom: 24px;
+        }
+
+        .resumen-item {
+            background: white;
+            border: 1px solid var(--borde);
+            border-radius: 15px;
+            padding: 20px;
+        }
+
+        .resumen-item .icono {
+            font-size: 26px;
+            margin-bottom: 11px;
+        }
+
+        .resumen-item strong {
+            display: block;
+            color: var(--principal);
+            font-size: 14px;
+            margin-bottom: 8px;
+        }
+
+        .resumen-item span {
+            font-size: 12px;
+            color: var(--suave);
+            line-height: 1.6;
+        }
+
+        .panel {
+            background: white;
+            border: 1px solid var(--borde);
+            border-radius: 17px;
+            margin-bottom: 23px;
+            overflow: hidden;
+            box-shadow: 0 5px 16px rgba(20, 51, 68, .04);
+        }
+
+        .panel-cabecera {
+            padding: 21px 23px;
+            border-bottom: 1px solid var(--borde);
+            background: #f9fbfc;
+        }
+
+        .panel-cabecera h2 {
+            margin: 0 0 8px;
+            color: var(--principal);
+            font-size: 20px;
+        }
+
+        .panel-cabecera p {
+            margin: 0;
+            color: var(--suave);
+            line-height: 1.6;
+            font-size: 13px;
+        }
+
+        .panel-contenido {
+            padding: 23px;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 16px;
+        }
+
+        .campo {
+            min-width: 0;
+        }
+
+        .campo-completo {
+            grid-column: 1 / -1;
+        }
+
+        label {
+            display: block;
+            font-size: 13px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        input,
+        textarea,
+        select {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #cbd8df;
+            border-radius: 9px;
+            font: inherit;
+            font-size: 14px;
+            background: white;
+            color: var(--texto);
+        }
+
+        input:focus,
+        textarea:focus,
+        select:focus {
+            outline: none;
+            border-color: var(--acento);
+            box-shadow: 0 0 0 3px rgba(12, 148, 132, .12);
+        }
+
+        input:disabled,
+        textarea:disabled {
+            background: #eaf0f3;
+            color: #7b8b96;
+        }
+
+        input[readonly] {
+            background: #f0f5f7;
+        }
+
+        textarea {
+            min-height: 78px;
+            resize: vertical;
+        }
+
+        .ayuda {
+            font-size: 12px;
+            color: var(--suave);
+            margin-top: 7px;
+            line-height: 1.5;
+        }
+
+        .acciones {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            align-items: center;
+            margin-top: 20px;
+        }
+
+        .btn {
+            display: inline-block;
+            border: none;
+            border-radius: 9px;
+            padding: 12px 19px;
+            font: inherit;
+            font-size: 13px;
+            font-weight: 700;
+            text-align: center;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        .btn:disabled {
+            opacity: .6;
+            cursor: not-allowed;
+        }
+
+        .btn-principal {
+            color: white;
+            background: var(--acento);
+        }
+
+        .btn-principal:hover {
+            background: var(--acento-oscuro);
+        }
+
+        .btn-secundario {
+            color: var(--principal);
+            background: #e6eef2;
+        }
+
+        .btn-advertencia {
+            background: #996419;
+            color: white;
+        }
+
+        .aviso {
+            border: 1px solid;
+            border-radius: 11px;
+            padding: 15px 18px;
+            margin-bottom: 19px;
+            font-size: 13px;
+            line-height: 1.6;
+        }
+
+        .aviso-info {
+            color: #234d64;
+            border-color: #bbdced;
+            background: #eaf4fa;
+        }
+
+        .aviso-exito {
+            color: #17633c;
+            border-color: #a4dec2;
+            background: #e7f6ee;
+        }
+
+        .aviso-error {
+            color: var(--error);
+            border-color: #efb4bd;
+            background: #ffedf0;
+        }
+
+        .aviso-stock {
+            color: #77521a;
+            border-color: #edce86;
+            background: #fff5df;
+        }
+
+        .resultados {
+            display: grid;
+            gap: 12px;
+        }
+
+        .resultado {
+            border: 1px solid var(--borde);
+            border-radius: 12px;
+            padding: 17px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 16px;
+            flex-wrap: wrap;
+        }
+
+        .resultado h3 {
+            margin: 0 0 8px;
+            color: var(--principal);
+            font-size: 16px;
+        }
+
+        .resultado p {
+            margin: 5px 0;
+            font-size: 13px;
+            color: var(--suave);
+        }
+
+        .etiqueta {
+            display: inline-block;
+            padding: 5px 9px;
+            border-radius: 7px;
+            font-size: 11px;
+            font-weight: 700;
+        }
+
+        .etiqueta-verde {
+            background: #ddf5e8;
+            color: #167447;
+        }
+
+        .etiqueta-roja {
+            background: #ffe6e8;
+            color: #9d2833;
+        }
+
+        .etiqueta-amarilla {
+            background: #fff0cf;
+            color: #8c611a;
+        }
+
+        .receta-resumen {
+            padding: 17px;
+            border-radius: 12px;
+            background: #edf7f5;
+            border: 1px solid #c2e5de;
+            margin-bottom: 20px;
+        }
+
+        .receta-resumen h3 {
+            color: var(--principal);
+            margin: 0 0 10px;
+            font-size: 18px;
+        }
+
+        .receta-resumen p {
+            margin: 7px 0;
+            font-size: 13px;
+        }
+
+        .linea-medicamento {
+            border: 1px solid var(--borde);
+            border-radius: 13px;
+            padding: 19px;
+            margin-bottom: 15px;
+            background: #f9fbfc;
+        }
+
+        .linea-medicamento.seleccionada {
+            border-color: var(--acento);
+            background: #f0faf8;
+        }
+
+        .medicamento-cabecera {
+            display: flex;
+            align-items: flex-start;
+            gap: 13px;
+            margin-bottom: 15px;
+        }
+
+        .seleccionar-med {
+            width: 20px;
+            height: 20px;
+            margin-top: 2px;
+            accent-color: var(--acento);
+            flex-shrink: 0;
+        }
+
+        .medicamento-titulo {
+            flex: 1;
+        }
+
+        .medicamento-titulo h3 {
+            margin: 0 0 6px;
+            color: var(--principal);
+            font-size: 16px;
+        }
+
+        .medicamento-titulo p {
+            margin: 0;
+            color: var(--suave);
+            font-size: 12px;
+            line-height: 1.6;
+        }
+
+        .datos-medicamento {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+            margin-bottom: 16px;
+        }
+
+        .dato {
+            border: 1px solid var(--borde);
+            background: white;
+            border-radius: 9px;
+            padding: 12px;
+        }
+
+        .dato span {
+            display: block;
+            color: var(--suave);
+            font-size: 11px;
+            margin-bottom: 7px;
+        }
+
+        .dato strong {
+            display: block;
+            color: var(--principal);
+            font-size: 16px;
+        }
+
+        .datos-clinicos {
+            padding: 13px;
+            border-radius: 9px;
+            background: #eef3f6;
+            margin-bottom: 16px;
+            font-size: 12px;
+            line-height: 1.8;
+        }
+
+        .datos-clinicos strong {
+            color: var(--principal);
+        }
+
+        .entrega-campos {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+        }
+
+        .sin-seleccion {
+            text-align: center;
+            padding: 28px 18px;
+            color: var(--suave);
+        }
+
+        .sin-seleccion .icono {
+            font-size: 30px;
+            margin-bottom: 10px;
+        }
+
+        .sin-seleccion strong {
+            display: block;
+            color: var(--principal);
+            margin-bottom: 8px;
+        }
+
+        .contador {
+            font-size: 13px;
+            color: var(--suave);
+        }
+
+        .pie {
+            text-align: center;
+            color: #7c8a96;
+            font-size: 12px;
+            padding-top: 13px;
+        }
+
+        @media (max-width: 820px) {
+            .resumen {
+                grid-template-columns: 1fr;
+            }
+
+            .datos-medicamento {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 600px) {
+            .form-grid,
+            .entrega-campos,
+            .datos-medicamento {
+                grid-template-columns: 1fr;
+            }
+
+            .campo-completo {
+                grid-column: auto;
+            }
+
+            .contenedor {
+                padding: 0 13px 35px;
+            }
+
+            .panel-contenido {
+                padding: 17px;
+            }
+
+            .bienvenida h1 {
+                font-size: 23px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<!-- ===================================================== -->
+<!-- ENCABEZADO -->
+<!-- ===================================================== -->
+
+<header class="encabezado">
+
+    <div class="encabezado-contenido">
+
+        <div>
+
+            <div class="marca">
+                SANTOS <span>+</span>
+            </div>
+
+            <div class="subtitulo">
+                Sistema de Gestión Clínica · Farmacia
+            </div>
+
+        </div>
+
+        <div class="identidad">
+
+            <strong th:text="${nombreFarmaceutico}">
+                Farmacéutico
+            </strong>
+
+            Sucursal asignada:
+            <span th:text="${idSucursal}">1</span>
+
+        </div>
+
+    </div>
+
+</header>
+
+
+<main class="contenedor">
+
+    <!-- ================================================= -->
+    <!-- BIENVENIDA -->
+    <!-- ================================================= -->
+
+    <section class="bienvenida">
+
+        <h1>Panel de Farmacia</h1>
+
+        <p>
+            Consulta de recetas médicas, entrega de
+            medicamentos y control de inventario
+            correspondiente a tu sucursal.
+        </p>
+
+    </section>
+
+
+    <!-- ================================================= -->
+    <!-- TARJETAS DE INFORMACIÓN -->
+    <!-- ================================================= -->
+
+    <section class="resumen">
+
+        <div class="resumen-item">
+
+            <div class="icono">💊</div>
+
+            <strong>Despacho de medicamentos</strong>
+
+            <span>
+                Entrega parcial o completa según
+                las cantidades pendientes.
+            </span>
+
+        </div>
+
+        <div class="resumen-item">
+
+            <div class="icono">🔒</div>
+
+            <strong>Seguridad por sucursal</strong>
+
+            <span>
+                Las recetas y el inventario se consultan
+                mediante permisos del usuario autenticado.
+            </span>
+
+        </div>
+
+        <div class="resumen-item">
+
+            <div class="icono">📋</div>
+
+            <strong>Control de decisiones</strong>
+
+            <span>
+                Registro de medicamentos entregados
+                o decisión de no adquirirlos.
+            </span>
+
+        </div>
+
+    </section>
+
+
+    <!-- ================================================= -->
+    <!-- MENSAJES DEL CONTROLADOR -->
+    <!-- ================================================= -->
+
+    <div class="aviso aviso-exito"
+         th:if="${mensajeExito != null}"
+         th:text="${mensajeExito}">
+    </div>
+
+    <div class="aviso aviso-error"
+         th:if="${mensajeError != null}"
+         th:text="${mensajeError}">
+    </div>
+
+    <div class="aviso aviso-info"
+         th:if="${mensajeInformacion != null}"
+         th:text="${mensajeInformacion}">
+    </div>
+
+    <div class="aviso aviso-info"
+         th:if="${idDespachoRegistrado != null}">
+
+        Número de despacho:
+
+        <strong th:text="${idDespachoRegistrado}">
+            0
+        </strong>
+
+    </div>
+
+
+    <!-- ================================================= -->
+    <!-- CU-11 - RESUMEN DETALLADO DEL DESPACHO -->
+    <!-- ================================================= -->
+    <!--
+        Los datos serán consultados desde PostgreSQL
+        mediante un servicio del backend.
+
+        No se utilizan precios ni cantidades
+        enviados por el navegador.
+    -->
+
+    <section class="panel"
+             id="resumen-despacho"
+             th:if="${resumenDespacho != null}">
+
+        <div class="panel-cabecera">
+
+            <h2>Resumen del despacho registrado</h2>
+
+            <p>
+                Detalle de los medicamentos entregados
+                y del monto registrado en Farmacia.
+            </p>
+
+        </div>
+
+        <div style="padding: 20px;">
+
+            <!-- DATOS GENERALES -->
+
+            <p>
+                <strong>Despacho:</strong>
+
+                #<span th:text="${resumenDespacho.idDespacho()}">
+                0
+            </span>
+            </p>
+
+            <p>
+                <strong>Receta médica:</strong>
+
+                #<span th:text="${resumenDespacho.idReceta()}">
+                0
+            </span>
+            </p>
+
+
+            <!-- MEDICAMENTOS DESPACHADOS -->
+
+            <div style="overflow-x: auto; margin-top: 20px;">
+
+                <table style="
+                width: 100%;
+                border-collapse: collapse;
+                text-align: left;
+                font-size: 13px;
+            ">
+
+                    <thead>
+
+                    <tr style="background: #e6eef2;">
+
+                        <th style="padding: 12px;">
+                            Medicamento recetado
+                        </th>
+
+                        <th style="padding: 12px;">
+                            Medicamento entregado
+                        </th>
+
+                        <th style="padding: 12px;">
+                            Cantidad
+                        </th>
+
+                        <th style="padding: 12px;">
+                            Precio unitario
+                        </th>
+
+                        <th style="padding: 12px;">
+                            Subtotal
+                        </th>
+
+                    </tr>
+
+                    </thead>
+
+                    <tbody>
+
+                    <tr th:each="linea : ${resumenDespacho.lineas()}">
+
+                        <td style="padding: 12px;"
+                            th:text="${linea.medicamentoOriginal()}">
+                            Medicamento original
+                        </td>
+
+                        <td style="padding: 12px;"
+                            th:text="${linea.medicamentoEntregado()}">
+                            Medicamento entregado
+                        </td>
+
+                        <td style="padding: 12px;"
+                            th:text="${linea.cantidadEntregada()}">
+                            0
+                        </td>
+
+                        <td style="padding: 12px;">
+
+                            Q<span th:text="${linea.precioUnitario()}">
+                            0.00
+                        </span>
+
+                        </td>
+
+                        <td style="padding: 12px;">
+
+                            Q<span th:text="${linea.subtotal()}">
+                            0.00
+                        </span>
+
+                        </td>
+
+                    </tr>
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+
+            <!-- JUSTIFICACIONES FA02 -->
+
+            <div th:each="linea : ${resumenDespacho.lineas()}"
+                 th:if="${linea.razonSustitucion() != null}"
+                 class="aviso aviso-info"
+                 style="margin-top: 15px;">
+
+                <strong>Sustitución registrada:</strong>
+
+                <p>
+                <span th:text="${linea.medicamentoOriginal()}">
+                    Original
+                </span>
+
+                    sustituido por
+
+                    <span th:text="${linea.medicamentoEntregado()}">
+                    Alternativo
+                </span>
+                </p>
+
+                <p>
+                    <strong>Justificación:</strong>
+
+                    <span th:text="${linea.razonSustitucion()}">
+                    Motivo
+                </span>
+                </p>
+
+            </div>
+
+
+            <!-- TOTAL DEFINITIVO -->
+
+            <div style="
+            margin-top: 20px;
+            padding: 18px;
+            background: #e8f4f1;
+            border-radius: 10px;
+            font-size: 18px;
+            font-weight: 700;
+        ">
+
+                Total del Despacho:
+
+                Q<span th:text="${resumenDespacho.montoTotal()}">
+                0.00
+            </span>
+
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <div class="aviso aviso-stock"
+         th:if="${alertasStockMinimo != null}">
+
+        <strong>Advertencias de stock mínimo</strong>
+
+        <ul>
+            <li th:each="alerta : ${alertasStockMinimo}"
+                th:text="${alerta}">
+            </li>
+        </ul>
+
+    </div>
+
+
+    <!-- ================================================= -->
+    <!-- BUSCAR RECETAS MÉDICAS -->
+    <!-- ================================================= -->
+
+    <section class="panel" id="buscar-recetas">
+
+        <div class="panel-cabecera">
+
+            <h2>🔎 Buscar receta médica</h2>
+
+            <p>
+                Busca una receta por número de receta
+                o número de consulta. Solo se mostrarán
+                recetas activas de tu sucursal.
+            </p>
+
+        </div>
+
+        <div class="panel-contenido">
+
+            <form th:action="@{/interno/farmacia/buscar}"
+                  method="get">
+
+                <div class="form-grid">
+
+                    <div class="campo">
+
+                        <label for="tipoBusqueda">
+                            Tipo de búsqueda
+                        </label>
+
+                        <select id="tipoBusqueda"
+                                name="tipoBusqueda"
+                                required>
+
+                            <option value="RECETA"
+                                    th:selected="${tipoBusqueda == null or tipoBusqueda == 'RECETA'}">
+
+                                Por número de receta
+
+                            </option>
+
+                            <option value="CONSULTA"
+                                    th:selected="${tipoBusqueda == 'CONSULTA'}">
+
+                                Por número de consulta
+
+                            </option>
+
+                        </select>
+
+                    </div>
+
+
+                    <div class="campo">
+
+                        <label for="valorBusqueda">
+                            Número que deseas buscar
+                        </label>
+
+                        <input id="valorBusqueda"
+                               type="number"
+                               name="valorBusqueda"
+                               min="1"
+                               step="1"
+                               required
+                               placeholder="Ejemplo: 3"
+                               th:value="${valorBusqueda}">
+
+                    </div>
+
+                </div>
+
+
+                <div class="acciones">
+
+                    <button type="submit"
+                            class="btn btn-principal">
+
+                        Buscar receta
+
+                    </button>
+
+                    <a th:href="@{/interno/farmacia}"
+                       class="btn btn-secundario">
+
+                        Limpiar búsqueda
+
+                    </a>
+
+                </div>
+
+            </form>
+
+        </div>
+
+    </section>
+
+
+    <!-- ================================================= -->
+    <!-- RESULTADOS DE BÚSQUEDA -->
+    <!-- ================================================= -->
+
+    <section class="panel"
+             id="resultados-recetas"
+             th:if="${resultadosRecetas != null and !resultadosRecetas.isEmpty()}">
+
+        <div class="panel-cabecera">
+
+            <h2>📄 Recetas encontradas</h2>
+
+            <p>
+                Selecciona una receta para consultar
+                sus medicamentos y cantidades pendientes.
+            </p>
+
+        </div>
+
+        <div class="panel-contenido">
+
+            <div class="resultados">
+
+                <div class="resultado"
+                     th:each="resumen : ${resultadosRecetas}">
+
+                    <div>
+
+                        <h3 th:text="|Receta #${resumen.idReceta()}|">
+                            Receta #3
+                        </h3>
+
+                        <p th:text="|Consulta médica #${resumen.idConsulta()}|">
+                            Consulta médica #3
+                        </p>
+
+                        <p>
+                            Fecha de emisión:
+
+                            <span th:text="${resumen.fechaEmision()}">
+                                Fecha
+                            </span>
+                        </p>
+
+                        <span class="etiqueta etiqueta-verde"
+                              th:if="${resumen.vigente()}">
+
+                            Vigente
+
+                        </span>
+
+                        <span class="etiqueta etiqueta-roja"
+                              th:unless="${resumen.vigente()}">
+
+                            Receta vencida
+
+                        </span>
+
+                    </div>
+
+
+                    <a class="btn btn-principal"
+                       th:href="@{/interno/farmacia/receta/{idReceta}(idReceta=${resumen.idReceta()})}">
+
+                        Ver medicamentos
+
+                    </a>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <!-- ================================================= -->
+    <!-- RECETA SELECCIONADA -->
+    <!-- ================================================= -->
+
+    <section class="panel"
+             id="receta-seleccionada"
+             th:if="${recetaSeleccionada != null}">
+
+        <div class="panel-cabecera">
+
+            <h2>💊 Medicamentos de la receta</h2>
+
+            <p>
+                Consulta las cantidades prescritas,
+                entregadas, pendientes y las existencias
+                actuales de tu sucursal.
+            </p>
+
+        </div>
+
+
+        <div class="panel-contenido">
+
+            <!-- ========================================= -->
+            <!-- RESUMEN DE LA RECETA -->
+            <!-- ========================================= -->
+
+            <div class="receta-resumen">
+
+                <h3 th:text="|Receta médica #${recetaSeleccionada.idReceta()}|">
+                    Receta médica
+                </h3>
+
+                <p>
+                    <strong>Consulta médica:</strong>
+
+                    <span th:text="${recetaSeleccionada.idConsulta()}">
+                        0
+                    </span>
+                </p>
+
+                <p>
+                    <strong>Emisión:</strong>
+
+                    <span th:text="${recetaSeleccionada.fechaEmision()}">
+                        Fecha
+                    </span>
+                </p>
+
+                <p>
+                    <strong>Estado:</strong>
+
+                    <span class="etiqueta etiqueta-verde"
+                          th:if="${recetaSeleccionada.vigente()}">
+
+                        Vigente
+
+                    </span>
+
+                    <span class="etiqueta etiqueta-roja"
+                          th:unless="${recetaSeleccionada.vigente()}">
+
+                        Vencida
+
+                    </span>
+                </p>
+
+                <p th:if="${recetaSeleccionada.notas() != null}">
+
+                    <strong>Notas:</strong>
+
+                    <span th:text="${recetaSeleccionada.notas()}">
+                        Notas médicas
+                    </span>
+
+                </p>
+
+            </div>
+
+
+            <!-- ========================================= -->
+            <!-- RECETA VENCIDA -->
+            <!-- ========================================= -->
+
+            <div class="aviso aviso-error"
+                 th:unless="${recetaSeleccionada.vigente()}">
+
+                <strong>Receta vencida.</strong>
+
+                Los medicamentos pueden visualizarse,
+                pero no se permite registrar un nuevo
+                despacho ni una operación No adquirido.
+
+            </div>
+
+
+            <!-- ========================================= -->
+            <!-- FORMULARIO DE DESPACHO -->
+            <!-- ========================================= -->
+
+            <form id="formConfirmar"
+                  th:action="@{/interno/farmacia/confirmar}"
+                  th:object="${solicitud}"
+                  method="post">
+
+
+                <!-- TOKEN CSRF -->
+
+                <input type="hidden"
+                       th:name="${_csrf.parameterName}"
+                       th:value="${_csrf.token}">
+
+
+                <!-- ID DE RECETA -->
+
+                <input type="hidden"
+                       th:field="*{idReceta}">
+
+
+                <!-- CLAVE ÚNICA -->
+
+                <input type="hidden"
+                       th:field="*{claveOperacion}">
+
+
+                <!-- CAMPOS QUE GENERARÁ JAVASCRIPT -->
+
+                <div id="camposGenerados"></div>
+
+
+                <!-- ===================================== -->
+                <!-- LISTAR MEDICAMENTOS -->
+                <!-- ===================================== -->
+
+
+                <div class="linea-medicamento"
+                     th:each="med, estado : ${recetaSeleccionada.medicamentos()}"
+                     th:attr="
+         data-id-detalle=${med.idDetalleReceta()},
+         data-id-original=${med.idMedicamento()},
+         data-pendiente=${med.cantidadPendiente()},
+         data-stock=${med.stockDisponible()},
+         data-controlado=${med.medicamentoControlado()}
+     ">
+
+
+
+                <!-- ================================= -->
+                    <!-- SELECCIÓN -->
+                    <!-- ================================= -->
+
+                    <div class="medicamento-cabecera">
+
+                        <input type="checkbox"
+                               class="seleccionar-med"
+                               th:disabled="${!recetaSeleccionada.vigente() or !med.medicamentoActivo() or med.cantidadPendiente() <= 0}"
+                               th:aria-label="|Seleccionar ${med.nombreMedicamento()}|">
+
+
+                        <div class="medicamento-titulo">
+
+                            <h3 th:text="${med.nombreMedicamento()}">
+                                Nombre del medicamento
+                            </h3>
+
+                            <p th:text="|ID del medicamento: ${med.idMedicamento()} · Detalle de receta: ${med.idDetalleReceta()}|">
+                                Identificadores
+                            </p>
+
+                            <div style="margin-top: 9px">
+
+                                <span class="etiqueta etiqueta-amarilla"
+                                      th:if="${med.medicamentoControlado()}">
+
+                                    Medicamento controlado
+
+                                </span>
+
+                                <span class="etiqueta etiqueta-roja"
+                                      th:if="${!med.medicamentoActivo()}">
+
+                                    Medicamento inactivo
+
+                                </span>
+
+                                <span class="etiqueta etiqueta-amarilla"
+                                      th:if="${med.stockBajo()}">
+
+                                    Stock bajo
+
+                                </span>
+
+                                <span class="etiqueta etiqueta-roja"
+                                      th:if="${!med.inventarioRegistrado()}">
+
+                                    Sin inventario registrado
+
+                                </span>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- ================================= -->
+                    <!-- CANTIDADES -->
+                    <!-- ================================= -->
+
+                    <div class="datos-medicamento">
+
+                        <div class="dato">
+
+                            <span>Prescritas</span>
+
+                            <strong th:text="${med.cantidadRecetada()}">
+                                0
+                            </strong>
+
+                        </div>
+
+
+                        <div class="dato">
+
+                            <span>Ya entregadas</span>
+
+                            <strong th:text="${med.cantidadEntregada()}">
+                                0
+                            </strong>
+
+                        </div>
+
+
+                        <div class="dato">
+
+                            <span>Pendientes</span>
+
+                            <strong th:text="${med.cantidadPendiente()}">
+                                0
+                            </strong>
+
+                        </div>
+
+
+                        <div class="dato">
+
+                            <span>Stock en sucursal</span>
+
+                            <strong th:text="${med.stockDisponible()}">
+                                0
+                            </strong>
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- ================================= -->
+                    <!-- INDICACIONES -->
+                    <!-- ================================= -->
+
+                    <div class="datos-clinicos">
+
+                        <strong>Dosis:</strong>
+                        <span th:text="${med.dosis()}">Dosis</span>
+
+                        <br>
+
+                        <strong>Frecuencia:</strong>
+                        <span th:text="${med.frecuencia()}">
+                            Frecuencia
+                        </span>
+
+                        <br>
+
+                        <strong>Duración:</strong>
+                        <span th:text="${med.duracion()}">
+                            Duración
+                        </span>
+
+                        <br>
+
+                        <strong>Unidad:</strong>
+                        <span th:text="${med.unidad()}">
+                            Unidad
+                        </span>
+
+                        <br>
+
+                        <strong>Precio histórico unitario:</strong>
+                        Q<span th:text="${med.precioUnitario()}">
+                            0.00
+                        </span>
+
+                    </div>
+
+
+                    <!-- ================================= -->
+                    <!-- CAMPOS DE ENTREGA -->
+                    <!-- ================================= -->
+
+                    <div class="entrega-campos">
+
+                        <div class="campo">
+
+                            <label>
+                                Cantidad a entregar
+                            </label>
+
+                            <input type="number"
+                                   class="cantidad-entrega"
+                                   min="1"
+                                   step="1"
+                                   value="1"
+                                   disabled>
+
+                            <div class="ayuda">
+                                La cantidad debe respetar
+                                las unidades pendientes y
+                                el stock del medicamento entregado.
+                            </div>
+
+                        </div>
+
+
+                        <!-- ========================================= -->
+                        <!-- CU-11 FA02 - SUSTITUIR MEDICAMENTO -->
+                        <!-- ========================================= -->
+
+                        <div class="campo campo-completo">
+
+                            <label style="
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        cursor: pointer;
+    ">
+
+                                <input type="checkbox"
+                                       class="activar-sustitucion"
+                                       style="
+                   width: 19px;
+                   height: 19px;
+                   flex-shrink: 0;
+               "
+                                       th:disabled="${med.medicamentoControlado()}">
+
+                                Sustituir medicamento recetado
+
+                            </label>
+
+                            <div class="ayuda">
+
+                                Marca esta opción únicamente cuando
+                                corresponda una sustitución permitida.
+
+                                El medicamento alternativo y la
+                                justificación serán obligatorios.
+
+                            </div>
+
+                            <div class="ayuda"
+                                 th:if="${med.medicamentoControlado()}">
+
+                                No se permiten sustituciones de
+                                medicamentos controlados.
+
+                            </div>
+
+                        </div>
+
+
+
+                        <div class="campo">
+
+                            <label>
+                                ID del medicamento a entregar
+                            </label>
+
+                            <input type="number"
+                                   class="medicamento-entrega"
+                                   min="1"
+                                   step="1"
+                                   th:value="${med.idMedicamento()}"
+                                   th:readonly="${med.medicamentoControlado()}"
+                                   disabled>
+
+                            <div class="ayuda"
+                                 th:if="${!med.medicamentoControlado()}">
+
+                                Se propone el medicamento original.
+                                Para una sustitución de prueba,
+                                introduce el ID de la alternativa.
+
+                            </div>
+
+                            <div class="ayuda"
+                                 th:if="${med.medicamentoControlado()}">
+
+                                No se permiten sustituciones
+                                automáticas de controlados.
+                                El backend verificará la autorización.
+
+                            </div>
+
+                        </div>
+
+
+                        <div class="campo campo-completo">
+
+                            <label>
+                                Razón de sustitución
+                            </label>
+
+                            <textarea
+                                    class="razon-sustitucion"
+                                    maxlength="1000"
+                                    disabled
+                                    placeholder="Solo cuando se entregue un medicamento diferente al original"></textarea>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <!-- ===================================== -->
+                <!-- CONTADOR -->
+                <!-- ===================================== -->
+
+                <div class="contador"
+                     id="contadorMedicamentos">
+
+                    Medicamentos seleccionados: 0
+
+                </div>
+
+
+                <!-- ===================================== -->
+                <!-- OBSERVACIONES -->
+                <!-- ===================================== -->
+
+                <div class="campo"
+                     style="margin-top: 20px">
+
+                    <label for="observacionesConfirmar">
+                        Observaciones del despacho
+                    </label>
+
+                    <textarea
+                            id="observacionesConfirmar"
+                            th:field="*{observaciones}"
+                            maxlength="1000"
+                            placeholder="Observaciones opcionales del despacho"></textarea>
+
+                </div>
+
+
+                <!-- ===================================== -->
+                <!-- BOTÓN DE CONFIRMACIÓN -->
+                <!-- ===================================== -->
+
+
+                <!-- ===================================== -->
+                <!-- CU-11 - VISTA PREVIA DEL MONTO -->
+                <!-- ===================================== -->
+
+                <div class="acciones">
+
+                    <button type="button"
+                            id="botonCalcularTotal"
+                            class="btn btn-secundario"
+                            th:disabled="${!recetaSeleccionada.vigente()}">
+
+                        Calcular total
+
+                    </button>
+
+
+                    <button type="submit"
+                            id="botonConfirmar"
+                            class="btn btn-principal"
+                            disabled
+                            th:disabled="${!recetaSeleccionada.vigente()}">
+
+                        Confirmar despacho
+
+                    </button>
+
+
+                    <div id="resultadoVistaPrevia"
+                         role="status"
+                         aria-live="polite"
+                         style="
+             width: 100%;
+             font-size: 17px;
+             font-weight: 700;
+             margin-top: 10px;
+         ">
+
+                        Calcule el total antes de confirmar el despacho.
+
+                    </div>
+
+
+                    <span class="contador">
+        El monto se calcula en el backend
+        y se valida nuevamente al confirmar.
+    </span>
+
+                </div>
+
+
+            </form>
+
+        </div>
+
+    </section>
+
+
+    <!-- ================================================= -->
+    <!-- FA03 - NO ADQUIRIDO -->
+    <!-- ================================================= -->
+
+    <section class="panel" id="no-adquirido">
+
+        <div class="panel-cabecera">
+
+            <h2>📋 Paciente no adquiere medicamentos</h2>
+
+            <p>
+                Registra cuando el paciente decide no adquirir
+                los medicamentos, sin descontar inventario
+                ni crear detalles de entrega.
+            </p>
+
+        </div>
+
+
+        <div class="panel-contenido">
+
+            <!-- ========================================= -->
+            <!-- SI NO EXISTE RECETA SELECCIONADA -->
+            <!-- ========================================= -->
+
+            <div class="sin-seleccion"
+                 th:if="${recetaSeleccionada == null}">
+
+                <div class="icono">📄</div>
+
+                <strong>Primero selecciona una receta</strong>
+
+                Busca una receta médica para habilitar
+                el registro de No adquirido.
+
+            </div>
+
+
+            <!-- ========================================= -->
+            <!-- FORMULARIO -->
+            <!-- ========================================= -->
+
+            <form id="formNoAdquirido"
+                  th:if="${recetaSeleccionada != null}"
+                  th:action="@{/interno/farmacia/no-adquirido}"
+                  method="post">
+
+
+                <!-- TOKEN CSRF -->
+
+                <input type="hidden"
+                       th:name="${_csrf.parameterName}"
+                       th:value="${_csrf.token}">
+
+
+                <!-- CLAVE ÚNICA -->
+
+                <input type="hidden"
+                       name="claveOperacion"
+                       th:value="${claveOperacionNoAdquirido}">
+
+
+                <!-- ID DE RECETA -->
+
+                <input type="hidden"
+                       name="idReceta"
+                       th:value="${recetaSeleccionada.idReceta()}">
+
+
+                <div class="form-grid">
+
+                    <div class="campo">
+
+                        <label>
+                            Receta médica seleccionada
+                        </label>
+
+                        <input type="text"
+                               th:value="|Receta #${recetaSeleccionada.idReceta()}|"
+                               readonly>
+
+                    </div>
+
+
+                    <div class="campo campo-completo">
+
+                        <label for="observacionesNoAdquirido">
+                            Observaciones
+                        </label>
+
+                        <textarea
+                                id="observacionesNoAdquirido"
+                                name="observaciones"
+                                maxlength="1000"
+                                placeholder="Ejemplo: El paciente decidió no adquirir los medicamentos en esta visita."></textarea>
+
+                    </div>
+
+                </div>
+
+
+                <div class="acciones">
+
+                    <button type="submit"
+                            class="btn btn-advertencia"
+                            th:disabled="${!recetaSeleccionada.vigente()}">
+
+                        Registrar no adquirido
+
+                    </button>
+
+                </div>
+
+            </form>
+
+        </div>
+
+    </section>
+
+
+    <!-- ================================================= -->
+    <!-- PIE DE PÁGINA -->
+    <!-- ================================================= -->
+
+    <footer class="pie">
+
+        SANTOS · Sistema de Gestión Clínica
+        · CU-11 Farmacia
+
+    </footer>
+
+</main>
+
+
+<!-- ===================================================== -->
+<!-- JAVASCRIPT: PREPARAR LÍNEAS DEL DESPACHO -->
+<!-- ===================================================== -->
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+
+        const formulario =
+            document.getElementById("formConfirmar");
+
+        const contador =
+            document.getElementById("contadorMedicamentos");
+
+
+        // ================================================
+        // ACTUALIZAR ESTADO DE LAS FILAS
+        // ================================================
+
+
+        function actualizarFila(fila) {
+
+            const seleccion =
+                fila.querySelector(".seleccionar-med");
+
+            const cantidad =
+                fila.querySelector(".cantidad-entrega");
+
+            const medicamento =
+                fila.querySelector(".medicamento-entrega");
+
+            const razon =
+                fila.querySelector(".razon-sustitucion");
+
+            const sustitucion =
+                fila.querySelector(".activar-sustitucion");
+
+            const idOriginal =
+                Number(fila.dataset.idOriginal);
+
+            const controlado =
+                fila.dataset.controlado === "true";
+
+            const activa =
+                seleccion.checked && !seleccion.disabled;
+
+
+            // --------------------------------------------
+            // ESTADO VISUAL DE LA FILA
+            // --------------------------------------------
+
+            fila.classList.toggle(
+                "seleccionada",
+                activa
+            );
+
+
+            // --------------------------------------------
+            // PERMITIR SUSTITUCION SOLO SI CORRESPONDE
+            // --------------------------------------------
+
+            sustitucion.disabled =
+                !activa || controlado;
+
+            if (!activa || controlado) {
+                sustitucion.checked = false;
+            }
+
+
+            // --------------------------------------------
+            // RESTAURAR MEDICAMENTO ORIGINAL
+            // --------------------------------------------
+
+            if (!sustitucion.checked) {
+
+                medicamento.value =
+                    String(idOriginal);
+
+                razon.value = "";
+            }
+
+
+            // --------------------------------------------
+            // HABILITAR CAMPOS SEGUN SELECCION
+            // --------------------------------------------
+
+            cantidad.disabled = !activa;
+
+            medicamento.disabled = !activa;
+
+            medicamento.readOnly =
+                !activa
+                || !sustitucion.checked
+                || controlado;
+
+            razon.disabled =
+                !activa
+                || !sustitucion.checked;
+
+            razon.required =
+                activa && sustitucion.checked;
+
+
+            if (!activa) {
+                return;
+            }
+
+
+            // --------------------------------------------
+            // CANTIDAD MAXIMA
+            // --------------------------------------------
+
+            const idEntregado =
+                Number(medicamento.value);
+
+            const pendiente =
+                Number(fila.dataset.pendiente);
+
+            const stockOriginal =
+                Number(fila.dataset.stock);
+
+            let maximo = pendiente;
+
+            if (idOriginal === idEntregado) {
+
+                maximo = Math.min(
+                    pendiente,
+                    stockOriginal
+                );
+            }
+
+            cantidad.max = String(maximo);
+
+            // El backend verificara nuevamente
+            // el stock del medicamento realmente
+            // entregado y las reglas de seguridad.
+        }
+
+
+        // ================================================
+        // ACTUALIZAR CONTADOR
+        // ================================================
+
+        function actualizarContador() {
+
+            if (!formulario || !contador) {
+                return;
+            }
+
+            const seleccionados =
+                formulario.querySelectorAll(
+                    ".seleccionar-med:checked"
+                ).length;
+
+
+            contador.textContent =
+                "Medicamentos seleccionados: "
+                + seleccionados;
+        }
+
+
+        // ================================================
+        // GENERAR CAMPO OCULTO PARA SPRING MVC
+        // ================================================
+
+        function agregarCampo(
+            contenedor,
+            nombre,
+            valor
+        ) {
+
+            const campo =
+                document.createElement("input");
+
+            campo.type = "hidden";
+
+            campo.name = nombre;
+
+            campo.value = valor;
+
+            contenedor.appendChild(campo);
+        }
+
+
+        // ================================================
+        // FORMULARIO DE DESPACHO
+        // ================================================
+
+        if (formulario) {
+
+            const filas =
+                formulario.querySelectorAll(
+                    ".linea-medicamento"
+                );
+
+
+            // --------------------------------------------
+            // ACTIVAR Y DESACTIVAR CAMPOS
+            // --------------------------------------------
+
+            filas.forEach(function (fila) {
+
+                const seleccion =
+                    fila.querySelector(".seleccionar-med");
+
+                const medicamento =
+                    fila.querySelector(".medicamento-entrega");
+
+                const sustitucion =
+                    fila.querySelector(".activar-sustitucion");
+
+                sustitucion.addEventListener(
+                    "change",
+                    function () {
+                        actualizarFila(fila);
+                    }
+                );
+
+
+                seleccion.addEventListener(
+                    "change",
+                    function () {
+
+                        actualizarFila(fila);
+
+                        actualizarContador();
+                    }
+                );
+
+
+                medicamento.addEventListener(
+                    "input",
+                    function () {
+
+                        actualizarFila(fila);
+                    }
+                );
+
+
+                actualizarFila(fila);
+            });
+
+
+            actualizarContador();
+
+
+
+            // ================================================
+            // CU-11 - VISTA PREVIA DEL MONTO DESDE EL BACKEND
+            // ================================================
+
+            const botonCalcularTotal =
+                document.getElementById("botonCalcularTotal");
+
+            const botonConfirmarDespacho =
+                document.getElementById("botonConfirmar");
+
+            const resultadoVistaPrevia =
+                document.getElementById("resultadoVistaPrevia");
+
+            let revisionFormulario = 0;
+
+
+            // ------------------------------------------------
+            // NO CONFIRMAR SIN CONSULTAR PRIMERO EL TOTAL
+            // ------------------------------------------------
+
+            if (botonConfirmarDespacho) {
+                botonConfirmarDespacho.disabled = true;
+            }
+
+
+            // ------------------------------------------------
+            // INVALIDAR TOTAL SI CAMBIAN LOS DATOS
+            // ------------------------------------------------
+
+            function invalidarVistaPrevia() {
+
+                revisionFormulario++;
+
+                if (botonConfirmarDespacho) {
+                    botonConfirmarDespacho.disabled = true;
+                }
+
+                if (resultadoVistaPrevia) {
+                    resultadoVistaPrevia.textContent =
+                        "Los datos cambiaron. Calcule nuevamente el total.";
+                }
+            }
+
+            formulario.addEventListener(
+                "input",
+                invalidarVistaPrevia
+            );
+
+            formulario.addEventListener(
+                "change",
+                invalidarVistaPrevia
+            );
+
+
+            // ------------------------------------------------
+            // CALCULAR TOTAL EN SPRING BOOT
+            // ------------------------------------------------
+
+            if (botonCalcularTotal && resultadoVistaPrevia) {
+
+                botonCalcularTotal.addEventListener(
+                    "click",
+                    async function () {
+
+                        botonCalcularTotal.disabled = true;
+
+                        if (botonConfirmarDespacho) {
+                            botonConfirmarDespacho.disabled = true;
+                        }
+
+                        resultadoVistaPrevia.textContent =
+                            "Calculando total en el servidor...";
+
+                        const revisionActual = revisionFormulario;
+
+                        try {
+
+                            const csrf =
+                                formulario.querySelector(
+                                    'input[name="_csrf"]'
+                                );
+
+                            const receta =
+                                formulario.querySelector(
+                                    'input[name="idReceta"]'
+                                );
+
+                            const clave =
+                                formulario.querySelector(
+                                    'input[name="claveOperacion"]'
+                                );
+
+                            if (!csrf || !receta || !clave) {
+                                throw new Error(
+                                    "Faltan datos obligatorios del formulario."
+                                );
+                            }
+
+
+                            // --------------------------------
+                            // PREPARAR DATOS PARA SPRING MVC
+                            // --------------------------------
+
+                            const datos = new URLSearchParams();
+
+                            datos.set("idReceta", receta.value);
+
+                            datos.set(
+                                "claveOperacion",
+                                clave.value
+                            );
+
+                            datos.set(
+                                "observaciones",
+                                formulario.querySelector(
+                                    '[name="observaciones"]'
+                                )?.value || ""
+                            );
+
+                            datos.set(csrf.name, csrf.value);
+
+
+                            const seleccionadas =
+                                Array.from(
+                                    formulario.querySelectorAll(
+                                        ".linea-medicamento"
+                                    )
+                                ).filter(function (fila) {
+
+                                    return fila.querySelector(
+                                        ".seleccionar-med"
+                                    ).checked;
+                                });
+
+                            if (seleccionadas.length === 0) {
+                                throw new Error(
+                                    "Seleccione al menos un medicamento."
+                                );
+                            }
+
+
+                            seleccionadas.forEach(function (fila, indice) {
+
+                                const prefijo =
+                                    "medicamentos[" + indice + "].";
+
+                                datos.set(
+                                    prefijo + "idDetalleReceta",
+                                    fila.dataset.idDetalle
+                                );
+
+                                datos.set(
+                                    prefijo + "idMedicamentoEntregado",
+                                    fila.querySelector(
+                                        ".medicamento-entrega"
+                                    ).value
+                                );
+
+                                datos.set(
+                                    prefijo + "cantidadEntregada",
+                                    fila.querySelector(
+                                        ".cantidad-entrega"
+                                    ).value
+                                );
+
+                                datos.set(
+                                    prefijo + "razonSustitucion",
+                                    fila.querySelector(
+                                        ".razon-sustitucion"
+                                    ).value
+                                );
+
+                                datos.set(
+                                    prefijo + "sustitucionSolicitada",
+                                    String(
+                                        fila.querySelector(
+                                            ".activar-sustitucion"
+                                        ).checked
+                                    )
+                                );
+                            });
+
+
+                            // --------------------------------
+                            // SOLICITAR CÁLCULO AL BACKEND
+                            // --------------------------------
+
+                            const respuesta = await fetch(
+                                "/interno/farmacia/vista-previa",
+                                {
+                                    method: "POST",
+                                    credentials: "same-origin",
+                                    body: datos
+                                }
+                            );
+
+                            const tipoRespuesta =
+                                respuesta.headers.get("content-type") || "";
+
+                            if (!tipoRespuesta.includes("application/json")) {
+                                throw new Error(
+                                    "No se recibió una respuesta válida. " +
+                                    "Compruebe que la sesión esté activa."
+                                );
+                            }
+
+                            const resultado = await respuesta.json();
+
+
+                            // Si cambiaron los datos durante la
+                            // consulta, descartamos el cálculo anterior.
+
+                            if (revisionActual !== revisionFormulario) {
+                                resultadoVistaPrevia.textContent =
+                                    "Los datos cambiaron. Calcule nuevamente.";
+                                return;
+                            }
+
+
+                            if (!respuesta.ok) {
+                                throw new Error(
+                                    resultado.error ||
+                                    "El servidor rechazó la solicitud."
+                                );
+                            }
+
+
+                            if (!resultado.total) {
+                                throw new Error(
+                                    "El servidor no devolvió el monto."
+                                );
+                            }
+
+
+                            // --------------------------------
+                            // MOSTRAR MONTO DEL BACKEND
+                            // --------------------------------
+
+                            resultadoVistaPrevia.textContent =
+                                "Total del Despacho: Q" + resultado.total;
+
+                            if (botonConfirmarDespacho) {
+                                botonConfirmarDespacho.disabled = false;
+                            }
+
+                        } catch (error) {
+
+                            resultadoVistaPrevia.textContent =
+                                "No se pudo calcular: " + error.message;
+
+                        } finally {
+
+                            botonCalcularTotal.disabled = false;
+                        }
+                    }
+                );
+            }
+
+
+
+            // --------------------------------------------
+            // PREPARAR MEDICAMENTOS SELECCIONADOS
+            // --------------------------------------------
+
+            formulario.addEventListener(
+                "submit",
+                function (evento) {
+
+                    const contenedor =
+                        document.getElementById(
+                            "camposGenerados"
+                        );
+
+
+                    // Eliminar campos de un intento
+                    // anterior que no llegó a enviarse.
+
+                    contenedor.replaceChildren();
+
+
+                    const seleccionadas =
+                        Array.from(
+                            formulario.querySelectorAll(
+                                ".linea-medicamento"
+                            )
+                        ).filter(function (fila) {
+
+                            return fila.querySelector(
+                                ".seleccionar-med"
+                            ).checked;
+                        });
+
+
+                    // ------------------------------------
+                    // EXIGIR AL MENOS UN MEDICAMENTO
+                    // ------------------------------------
+
+                    if (seleccionadas.length === 0) {
+
+                        evento.preventDefault();
+
+                        alert(
+                            "Selecciona al menos un medicamento."
+                        );
+
+                        return;
+                    }
+
+
+                    // ------------------------------------
+                    // VALIDAR Y GENERAR LÍNEAS
+                    // ------------------------------------
+
+                    for (
+                        let indice = 0;
+                        indice < seleccionadas.length;
+                        indice++
+                    ) {
+
+                        const fila =
+                            seleccionadas[indice];
+
+
+                        const idDetalle =
+                            Number(
+                                fila.dataset.idDetalle
+                            );
+
+
+                        const idOriginal =
+                            Number(
+                                fila.dataset.idOriginal
+                            );
+
+
+                        const idEntregado =
+                            Number(
+                                fila.querySelector(
+                                    ".medicamento-entrega"
+                                ).value
+                            );
+
+
+                        const cantidad =
+                            Number(
+                                fila.querySelector(
+                                    ".cantidad-entrega"
+                                ).value
+                            );
+
+
+                        const pendiente =
+                            Number(
+                                fila.dataset.pendiente
+                            );
+
+
+                        const stockOriginal =
+                            Number(
+                                fila.dataset.stock
+                            );
+
+
+                        const razon =
+                            fila.querySelector(
+                                ".razon-sustitucion"
+                            ).value.trim();
+
+
+                        // --------------------------------
+                        // VALIDAR IDENTIFICADORES
+                        // --------------------------------
+
+                        if (!Number.isInteger(idDetalle)
+                            || idDetalle <= 0
+                            || !Number.isInteger(idEntregado)
+                            || idEntregado <= 0) {
+
+                            evento.preventDefault();
+
+                            alert(
+                                "Selecciona un medicamento válido."
+                            );
+
+                            return;
+                        }
+
+
+                        // --------------------------------
+                        // CANTIDAD POSITIVA Y PENDIENTE
+                        // --------------------------------
+
+                        if (!Number.isInteger(cantidad)
+                            || cantidad <= 0
+                            || cantidad > pendiente) {
+
+                            evento.preventDefault();
+
+                            alert(
+                                "La cantidad debe ser mayor a cero "
+                                + "y no superar las unidades pendientes."
+                            );
+
+                            return;
+                        }
+
+
+                        // --------------------------------
+                        // INVENTARIO DEL PRODUCTO ORIGINAL
+                        // --------------------------------
+
+                        if (idOriginal === idEntregado
+                            && cantidad > stockOriginal) {
+
+                            evento.preventDefault();
+
+                            alert(
+                                "El medicamento original no tiene "
+                                + "existencias suficientes."
+                            );
+
+                            return;
+                        }
+
+
+
+                        const sustitucionMarcada =
+                            fila.querySelector(
+                                ".activar-sustitucion"
+                            ).checked;
+
+
+// --------------------------------
+// VALIDAR COHERENCIA DE SUSTITUCION
+// --------------------------------
+
+                        if (sustitucionMarcada
+                            && idOriginal === idEntregado) {
+
+                            evento.preventDefault();
+
+                            alert(
+                                "Selecciona un medicamento alternativo " +
+                                "diferente del medicamento recetado."
+                            );
+
+                            return;
+                        }
+
+
+                        if (!sustitucionMarcada
+                            && idOriginal !== idEntregado) {
+
+                            evento.preventDefault();
+
+                            alert(
+                                "Debes marcar la casilla de sustitución " +
+                                "para entregar otro medicamento."
+                            );
+
+                            return;
+                        }
+
+
+                        // --------------------------------
+                        // SUSTITUCIÓN
+                        // --------------------------------
+
+                        if (idOriginal !== idEntregado
+                            && razon.length === 0) {
+
+                            evento.preventDefault();
+
+                            alert(
+                                "Indica la razón de sustitución."
+                            );
+
+                            return;
+                        }
+
+
+                        if (idOriginal === idEntregado
+                            && razon.length > 0) {
+
+                            evento.preventDefault();
+
+                            alert(
+                                "La razón de sustitución debe "
+                                + "estar vacía si entregas "
+                                + "el medicamento original."
+                            );
+
+                            return;
+                        }
+
+
+                        // --------------------------------
+                        // NOMBRES ESPERADOS POR EL DTO
+                        // --------------------------------
+
+                        const prefijo =
+                            "medicamentos["
+                            + indice
+                            + "].";
+
+
+                        agregarCampo(
+                            contenedor,
+                            prefijo + "idDetalleReceta",
+                            idDetalle
+                        );
+
+
+                        agregarCampo(
+                            contenedor,
+                            prefijo + "idMedicamentoEntregado",
+                            idEntregado
+                        );
+
+
+                        agregarCampo(
+                            contenedor,
+                            prefijo + "cantidadEntregada",
+                            cantidad
+                        );
+
+
+
+                        agregarCampo(
+                            contenedor,
+                            prefijo + "razonSustitucion",
+                            razon
+                        );
+
+
+                        // --------------------------------
+                        // CU-11 FA02 - CASILLA DE SUSTITUCIÓN
+                        // --------------------------------
+                        //
+                        // Enviamos la decisión del farmacéutico.
+                        // El backend validará todos los datos.
+                        // --------------------------------
+
+                        agregarCampo(
+                            contenedor,
+                            prefijo + "sustitucionSolicitada",
+                            sustitucionMarcada
+                        );
+
+                    }
+
+
+                    // ------------------------------------
+                    // EVITAR DOBLE ENVÍO ACCIDENTAL
+                    // ------------------------------------
+
+
+                    const boton =
+                        document.getElementById(
+                            "botonConfirmar"
+                        );
+
+
+                    if (boton) {
+
+                        boton.disabled = true;
+
+                        boton.textContent =
+                            "Procesando despacho...";
+                    }
+                }
+            );
+        }
+
+
+        // ================================================
+        // EVITAR DOBLE CLIC EN NO ADQUIRIDO
+        // ================================================
+
+        const noAdquirido =
+            document.getElementById(
+                "formNoAdquirido"
+            );
+
+
+        if (noAdquirido) {
+
+            noAdquirido.addEventListener(
+                "submit",
+                function () {
+
+                    const boton =
+                        noAdquirido.querySelector(
+                            'button[type="submit"]'
+                        );
+
+
+                    if (boton) {
+
+                        boton.disabled = true;
+
+                        boton.textContent =
+                            "Registrando...";
+                    }
+                }
+            );
+        }
+
+    });
+</script>
+
+</body>
+</html>

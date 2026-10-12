@@ -6,7 +6,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#1B5FA6">
     <title>Panel interno | SANTOS</title>
+
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Crect width='24' height='24' rx='6' fill='%231B5FA6'/%3E%3Cpath d='M9 4h6v5h5v6h-5v5H9v-5H4V9h5z' fill='white'/%3E%3C/svg%3E">
 
     <!-- Bootstrap 5 e íconos -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
@@ -15,7 +18,7 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"
           rel="stylesheet">
 
-    <!-- Fuentes SANTOS -->
+    <!-- Fuente SANTOS -->
     <link rel="preconnect"
           href="https://fonts.googleapis.com">
 
@@ -23,7 +26,7 @@
           href="https://fonts.gstatic.com"
           crossorigin>
 
-    <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700&family=Figtree:wght@400;500;600&display=swap"
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
           rel="stylesheet">
 
     <!-- Tema SANTOS -->
@@ -33,6 +36,8 @@
 </head>
 
 <body>
+
+<a class="skip-link" href="#contenido">Saltar al contenido</a>
 
 
 <!-- =====================================================
@@ -99,7 +104,7 @@
                 <button type="submit"
                         class="btn btn-outline-secondary rounded-pill px-3">
 
-                    <i class="bi bi-box-arrow-right me-1"></i>
+                    <i class="bi bi-box-arrow-right me-1" aria-hidden="true"></i>
 
                     <span class="d-none d-sm-inline">
                         Cerrar sesión
@@ -154,69 +159,107 @@
 <!-- =====================================================
      CONTENIDO
      ===================================================== -->
-<main class="container py-5">
+<main id="contenido" class="container py-3 py-lg-4">
 
     <section aria-labelledby="titulo-modulos">
 
-        <div class="mb-4">
+        <div class="santos-seccion-titulo mb-3">
 
-            <h2 id="titulo-modulos"
-                class="h4 fw-bold mb-1">
+            <h2 id="titulo-modulos">
 
                 Módulos disponibles
 
             </h2>
 
-            <p class="text-secondary mb-0">
+            <p class="text-secondary">
                 Opciones habilitadas para su usuario.
             </p>
 
         </div>
 
 
-        <div class="row g-4">
+        <div class="santos-modulos">
+
 
 
             <!-- =================================================
-                 CU-01
-                 ADMINISTRADOR
+                 CU-01 - ADMINISTRADOR
+                 MANTENIMIENTO DE USUARIOS
                  ================================================= -->
-            <div class="col-md-6 col-xl-4"
-                 sec:authorize="hasRole('ADMINISTRADOR')">
+
+            <div sec:authorize="hasRole('ADMINISTRADOR')">
 
                 <div class="card santos-modulo h-100">
 
                     <div class="card-body p-4 d-flex flex-column">
 
                         <div class="santos-modulo-icono
-                                    bg-primary-subtle
-                                    text-primary">
+                        bg-primary-subtle
+                        text-primary">
 
-                            <i class="bi bi-people-fill"></i>
+                            <i class="bi bi-people-fill" aria-hidden="true"></i>
 
                         </div>
-
 
                         <h3 class="h5 fw-bold">
                             Mantenimiento de usuarios
                         </h3>
 
-
                         <p class="text-secondary">
-
-                            Consulte, cree, edite y administre
+                            Consulte, edite y administre
                             los usuarios internos registrados
                             en el sistema.
-
                         </p>
-
 
                         <a th:href="@{/admin/usuarios}"
                            class="btn btn-primary mt-auto">
 
-                            <i class="bi bi-person-gear me-2"></i>
-
+                            <i class="bi bi-person-gear me-2" aria-hidden="true"></i>
                             Administrar usuarios
+
+                        </a>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- =================================================
+                 CU-01 - ADMINISTRADOR
+                 REGISTRAR NUEVO USUARIO
+                 ================================================= -->
+
+            <div sec:authorize="hasRole('ADMINISTRADOR')">
+
+                <div class="card santos-modulo h-100">
+
+                    <div class="card-body p-4 d-flex flex-column">
+
+                        <div class="santos-modulo-icono
+                        bg-success-subtle
+                        text-success">
+
+                            <i class="bi bi-person-plus-fill" aria-hidden="true"></i>
+
+                        </div>
+
+                        <h3 class="h5 fw-bold">
+                            Registrar usuario
+                        </h3>
+
+                        <p class="text-secondary">
+                            Registre nuevos usuarios internos,
+                            asigne sus roles y configure
+                            la sucursal correspondiente.
+                        </p>
+
+                        <a th:href="@{/admin/usuarios/nuevo}"
+                           class="btn btn-success mt-auto">
+
+                            <i class="bi bi-person-plus-fill me-2" aria-hidden="true"></i>
+                            Registrar usuario
 
                         </a>
 
@@ -231,8 +274,7 @@
                  CU-05
                  RECEPCIONISTA
                  ================================================= -->
-            <div class="col-md-6 col-xl-4"
-                 sec:authorize="hasRole('RECEPCIONISTA')">
+            <div sec:authorize="hasRole('RECEPCIONISTA')">
 
                 <div class="card santos-modulo h-100">
 
@@ -242,7 +284,7 @@
                                     bg-success-subtle
                                     text-success">
 
-                            <i class="bi bi-person-check-fill"></i>
+                            <i class="bi bi-person-check-fill" aria-hidden="true"></i>
 
                         </div>
 
@@ -265,7 +307,7 @@
                         <a th:href="@{/interno/recepcion}"
                            class="btn btn-success mt-auto">
 
-                            <i class="bi bi-clipboard2-pulse me-2"></i>
+                            <i class="bi bi-clipboard2-pulse me-2" aria-hidden="true"></i>
 
                             Ir a Recepción
 
@@ -282,8 +324,7 @@
                  CU-06
                  CAJERO - COBRO DE CONSULTA
                  ================================================= -->
-            <div class="col-md-6 col-xl-4"
-                 sec:authorize="hasRole('CAJERO')">
+            <div sec:authorize="hasRole('CAJERO')">
 
                 <div class="card santos-modulo h-100">
 
@@ -293,7 +334,7 @@
                                     bg-warning-subtle
                                     text-warning-emphasis">
 
-                            <i class="bi bi-cash-coin"></i>
+                            <i class="bi bi-cash-coin" aria-hidden="true"></i>
 
                         </div>
 
@@ -315,7 +356,7 @@
                         <a th:href="@{/interno/caja}"
                            class="btn btn-warning mt-auto">
 
-                            <i class="bi bi-receipt me-2"></i>
+                            <i class="bi bi-receipt me-2" aria-hidden="true"></i>
 
                             Cobro de Consulta
 
@@ -332,8 +373,7 @@
                  CU-10
                  CAJERO - COBRO DE LABORATORIO
                  ================================================= -->
-            <div class="col-md-6 col-xl-4"
-                 sec:authorize="hasRole('CAJERO')">
+            <div sec:authorize="hasRole('CAJERO')">
 
                 <div class="card santos-modulo h-100">
 
@@ -343,7 +383,7 @@
                                     bg-info-subtle
                                     text-info-emphasis">
 
-                            <i class="bi bi-flask"></i>
+                            <i class="bi bi-flask" aria-hidden="true"></i>
 
                         </div>
 
@@ -371,7 +411,7 @@
                         <a th:href="@{/interno/caja/laboratorio}"
                            class="btn btn-info mt-auto">
 
-                            <i class="bi bi-cash-stack me-2"></i>
+                            <i class="bi bi-cash-stack me-2" aria-hidden="true"></i>
 
                             Cobrar Laboratorio
 
@@ -389,8 +429,7 @@
                  CU-07
                  ENFERMERO
                  ================================================= -->
-            <div class="col-md-6 col-xl-4"
-                 sec:authorize="hasRole('ENFERMERO')">
+            <div sec:authorize="hasRole('ENFERMERO')">
 
                 <div class="card santos-modulo h-100">
 
@@ -400,7 +439,7 @@
                                     bg-danger-subtle
                                     text-danger">
 
-                            <i class="bi bi-heart-pulse-fill"></i>
+                            <i class="bi bi-heart-pulse-fill" aria-hidden="true"></i>
 
                         </div>
 
@@ -423,7 +462,7 @@
                         <a th:href="@{/interno/enfermeria}"
                            class="btn btn-danger mt-auto">
 
-                            <i class="bi bi-heart-pulse me-2"></i>
+                            <i class="bi bi-heart-pulse me-2" aria-hidden="true"></i>
 
                             Ir a Enfermería
 
@@ -440,8 +479,7 @@
                  CU-08
                  MÉDICO
                  ================================================= -->
-            <div class="col-md-6 col-xl-4"
-                 sec:authorize="hasRole('MEDICO')">
+            <div sec:authorize="hasRole('MEDICO')">
 
                 <div class="card santos-modulo h-100">
 
@@ -451,7 +489,7 @@
                                     bg-info-subtle
                                     text-info-emphasis">
 
-                            <i class="bi bi-stethoscope"></i>
+                            <i class="bi bi-stethoscope" aria-hidden="true"></i>
 
                         </div>
 
@@ -475,7 +513,7 @@
                         <a th:href="@{/interno/medico}"
                            class="btn btn-info mt-auto">
 
-                            <i class="bi bi-stethoscope me-2"></i>
+                            <i class="bi bi-stethoscope me-2" aria-hidden="true"></i>
 
                             Ir a Consulta Médica
 
@@ -492,8 +530,7 @@
                  CU-09
                  LABORATORISTA
                  ================================================= -->
-            <div class="col-md-6 col-xl-4"
-                 sec:authorize="hasRole('LABORATORISTA')">
+            <div sec:authorize="hasRole('LABORATORISTA')">
 
                 <div class="card santos-modulo h-100">
 
@@ -503,7 +540,7 @@
                                     bg-success-subtle
                                     text-success">
 
-                            <i class="bi bi-flask-fill"></i>
+                            <i class="bi bi-flask-fill" aria-hidden="true"></i>
 
                         </div>
 
@@ -526,7 +563,7 @@
                         <a th:href="@{/interno/laboratorio}"
                            class="btn btn-success mt-auto">
 
-                            <i class="bi bi-clipboard2-pulse me-2"></i>
+                            <i class="bi bi-clipboard2-pulse me-2" aria-hidden="true"></i>
 
                             Ir a Laboratorio
 
@@ -539,23 +576,90 @@
             </div>
 
 
+
+            <!-- =================================================
+                 CU-11
+                 FARMACÉUTICO - DESPACHO DE MEDICAMENTOS
+                 ================================================= -->
+
+            <div sec:authorize="hasRole('FARMACEUTICO')">
+
+                <div class="card santos-modulo h-100">
+
+                    <div class="card-body p-4 d-flex flex-column">
+
+                        <!-- ICONO -->
+
+                        <div class="santos-modulo-icono
+                        bg-success-subtle
+                        text-success">
+
+                            <i class="bi bi-capsule" aria-hidden="true"></i>
+
+                        </div>
+
+
+                        <!-- TÍTULO -->
+
+                        <h3 class="h5 fw-bold">
+
+                            Farmacia
+
+                        </h3>
+
+
+                        <!-- DESCRIPCIÓN -->
+
+                        <p class="text-secondary">
+
+                            Consulte recetas médicas vigentes,
+                            verifique existencias, registre
+                            despachos de medicamentos,
+                            sustituciones y controle
+                            el inventario de su sucursal.
+
+                        </p>
+
+
+                        <!-- ACCESO A FARMACIA -->
+
+                        <a th:href="@{/interno/farmacia}"
+                           class="btn btn-success mt-auto">
+
+                            <i class="bi bi-capsule me-2" aria-hidden="true"></i>
+
+                            Ir a Farmacia
+
+                        </a>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+
             <!-- =================================================
                  ROLES SIN MÓDULO IMPLEMENTADO
                  ================================================= -->
-            <div class="col-12"
+            <div class="santos-modulos-aviso"
+
                  sec:authorize="!hasAnyRole(
-                    'ADMINISTRADOR',
-                    'RECEPCIONISTA',
-                    'CAJERO',
-                    'ENFERMERO',
-                    'MEDICO',
-                    'LABORATORISTA'
-                 )">
+    'ADMINISTRADOR',
+    'RECEPCIONISTA',
+    'CAJERO',
+    'ENFERMERO',
+    'MEDICO',
+    'LABORATORISTA',
+    'FARMACEUTICO'
+)"
+            >
 
                 <div class="alert santos-aviso"
                      role="alert">
 
-                    <i class="bi bi-info-circle-fill fs-4"></i>
+                    <i class="bi bi-info-circle-fill fs-4" aria-hidden="true"></i>
 
 
                     <div>
@@ -591,7 +695,7 @@
      ===================================================== -->
 <footer class="santos-pie">
 
-    <div class="container py-4 text-center small">
+    <div class="container py-3 text-center small">
 
         <strong>SANTOS</strong>
         · Sistema de clínica médica

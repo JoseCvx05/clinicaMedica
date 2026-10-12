@@ -1,113 +1,309 @@
-/* ============================================================
-   SANTOS · Tema para vistas internas (sobre Bootstrap 5.3)
-   Reutilizable en todas las vistas internas que usen Bootstrap.
-   ============================================================ */
+/* =========================================================
+   SANTOS · Panel interno
+   Tema sobre Bootstrap 5.3 (debe cargarse DESPUÉS de Bootstrap).
+   Layout de una sola pantalla: la página mide como mínimo el
+   alto del viewport y solo hace scroll si los módulos del rol
+   realmente no caben.
+   ========================================================= */
+
 :root {
-    --santos-900: #0a3d3a;
-    --santos-700: #0d5c57;
-    --santos-500: #14837b;
-    --santos-100: #dcefed;
-    --santos-fondo: #f2f7f6;
-    --santos-linea: #d5e2e1;
-    --santos-ambar: #f0b04a;
+    --bs-body-font-family: 'Plus Jakarta Sans', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+    --bs-body-color: #0f172a;
+    --bs-body-bg: #f8fafc;
+    --bs-secondary-color: #475569;
+    --bs-border-color: #cbd5e1;
 
-    /* Sobrescribe el color primario de Bootstrap */
-    --bs-primary: #0d5c57;
-    --bs-primary-rgb: 13, 92, 87;
-    --bs-primary-text-emphasis: #0a3d3a;
-    --bs-primary-bg-subtle: #dcefed;
-    --bs-primary-border-subtle: #a9d3cf;
-    --bs-link-color: #0d5c57;
-    --bs-link-hover-color: #0a3d3a;
-    --bs-body-font-family: "Figtree", "Segoe UI", system-ui, sans-serif;
-    --bs-body-color: #14272a;
-    --bs-body-bg: #f2f7f6;
-    --bs-focus-ring-color: rgba(240, 176, 74, .45);
-}
+    --bs-primary: #1b5fa6;
+    --bs-primary-rgb: 27, 95, 166;
+    --bs-success-rgb: 15, 118, 110;
+    --bs-danger-rgb: 185, 28, 28;
+    --bs-link-color: #124a85;
 
-h1, h2, h3, h4, h5, h6, .navbar-brand {
-    font-family: "Bricolage Grotesque", "Segoe UI", system-ui, sans-serif;
-    letter-spacing: -0.01em;
-}
+    /* Fondos suaves e iconos de los módulos (se usan las clases de Bootstrap del HTML) */
+    --bs-primary-bg-subtle: #eaf2fb;
+    --bs-success-bg-subtle: #e6f6f3;
+    --bs-warning-bg-subtle: #fef3c7;
+    --bs-info-bg-subtle: #e0f2fe;
+    --bs-danger-bg-subtle: #fee2e2;
+    --bs-warning-text-emphasis: #78350f;
+    --bs-info-text-emphasis: #075985;
 
-/* Botón primario con el verde SANTOS */
-.btn-primary {
-    --bs-btn-bg: #0d5c57;
-    --bs-btn-border-color: #0d5c57;
-    --bs-btn-hover-bg: #0a3d3a;
-    --bs-btn-hover-border-color: #0a3d3a;
-    --bs-btn-active-bg: #0a3d3a;
-    --bs-btn-active-border-color: #0a3d3a;
-    --bs-btn-disabled-bg: #0d5c57;
-    --bs-btn-disabled-border-color: #0d5c57;
-}
-.btn { border-radius: 999px; font-weight: 600; padding-block: .6rem; }
-.btn:focus-visible { outline: 3px solid var(--santos-ambar); outline-offset: 2px; box-shadow: none; }
-
-/* ---------- Barra superior ---------- */
-.santos-navbar {
-    background: #fff;
-    border-bottom: 1px solid var(--santos-linea);
-    padding-block: .6rem;
-}
-.santos-marca { display: flex; align-items: center; gap: .6rem; font-weight: 700; font-size: 1.3rem; letter-spacing: .05em; color: var(--santos-900); }
-.santos-marca:hover { color: var(--santos-700); }
-.santos-simbolo {
-    display: grid; place-items: center; width: 38px; height: 38px;
-    background: var(--santos-700); color: #fff; border-radius: 11px; font-size: 1.15rem;
-}
-.santos-avatar {
-    display: grid; place-items: center; width: 38px; height: 38px;
-    border-radius: 50%; background: var(--santos-100); color: var(--santos-700); font-size: 1.2rem;
+    --sa-ink: #0f172a;
+    --sa-muted: #475569;
+    --sa-line: #e2e8f0;
+    --sa-line-strong: #cbd5e1;
+    --sa-blue: #1b5fa6;
+    --sa-blue-tint: #eaf2fb;
+    --sa-blue-line: #c7dbf0;
+    --sa-teal: #0f766e;
+    --sa-teal-tint: #e6f6f3;
+    --sa-ease: cubic-bezier(0.23, 1, 0.32, 1);
 }
 
-/* ---------- Bienvenida ---------- */
-.santos-bienvenida {
-    background: var(--santos-900);
-    color: #fff;
-    padding: clamp(2rem, 5vw, 3.2rem) 0;
-    position: relative; overflow: hidden;
-}
-.santos-bienvenida::after {
-    content: ""; position: absolute; right: -70px; bottom: -90px;
-    width: 300px; height: 300px; background: #fff; opacity: .06;
-    clip-path: polygon(35% 0,65% 0,65% 35%,100% 35%,100% 65%,65% 65%,65% 100%,35% 100%,35% 65%,0 65%,0 35%,35% 35%);
-    pointer-events: none;
-}
-.santos-bienvenida .container { position: relative; z-index: 1; }
-.santos-bienvenida h1 { font-size: clamp(1.8rem, 4vw, 2.6rem); font-weight: 700; margin: .8rem 0 .5rem; }
-.santos-bienvenida p { margin: 0; color: #cde3e1; max-width: 55ch; }
-.santos-etiqueta {
-    display: inline-block; padding: .2rem .8rem; border-radius: 999px;
-    background: rgba(255,255,255,.14); font-size: .85rem; font-weight: 600;
-}
+/* ---------- Base: pantalla completa, pie al fondo ---------- */
+html, body { min-height: 100dvh; }
 
-/* ---------- Tarjetas de módulo ---------- */
-.santos-modulo {
-    border: 1px solid var(--santos-linea);
-    border-radius: 16px;
+body {
+    display: flex;
+    flex-direction: column;
+    color: var(--sa-ink);
+    background: var(--bs-body-bg);
+    -webkit-font-smoothing: antialiased;
+}
+body > main { flex: 1 0 auto; }
+
+h1, h2, h3 { color: var(--sa-ink); letter-spacing: -0.02em; text-wrap: balance; }
+p { text-wrap: pretty; }
+.text-secondary { color: var(--sa-muted) !important; }
+
+:where(a, button):focus-visible {
+    outline: 3px solid var(--sa-teal);
+    outline-offset: 2px;
     box-shadow: none;
-    transition: border-color .15s, transform .15s;
 }
-.santos-modulo:hover { border-color: var(--santos-500); transform: translateY(-2px); }
+
+.skip-link {
+    position: absolute;
+    left: 16px;
+    top: -64px;
+    z-index: 2000;
+    padding: 10px 16px;
+    border-radius: 10px;
+    background: var(--sa-ink);
+    color: #fff;
+    font-weight: 600;
+    text-decoration: none;
+}
+.skip-link:focus { top: 12px; color: #fff; }
+
+/* ---------- Barra superior (compacta) ---------- */
+.santos-navbar {
+    min-height: 64px;
+    padding-block: 8px;
+    background: rgba(255, 255, 255, 0.92);
+    backdrop-filter: saturate(160%) blur(10px);
+    -webkit-backdrop-filter: saturate(160%) blur(10px);
+    border-bottom: 1px solid var(--sa-line);
+}
+
+.santos-marca {
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+    margin: 0;
+    font-size: 1.15rem;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    color: var(--sa-ink);
+}
+.santos-simbolo {
+    display: grid;
+    place-items: center;
+    width: 40px;
+    height: 40px;
+    border-radius: 13px;
+    background: var(--sa-blue);
+    color: #fff;
+    font-size: 1.2rem;
+}
+
+.santos-avatar {
+    display: grid;
+    place-items: center;
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    background: var(--sa-teal-tint);
+    color: var(--sa-teal);
+    font-size: 1.1rem;
+}
+
+/* ---------- Botones ---------- */
+.btn {
+    --bs-btn-border-radius: 12px;
+    --bs-btn-font-weight: 600;
+    --bs-btn-disabled-opacity: 1;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 44px;
+    transition: background-color 160ms var(--sa-ease), border-color 160ms var(--sa-ease),
+    color 160ms var(--sa-ease), transform 120ms var(--sa-ease);
+}
+.btn:active { transform: scale(0.97); }
+
+.btn-outline-secondary {
+    --bs-btn-color: #334155;
+    --bs-btn-border-color: #cbd5e1;
+    --bs-btn-hover-bg: #f1f5f9;
+    --bs-btn-hover-border-color: #94a3b8;
+    --bs-btn-hover-color: #0f172a;
+    --bs-btn-active-bg: #e2e8f0;
+    --bs-btn-active-border-color: #94a3b8;
+    --bs-btn-active-color: #0f172a;
+}
+.btn-primary {
+    --bs-btn-bg: #1b5fa6;
+    --bs-btn-border-color: #1b5fa6;
+    --bs-btn-color: #fff;
+    --bs-btn-hover-bg: #124a85;
+    --bs-btn-hover-border-color: #124a85;
+    --bs-btn-hover-color: #fff;
+    --bs-btn-active-bg: #0d3a6b;
+    --bs-btn-active-border-color: #0d3a6b;
+    --bs-btn-active-color: #fff;
+}
+
+/* ---------- Bienvenida (franja compacta) ---------- */
+.santos-bienvenida {
+    padding-block: 18px;
+    background:
+            radial-gradient(50% 140% at 100% 0%, rgba(15, 118, 110, 0.09), transparent 70%),
+            #ffffff;
+    border-bottom: 1px solid var(--sa-line);
+}
+.santos-bienvenida .container {
+    display: grid;
+    grid-template-columns: 1fr minmax(240px, 440px);
+    column-gap: 32px;
+    align-items: end;
+}
+.santos-etiqueta {
+    grid-column: 1;
+    justify-self: start;
+    margin-bottom: 8px;
+    padding: 4px 12px;
+    border-radius: 999px;
+    background: var(--sa-teal-tint);
+    color: #0f5c55;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+.santos-bienvenida h1 {
+    grid-column: 1;
+    margin: 0;
+    font-size: clamp(1.5rem, 2.8vw, 2.1rem);
+    font-weight: 800;
+    line-height: 1.15;
+    letter-spacing: -0.03em;
+}
+.santos-bienvenida h1 span { color: var(--sa-blue); }
+.santos-bienvenida p {
+    grid-column: 2;
+    grid-row: 1 / span 2;
+    align-self: end;
+    margin: 0;
+    color: var(--sa-muted);
+    font-size: 0.97rem;
+}
+
+/* ---------- Contenido ---------- */
+.santos-seccion-titulo {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 4px 16px;
+}
+.santos-seccion-titulo h2 { margin: 0; font-size: 1.2rem; font-weight: 800; }
+.santos-seccion-titulo p { margin: 0; font-size: 0.93rem; }
+
+/* Rejilla de módulos: tarjetas de ancho acotado que se acomodan según el espacio */
+.santos-modulos {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 400px));
+    justify-content: start;
+    gap: 18px;
+}
+.santos-modulos > * { min-width: 0; }
+.santos-modulos-aviso { grid-column: 1 / -1; }
+
+.santos-modulo,
+.card.santos-modulo {
+    border: 1px solid var(--sa-line);
+    border-radius: 20px;
+    background: #ffffff;
+    transition: transform 200ms var(--sa-ease), border-color 200ms var(--sa-ease), box-shadow 200ms var(--sa-ease);
+    animation: sa-aparecer 380ms var(--sa-ease) backwards;
+}
+.santos-modulos > :nth-child(2) .santos-modulo { animation-delay: 50ms; }
+.santos-modulos > :nth-child(3) .santos-modulo { animation-delay: 100ms; }
+.santos-modulos > :nth-child(n+4) .santos-modulo { animation-delay: 150ms; }
+
+@media (hover: hover) and (pointer: fine) {
+    .santos-modulo:hover {
+        transform: translateY(-3px);
+        border-color: var(--sa-line-strong);
+        box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04), 0 12px 28px -14px rgba(27, 95, 166, 0.22);
+    }
+}
+@keyframes sa-aparecer {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: none; }
+}
+
+.santos-modulo .card-body { padding: 1.35rem !important; }
+.santos-modulo h3 { margin-bottom: 6px; font-size: 1.08rem; font-weight: 800; }
+.santos-modulo p { margin-bottom: 16px; font-size: 0.93rem; line-height: 1.5; }
+
 .santos-modulo-icono {
-    display: grid; place-items: center;
-    width: 60px; height: 60px; border-radius: 16px;
-    font-size: 1.7rem; margin-bottom: 1.2rem;
+    display: grid;
+    place-items: center;
+    width: 46px;
+    height: 46px;
+    margin-bottom: 12px;
+    border-radius: 14px;
+    font-size: 1.3rem;
 }
 
-/* ---------- Aviso ---------- */
+/* Todos los botones de módulo comparten el estilo principal, sin importar su variante */
+.santos-modulo .btn {
+    --bs-btn-bg: #1b5fa6;
+    --bs-btn-border-color: #1b5fa6;
+    --bs-btn-color: #ffffff;
+    --bs-btn-hover-bg: #124a85;
+    --bs-btn-hover-border-color: #124a85;
+    --bs-btn-hover-color: #ffffff;
+    --bs-btn-active-bg: #0d3a6b;
+    --bs-btn-active-border-color: #0d3a6b;
+    --bs-btn-active-color: #ffffff;
+    width: 100%;
+}
+
+/* ---------- Aviso sin módulos ---------- */
 .santos-aviso {
-    display: flex; gap: 1rem; align-items: flex-start;
-    background: #fff; border: 1px dashed var(--santos-500);
-    border-radius: 14px; color: var(--santos-900);
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+    padding: 18px 20px;
+    border: 1px solid var(--sa-blue-line);
+    border-left: 4px solid var(--sa-blue);
+    border-radius: 14px;
+    background: var(--sa-blue-tint);
+    color: #0f2f52;
+}
+.santos-aviso .bi { color: var(--sa-blue); }
+.santos-aviso h3 { color: #0f2f52; }
+
+/* ---------- Pie compacto ---------- */
+.santos-pie {
+    flex-shrink: 0;
+    background: #ffffff;
+    border-top: 1px solid var(--sa-line);
+    color: var(--sa-muted);
+}
+.santos-pie strong { color: var(--sa-ink); letter-spacing: 0.08em; }
+
+/* ---------- Responsivo ---------- */
+@media (max-width: 767.98px) {
+    .santos-bienvenida .container { grid-template-columns: 1fr; row-gap: 6px; }
+    .santos-bienvenida p { grid-column: 1; grid-row: auto; }
+    .santos-modulos { grid-template-columns: 1fr; }
 }
 
-/* ---------- Pie ---------- */
-.santos-pie { background: #14272a; color: #c3d2d3; margin-top: 3rem; }
-.santos-pie strong { color: #fff; letter-spacing: .05em; }
-
+/* ---------- Movimiento reducido ---------- */
 @media (prefers-reduced-motion: reduce) {
-    .santos-modulo { transition: none; }
-    .santos-modulo:hover { transform: none; }
+    .santos-modulo { animation: none; }
+    .santos-modulo:hover, .btn:active { transform: none; }
 }

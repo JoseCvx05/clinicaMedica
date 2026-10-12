@@ -4,11 +4,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#1B5FA6">
     <title>Acceso interno | SANTOS</title>
+
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Crect width='24' height='24' rx='6' fill='%231B5FA6'/%3E%3Cpath d='M9 4h6v5h5v6h-5v5H9v-5H4V9h5z' fill='white'/%3E%3C/svg%3E">
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700&family=Figtree:wght@400;500;600&display=swap"
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
           rel="stylesheet">
 
     <link rel="stylesheet" th:href="@{/css/login-interno.css}" href="/css/login-interno.css">
@@ -62,7 +65,9 @@
                 <label for="nombreUsuario">Nombre de usuario</label>
 
                 <input type="text" id="nombreUsuario" name="nombreUsuario"
-                       autocomplete="username" minlength="8" maxlength="9" required>
+                       autocomplete="username" autocapitalize="off" spellcheck="false"
+                       aria-describedby="errorNombreUsuario"
+                       minlength="8" maxlength="9" required>
 
                 <small id="errorNombreUsuario" class="field-error" aria-live="polite"></small>
             </div>
@@ -73,7 +78,8 @@
 
                 <div class="password-container">
                     <input type="password" id="contrasena" name="contrasena"
-                           autocomplete="current-password" required>
+                           autocomplete="current-password"
+                           aria-describedby="errorContrasena" required>
 
                     <button type="button" id="btnMostrarContrasena"
                             class="btn-password" aria-label="Mostrar contraseña">

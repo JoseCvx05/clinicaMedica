@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="es"
       xmlns:th="http://www.thymeleaf.org">
@@ -11,7 +12,11 @@
 
     <meta name="theme-color" content="#1B5FA6">
 
+    <meta name="description" content="Portal del paciente de la Clínica médica SANTOS: agende y consulte sus citas médicas.">
+
     <title>Portal del Paciente | SANTOS Clínica médica</title>
+
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Crect width='24' height='24' rx='6' fill='%231B5FA6'/%3E%3Cpath d='M9 4h6v5h5v6h-5v5H9v-5H4V9h5z' fill='white'/%3E%3C/svg%3E">
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -25,6 +30,8 @@
 </head>
 
 <body>
+
+<a class="skip-link" href="#contenido">Saltar al contenido</a>
 
 <!-- ======================================================
      ENCABEZADO
@@ -106,7 +113,7 @@
 <!-- ======================================================
      CONTENIDO PRINCIPAL
      ====================================================== -->
-<main>
+<main id="contenido">
 
     <!-- ==================================================
          BIENVENIDA
@@ -221,6 +228,60 @@
                        class="btn-primary">
 
                         Ver Mis Citas
+
+                    </a>
+
+                </article>
+
+
+                <!-- ======================================
+                     CU-11 - MIS MEDICAMENTOS
+                     ====================================== -->
+                <!--
+                    Permite al paciente autenticado
+                    consultar los medicamentos entregados
+                    en Farmacia interna.
+
+                    El historial se obtiene mediante
+                    PacienteMedicamentosService.
+
+                    La consulta utiliza el paciente
+                    autenticado y solo incluye
+                    despachos CONFIRMADOS.
+
+                    Este enlace no modifica inventario,
+                    recetas, citas ni despachos.
+                -->
+                <article class="service-card">
+
+                    <div class="service-icon" aria-hidden="true">
+
+                        <!-- Icono de medicamento -->
+                        <svg viewBox="0 0 24 24">
+
+                            <path d="M10.5 4.5a5 5 0 0 1 7.1 7.1l-6 6a5 5 0 0 1-7.1-7.1z"/>
+
+                            <path d="M8.5 9.5l6 6"/>
+
+                        </svg>
+
+                    </div>
+
+                    <h3>
+                        Mis medicamentos
+                    </h3>
+
+                    <p>
+                        Consulte los medicamentos recibidos
+                        en Farmacia, sus cantidades, fechas
+                        de entrega y sustituciones registradas.
+                    </p>
+
+                    <a th:href="@{/paciente/medicamentos}"
+                       href="/paciente/medicamentos"
+                       class="btn-primary">
+
+                        Ver Mis Medicamentos
 
                     </a>
 

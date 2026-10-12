@@ -1,7 +1,7 @@
 package com.proyecto.clinicamedica.controller;
 
 import com.proyecto.clinicamedica.service.CitaPacienteService;
-
+import com.proyecto.clinicamedica.service.PacienteMedicamentosService;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
 
@@ -40,17 +40,22 @@ public class PacienteDashboardController {
 
     private final CitaPacienteService citaPacienteService;
 
+    private final PacienteMedicamentosService pacienteMedicamentosService;
 
     // =====================================================
     // CONSTRUCTOR
     // =====================================================
 
     public PacienteDashboardController(
-            CitaPacienteService citaPacienteService
+            CitaPacienteService citaPacienteService,
+            PacienteMedicamentosService pacienteMedicamentosService
     ) {
 
         this.citaPacienteService =
                 citaPacienteService;
+
+        this.pacienteMedicamentosService =
+                pacienteMedicamentosService;
     }
 
 
@@ -120,4 +125,38 @@ public class PacienteDashboardController {
 
         return "paciente/mis-citas";
     }
+
+
+    // =====================================================
+    // CU-11 - MIS MEDICAMENTOS
+    // =====================================================
+    //
+    // Muestra el historial de medicamentos
+    // realmente entregados en Farmacia.
+    //
+    // SEGURIDAD:
+    //
+    // - Ruta protegida por ROLE_PACIENTE.
+    // - El Service identifica al paciente autenticado.
+    // - No recibe IDs de otros pacientes desde la URL.
+    // - Solo consulta despachos CONFIRMADOS.
+    //
+    // No modifica inventario, recetas ni despachos.
+    //
+    // =====================================================
+
+    @GetMapping("/paciente/medicamentos")
+    public String mostrarMisMedicamentos(
+            Model model
+    ) {
+
+        model.addAttribute(
+                "medicamentos",
+                pacienteMedicamentosService
+                        .listarMisMedicamentos()
+        );
+
+        return "paciente/mis-medicamentos";
+    }
+
 }

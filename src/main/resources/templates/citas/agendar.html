@@ -19,6 +19,8 @@
         Agendar cita
     </title>
 
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Crect width='24' height='24' rx='6' fill='%231B5FA6'/%3E%3Cpath d='M9 4h6v5h5v6h-5v5H9v-5H4V9h5z' fill='white'/%3E%3C/svg%3E">
+
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
@@ -40,7 +42,9 @@
 
 <body>
 
-<div class="container py-5 wizard-container">
+<a class="skip-link" href="#contenido">Saltar al contenido</a>
+
+<main id="contenido" class="container py-5 wizard-container">
 
     <!-- MARCA -->
     <div class="wizard-brand">
@@ -61,7 +65,7 @@
 
                 <h1 class="h3 fw-bold mb-2">
 
-                    <i class="bi bi-calendar-check me-2 text-primary"></i>
+                    <i class="bi bi-calendar-check me-2 text-primary" aria-hidden="true"></i>
 
                     <span th:text="${citaWizard.esSeguimiento
                             ? 'Agendar cita de seguimiento'
@@ -88,7 +92,7 @@
             <div class="alert alert-info d-flex align-items-center"
                  th:if="${modoWalkIn}">
 
-                <i class="bi bi-person-walking fs-4 me-3"></i>
+                <i class="bi bi-person-walking fs-4 me-3" aria-hidden="true"></i>
 
                 <div>
                     <strong>Agendamiento desde recepción</strong>
@@ -105,7 +109,7 @@
             <div class="alert alert-success d-flex align-items-start"
                  th:if="${citaWizard.esSeguimiento}">
 
-                <i class="bi bi-arrow-repeat fs-4 me-3"></i>
+                <i class="bi bi-arrow-repeat fs-4 me-3" aria-hidden="true"></i>
 
                 <div>
 
@@ -205,7 +209,7 @@
                         <div class="col-md-6"
                              th:each="sucursal : ${sucursales}">
 
-                            <input class="form-check-input d-none"
+                            <input class="form-check-input visually-hidden"
                                    type="radio"
                                    name="idSucursal"
                                    th:id="${'sucursal-' + sucursal.id}"
@@ -217,7 +221,7 @@
 
                                 <div class="d-flex align-items-center">
 
-                                    <i class="bi bi-hospital fs-3 text-primary me-3"></i>
+                                    <i class="bi bi-hospital fs-3 text-primary me-3" aria-hidden="true"></i>
 
                                     <div>
                                         <div class="fw-bold"
@@ -250,7 +254,7 @@
 
                             Continuar
 
-                            <i class="bi bi-arrow-right ms-2"></i>
+                            <i class="bi bi-arrow-right ms-2" aria-hidden="true"></i>
 
                         </button>
 
@@ -280,7 +284,7 @@
                         <div class="col-md-6"
                              th:each="especialidad : ${especialidades}">
 
-                            <input class="form-check-input d-none"
+                            <input class="form-check-input visually-hidden"
                                    type="radio"
                                    name="idEspecialidad"
                                    th:id="${'especialidad-' + especialidad.id}"
@@ -292,7 +296,7 @@
 
                                 <div class="d-flex align-items-center">
 
-                                    <i class="bi bi-heart-pulse fs-3 text-primary me-3"></i>
+                                    <i class="bi bi-heart-pulse fs-3 text-primary me-3" aria-hidden="true"></i>
 
                                     <span class="fw-bold"
                                           th:text="${especialidad.nombre}">
@@ -321,7 +325,7 @@
                                 name="paso"
                                 value="1">
 
-                            <i class="bi bi-arrow-left me-2"></i>
+                            <i class="bi bi-arrow-left me-2" aria-hidden="true"></i>
 
                             Volver
 
@@ -332,7 +336,7 @@
 
                             Continuar
 
-                            <i class="bi bi-arrow-right ms-2"></i>
+                            <i class="bi bi-arrow-right ms-2" aria-hidden="true"></i>
 
                         </button>
 
@@ -363,7 +367,7 @@
                         <div class="col-md-6"
                              th:each="medico : ${medicos}">
 
-                            <input class="form-check-input d-none"
+                            <input class="form-check-input visually-hidden"
                                    type="radio"
                                    name="idMedico"
                                    th:id="${'medico-' + medico.id}"
@@ -375,7 +379,7 @@
 
                                 <div class="d-flex align-items-center">
 
-                                    <i class="bi bi-person-badge fs-3 text-primary me-3"></i>
+                                    <i class="bi bi-person-badge fs-3 text-primary me-3" aria-hidden="true"></i>
 
                                     <div>
                                         <div class="fw-bold"
@@ -409,7 +413,7 @@
                                 name="paso"
                                 value="2">
 
-                            <i class="bi bi-arrow-left me-2"></i>
+                            <i class="bi bi-arrow-left me-2" aria-hidden="true"></i>
 
                             Volver
 
@@ -420,7 +424,7 @@
 
                             Continuar
 
-                            <i class="bi bi-arrow-right ms-2"></i>
+                            <i class="bi bi-arrow-right ms-2" aria-hidden="true"></i>
 
                         </button>
 
@@ -558,7 +562,7 @@
                                 name="paso"
                                 value="3">
 
-                            <i class="bi bi-arrow-left me-2"></i>
+                            <i class="bi bi-arrow-left me-2" aria-hidden="true"></i>
 
                             Volver
 
@@ -574,7 +578,7 @@
 
                             Continuar
 
-                            <i class="bi bi-arrow-right ms-2"></i>
+                            <i class="bi bi-arrow-right ms-2" aria-hidden="true"></i>
 
                         </button>
 
@@ -676,7 +680,7 @@
                                 <div class="d-flex align-items-center
                                             text-primary mt-2">
 
-                                    <i class="bi bi-person-walking me-2"></i>
+                                    <i class="bi bi-person-walking me-2" aria-hidden="true"></i>
 
                                     <span class="fw-semibold">
                                         Tipo de agendamiento: Walk-in
@@ -695,7 +699,7 @@
                                 <div class="d-flex align-items-center
                                             text-success mt-2">
 
-                                    <i class="bi bi-arrow-repeat me-2"></i>
+                                    <i class="bi bi-arrow-repeat me-2" aria-hidden="true"></i>
 
                                     <span class="fw-semibold">
                                         Tipo de agendamiento:
@@ -855,7 +859,7 @@
                                 name="paso"
                                 value="4">
 
-                            <i class="bi bi-arrow-left me-2"></i>
+                            <i class="bi bi-arrow-left me-2" aria-hidden="true"></i>
 
                             Volver
 
@@ -864,7 +868,7 @@
                         <button type="submit"
                                 class="btn btn-primary px-4">
 
-                            <i class="bi bi-calendar-check me-2"></i>
+                            <i class="bi bi-calendar-check me-2" aria-hidden="true"></i>
 
                             <span th:text="${citaWizard.esSeguimiento
                                     ? 'Agendar seguimiento'
@@ -890,7 +894,7 @@
 
     </div>
 
-</div>
+</main>
 
 
 <!-- SCRIPTS -->

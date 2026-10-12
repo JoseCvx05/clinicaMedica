@@ -1,129 +1,246 @@
-/* ==========================================================================
+/* =========================================================
    SANTOS · Pago de consulta
-   Se carga DESPUÉS de Bootstrap 5.3: redefine sus variables y componentes.
-   Bootstrap se mantiene porque el script de la vista alterna las clases
-   text-success / text-warning / text-danger y el backend usa is-invalid,
-   invalid-feedback y alert-*. Solo presentación.
-   ========================================================================== */
+   Tema sobre Bootstrap 5.3 (debe cargarse DESPUÉS de Bootstrap).
+   Conserva .pago-*, .resumen-item, .temporizador, .campo-seguro,
+   .nota-seguridad y los IDs que usa el script de la vista.
+   ========================================================= */
 
 :root {
-    --santos-lienzo: #F4F7FA;
-    --santos-linea: rgba(15, 34, 51, 0.08);
-    --santos-azul: #1B5FA6;
-    --santos-azul-tinte: #E8F0FA;
-    --santos-turquesa: #0B8C86;
-    --santos-turquesa-tinte: #E2F4F2;
-    --salida: cubic-bezier(0.23, 1, 0.32, 1);
+    --bs-body-font-family: 'Plus Jakarta Sans', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+    --bs-body-color: #0f172a;
+    --bs-body-bg: #f8fafc;
+    --bs-secondary-color: #475569;
+    --bs-border-color: #cbd5e1;
 
-    --bs-font-sans-serif: 'Plus Jakarta Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
-    --bs-body-color: #0F2233;
-    --bs-body-bg: #F4F7FA;
-    --bs-primary: #1B5FA6;
+    --bs-primary: #1b5fa6;
     --bs-primary-rgb: 27, 95, 166;
-    --bs-secondary-rgb: 74, 94, 112;
-    --bs-secondary-color: #4A5E70;
-    --bs-success-rgb: 31, 122, 77;
-    --bs-warning-rgb: 160, 100, 0;
-    --bs-danger-rgb: 179, 48, 58;
-    --bs-light-rgb: 244, 247, 250;
-    --bs-border-color: rgba(15, 34, 51, 0.1);
+    --bs-success-rgb: 15, 118, 110;
+    --bs-warning-rgb: 146, 64, 14;
+    --bs-danger-rgb: 185, 28, 28;
+    --bs-form-invalid-color: #b91c1c;
+    --bs-form-invalid-border-color: #b91c1c;
+    --bs-link-color: #124a85;
+
+    --sa-ink: #0f172a;
+    --sa-muted: #475569;
+    --sa-line: #e2e8f0;
+    --sa-line-strong: #cbd5e1;
+    --sa-blue: #1b5fa6;
+    --sa-blue-tint: #eaf2fb;
+    --sa-blue-line: #c7dbf0;
+    --sa-teal: #0f766e;
+    --sa-ring: rgba(27, 95, 166, 0.22);
+    --sa-ease: cubic-bezier(0.23, 1, 0.32, 1);
 }
 
 body {
-    font-family: var(--bs-font-sans-serif);
-    background: radial-gradient(60% 40% at 8% 0%, rgba(11, 140, 134, 0.09), transparent 70%),
-    radial-gradient(50% 40% at 100% 100%, rgba(27, 95, 166, 0.09), transparent 70%),
-    var(--santos-lienzo);
-    background-attachment: fixed;
+    min-height: 100dvh;
+    color: var(--sa-ink);
+    background:
+            radial-gradient(50% 40% at 100% 0%, rgba(15, 118, 110, 0.08), transparent 70%),
+            radial-gradient(45% 40% at 0% 100%, rgba(27, 95, 166, 0.08), transparent 70%),
+            #f8fafc;
     -webkit-font-smoothing: antialiased;
-    text-rendering: optimizeLegibility;
 }
 
-h1, h2, .h3, .h5 { letter-spacing: -0.03em; text-wrap: balance; }
-:focus-visible { outline: 3px solid rgba(27, 95, 166, 0.35); outline-offset: 2px; }
+h1, h2 { color: var(--sa-ink); letter-spacing: -0.02em; text-wrap: balance; }
+h1 { font-weight: 800; }
+p { text-wrap: pretty; }
+.text-secondary { color: var(--sa-muted) !important; }
 
-.pago-container { max-width: 1060px; }
+.skip-link {
+    position: absolute;
+    left: 16px;
+    top: -64px;
+    z-index: 2000;
+    padding: 10px 16px;
+    border-radius: 10px;
+    background: var(--sa-ink);
+    color: #fff;
+    font-weight: 600;
+    text-decoration: none;
+}
+.skip-link:focus { top: 12px; color: #fff; }
 
-/* ---------- Marca ---------- */
-.pago-brand { display: flex; align-items: center; gap: 12px; font-weight: 800; letter-spacing: 0.06em; }
-.pago-brand-simbolo { display: grid; place-items: center; width: 40px; height: 40px; color: #fff; background: var(--santos-azul); border-radius: 12px; }
-.pago-brand-simbolo svg { display: block; width: 20px; height: 20px; fill: currentColor; }
-.pago-brand small { font-size: 13px; font-weight: 500; letter-spacing: 0; color: #7A8B9A; }
+/* ---------- Estructura y marca ---------- */
+.pago-container { max-width: 1040px; }
 
-/* ---------- Tarjetas ---------- */
-.card-pago, .card-pago.shadow-sm {
-    border: 1px solid var(--santos-linea);
+.pago-brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 1.1rem;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    color: var(--sa-ink);
+}
+.pago-brand small { font-size: 0.78rem; font-weight: 500; letter-spacing: 0; color: var(--sa-muted); }
+.pago-brand-simbolo {
+    display: grid;
+    place-items: center;
+    width: 38px;
+    height: 38px;
+    border-radius: 12px;
+    background: var(--sa-blue);
+    color: #fff;
+}
+.pago-brand-simbolo svg { width: 20px; height: 20px; fill: currentColor; }
+
+.card-pago,
+.card-pago.shadow-sm {
+    border: 1px solid var(--sa-line);
     border-radius: 24px;
-    box-shadow: 0 2px 4px rgba(15, 34, 51, 0.04), 0 30px 60px -32px rgba(15, 34, 51, 0.24) !important;
-    animation: sube 520ms var(--salida) both;
+    background: #fff;
+    box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04), 0 18px 40px -22px rgba(27, 95, 166, 0.22) !important;
+    animation: sa-aparecer 380ms var(--sa-ease) backwards;
 }
-.col-lg-7 .card-pago { animation-delay: 90ms; }
-.card-pago h2 { font-weight: 800 !important; }
-.card-pago .bi-calendar-check { display: grid; place-items: center; width: 48px; height: 48px; flex: none; font-size: 1.4rem !important; color: var(--santos-turquesa) !important; background: var(--santos-turquesa-tinte); border-radius: 14px; }
+.col-lg-7 .card-pago { animation-delay: 60ms; }
+@keyframes sa-aparecer {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: none; }
+}
 
-.resumen-item { padding: 14px 0; border-bottom: 1px solid var(--santos-linea); }
-.resumen-item:last-child { border-bottom: 0; }
-.resumen-item small { font-size: 0.8rem; font-weight: 600; color: #7A8B9A !important; }
-.resumen-item strong { font-weight: 600; }
+/* ---------- Resumen ---------- */
+.resumen-item { padding: 14px 0; border-bottom: 1px solid var(--sa-line); }
+.resumen-item small {
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--sa-muted) !important;
+}
+.resumen-item strong { display: block; margin-top: 2px; font-weight: 600; font-variant-numeric: tabular-nums; }
 
-.card-pago .bg-light { background: var(--santos-lienzo) !important; border: 1px dashed rgba(15, 34, 51, 0.2); border-radius: 16px !important; }
-.card-pago .bg-light .h4 { font-size: 1.7rem; letter-spacing: -0.03em; font-variant-numeric: tabular-nums; }
+.card-pago .bg-light {
+    background-color: var(--sa-blue-tint) !important;
+    border: 1px solid var(--sa-blue-line);
+    border-radius: 16px !important;
+}
+.card-pago .bg-light .h4 { font-size: 1.7rem; letter-spacing: -0.02em; font-variant-numeric: tabular-nums; }
 
-/* ---------- Temporizador ---------- */
-.temporizador { font-size: 2rem; font-weight: 800; letter-spacing: -0.02em; line-height: 1.2; font-variant-numeric: tabular-nums; }
-.temporizador-critico { animation: parpadeo 1s infinite; }
-@keyframes parpadeo { 50% { opacity: 0.55; } }
+/* ---------- Temporizador (clases de color las cambia el script) ---------- */
+.temporizador {
+    display: inline-block;
+    padding: 4px 20px;
+    border-radius: 14px;
+    background: #f1f5f9;
+    font-size: 2.4rem;
+    font-weight: 800;
+    line-height: 1.2;
+    letter-spacing: 0.02em;
+    font-variant-numeric: tabular-nums;
+}
+.temporizador.text-danger { background: #fef2f2; }
+.temporizador.text-warning { background: #fffbeb; }
+.temporizador.text-success { background: #f0fdfa; }
+.temporizador-critico { animation: sa-latido 1s var(--sa-ease) infinite; }
+@keyframes sa-latido {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+}
 
 /* ---------- Formulario ---------- */
-.form-label { font-size: 0.92rem; }
+.form-label { color: var(--sa-ink); }
 .form-control {
     min-height: 54px;
-    background-color: var(--santos-lienzo);
-    border: 1.5px solid transparent;
-    border-radius: 14px;
+    border: 1.5px solid var(--sa-line-strong);
+    border-radius: 12px;
+    background-color: #fff;
+    color: var(--sa-ink);
     font-weight: 500;
     font-variant-numeric: tabular-nums;
-    transition: border-color 160ms var(--salida), box-shadow 160ms var(--salida), background-color 160ms var(--salida);
+    transition: border-color 160ms var(--sa-ease), box-shadow 160ms var(--sa-ease);
 }
-.form-control::placeholder { font-weight: 400; color: #8A99A6; }
-.form-control:focus { background-color: #fff; border-color: var(--santos-azul); box-shadow: 0 0 0 4px rgba(27, 95, 166, 0.14); }
-.form-control.is-invalid { background-color: #FCEBEC; background-image: none; border-color: #B3303A; padding-right: 1rem; }
-.form-control.is-invalid:focus { box-shadow: 0 0 0 4px rgba(179, 48, 58, 0.14); }
-.invalid-feedback { font-size: 0.86rem; font-weight: 500; color: #B3303A; }
+.form-control::placeholder { color: #64748b; font-weight: 400; opacity: 1; }
+@media (hover: hover) and (pointer: fine) {
+    .form-control:hover { border-color: #94a3b8; }
+}
+.form-control:focus {
+    border-color: var(--sa-blue);
+    background-color: #fff;
+    color: var(--sa-ink);
+    box-shadow: 0 0 0 4px var(--sa-ring);
+}
+.form-control.is-invalid { border-color: #b91c1c; background-color: #fffafa; }
+.invalid-feedback { font-size: 0.85rem; font-weight: 600; }
 
+/* Campo de tarjeta con icono interno */
 .campo-seguro { position: relative; }
-.campo-seguro .form-control { padding-right: 52px; }
-.campo-seguro .icono { position: absolute; right: 18px; top: 47px; font-size: 1.15rem; color: #7A8B9A; pointer-events: none; }
+.campo-seguro .form-control { padding-right: 52px; background-image: none; }
+.campo-seguro .icono {
+    position: absolute;
+    right: 18px;
+    top: 49px;
+    font-size: 1.25rem;
+    line-height: 1;
+    color: var(--sa-muted);
+    pointer-events: none;
+}
+
+.nota-seguridad,
+.alert-light.nota-seguridad {
+    border: 1px solid #99e6d8 !important;
+    border-radius: 14px;
+    background: #f0fdfa;
+    color: #134e4a;
+    font-size: 0.92rem;
+}
+
+/* ---------- Botones ---------- */
+.btn {
+    --bs-btn-border-radius: 14px;
+    --bs-btn-font-weight: 700;
+    --bs-btn-disabled-opacity: 1;
+    min-height: 52px;
+    transition: background-color 160ms var(--sa-ease), border-color 160ms var(--sa-ease), transform 120ms var(--sa-ease);
+}
+.btn:active { transform: scale(0.98); }
+.btn:focus-visible { outline: 3px solid var(--sa-teal); outline-offset: 2px; box-shadow: none; }
+
+.btn-primary {
+    --bs-btn-bg: #1b5fa6;
+    --bs-btn-border-color: #1b5fa6;
+    --bs-btn-color: #fff;
+    --bs-btn-hover-bg: #124a85;
+    --bs-btn-hover-border-color: #124a85;
+    --bs-btn-hover-color: #fff;
+    --bs-btn-active-bg: #0d3a6b;
+    --bs-btn-active-border-color: #0d3a6b;
+    --bs-btn-active-color: #fff;
+    --bs-btn-disabled-bg: #e2e8f0;
+    --bs-btn-disabled-border-color: #cbd5e1;
+    --bs-btn-disabled-color: #334155;
+}
+/* Indicador mientras el botón está deshabilitado (procesando) */
+#botonPagar:disabled #textoBotonPagar::before {
+    content: "";
+    display: inline-block;
+    width: 16px;
+    height: 16px;
+    margin-right: 10px;
+    border: 2px solid var(--sa-line-strong);
+    border-top-color: var(--sa-blue);
+    border-radius: 50%;
+    vertical-align: -3px;
+    animation: sa-girar 700ms linear infinite;
+}
+@keyframes sa-girar { to { transform: rotate(360deg); } }
 
 /* ---------- Avisos ---------- */
-.alert { border: 0; border-radius: 16px; padding: 16px 18px; }
-.alert-warning { color: #8A5A00; background: #FFF3DC; }
-.alert-danger { color: #B3303A; background: #FCEBEC; }
-.alert-light { color: #4A5E70; background: var(--santos-lienzo); border: 0 !important; }
-.nota-seguridad { font-size: 0.88rem; }
-.nota-seguridad .bi { color: #1F7A4D !important; }
+.alert { --bs-alert-border-radius: 14px; padding: 16px 18px; }
+.alert-danger { --bs-alert-bg: #fef2f2; --bs-alert-border-color: #fecaca; --bs-alert-color: #991b1b; }
+.alert-warning { --bs-alert-bg: #fffbeb; --bs-alert-border-color: #fde68a; --bs-alert-color: #78350f; }
 
-/* ---------- Botón de pago ---------- */
-.btn { --bs-btn-border-radius: 16px; --bs-btn-font-weight: 700; letter-spacing: -0.01em; transition: transform 160ms var(--salida), background-color 160ms var(--salida), border-color 160ms var(--salida), opacity 160ms var(--salida); }
-.btn:active { transform: scale(0.98); }
-.btn:disabled { transform: none; }
-.btn-primary {
-    --bs-btn-bg: #1B5FA6; --bs-btn-border-color: #1B5FA6;
-    --bs-btn-hover-bg: #154E8A; --bs-btn-hover-border-color: #154E8A;
-    --bs-btn-active-bg: #11426F; --bs-btn-active-border-color: #11426F;
-    --bs-btn-disabled-bg: #1B5FA6; --bs-btn-disabled-border-color: #1B5FA6; --bs-btn-disabled-opacity: 0.55;
-    min-height: 56px;
-    box-shadow: 0 10px 22px -12px rgba(27, 95, 166, 0.75);
-}
-.btn-primary:disabled { box-shadow: none; }
-
-@keyframes sube { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
-
+/* ---------- Responsivo ---------- */
 @media (max-width: 575.98px) {
-    .card-pago .card-body { padding: 1.5rem !important; }
-    .temporizador { font-size: 1.75rem; }
+    .temporizador { font-size: 2rem; }
+    .card-pago .card-body { padding: 1.25rem !important; }
 }
 
+/* ---------- Movimiento reducido ---------- */
 @media (prefers-reduced-motion: reduce) {
-    *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+    .card-pago { animation: none; }
+    .temporizador-critico { animation: none; }
+    .btn:active { transform: none; }
+    #botonPagar:disabled #textoBotonPagar::before { animation-duration: 1.6s; }
 }

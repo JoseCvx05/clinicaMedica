@@ -1,0 +1,565 @@
+
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>Mis medicamentos | Clínica Médica SANTOS</title>
+
+    <style>
+
+        /* =============================================
+           ESTILOS GENERALES
+           ============================================= */
+
+        :root {
+            --azul: #102a43;
+            --azul-claro: #eaf3f8;
+            --verde: #087f75;
+            --fondo: #f4f7fb;
+            --texto: #263746;
+            --gris: #697b8a;
+            --borde: #e1e8ee;
+            --blanco: #ffffff;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: var(--fondo);
+            color: var(--texto);
+        }
+
+        /* =============================================
+           ENCABEZADO
+           ============================================= */
+
+        .encabezado {
+            background: var(--azul);
+            color: white;
+            padding: 22px 6%;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .marca {
+            font-size: 22px;
+            font-weight: bold;
+        }
+
+        .marca span {
+            color: #77dfd3;
+        }
+
+        .volver {
+            color: white;
+            text-decoration: none;
+            border: 1px solid #ffffff60;
+            padding: 11px 17px;
+            border-radius: 10px;
+            font-size: 14px;
+        }
+
+        .volver:hover {
+            background: #ffffff18;
+        }
+
+        /* =============================================
+           CONTENIDO
+           ============================================= */
+
+        .contenedor {
+            width: min(1150px, 92%);
+            margin: 35px auto 60px;
+        }
+
+        .titulo {
+            margin-bottom: 27px;
+        }
+
+        .titulo h1 {
+            color: var(--azul);
+            margin: 0 0 9px;
+            font-size: 30px;
+        }
+
+        .titulo p {
+            margin: 0;
+            color: var(--gris);
+            line-height: 1.6;
+        }
+
+        .resumen {
+            background: white;
+            border: 1px solid var(--borde);
+            border-radius: 15px;
+            padding: 22px;
+            margin-bottom: 25px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .resumen strong {
+            color: var(--azul);
+            font-size: 19px;
+        }
+
+        .contador {
+            background: var(--azul-claro);
+            color: var(--azul);
+            border-radius: 10px;
+            padding: 12px 18px;
+            font-weight: bold;
+        }
+
+        /* =============================================
+           TARJETAS DE MEDICAMENTOS
+           ============================================= */
+
+        .lista {
+            display: grid;
+            grid-template-columns: repeat(
+                auto-fit,
+                minmax(min(100%, 360px), 1fr)
+            );
+            gap: 20px;
+        }
+
+        .tarjeta {
+            background: white;
+            border: 1px solid var(--borde);
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 5px 18px #102a4308;
+        }
+
+        .tarjeta-cabecera {
+            background: var(--azul-claro);
+            padding: 19px 21px;
+        }
+
+        .tarjeta-cabecera h2 {
+            margin: 0 0 8px;
+            color: var(--azul);
+            font-size: 18px;
+            overflow-wrap: anywhere;
+        }
+
+        .fecha {
+            color: var(--gris);
+            font-size: 13px;
+        }
+
+        .tarjeta-cuerpo {
+            padding: 22px;
+        }
+
+        .dato {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 15px;
+            padding: 11px 0;
+            border-bottom: 1px solid var(--borde);
+        }
+
+        .dato:last-child {
+            border-bottom: none;
+        }
+
+        .dato span {
+            color: var(--gris);
+            font-size: 13px;
+        }
+
+        .dato strong {
+            text-align: right;
+            font-size: 14px;
+            color: var(--azul);
+            overflow-wrap: anywhere;
+        }
+
+        .etiqueta {
+            display: inline-block;
+            background: #dcf5ee;
+            color: #086b52;
+            border-radius: 7px;
+            padding: 7px 10px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        /* =============================================
+           SUSTITUCIONES
+           ============================================= */
+
+        .sustitucion {
+            background: #fff8e8;
+            border: 1px solid #f1dfa8;
+            border-radius: 11px;
+            padding: 15px;
+            margin-top: 17px;
+        }
+
+        .sustitucion strong {
+            color: #866117;
+        }
+
+        .sustitucion p {
+            margin: 9px 0 0;
+            font-size: 13px;
+            line-height: 1.6;
+            overflow-wrap: anywhere;
+        }
+
+        /* =============================================
+           TOTAL
+           ============================================= */
+
+        .total {
+            background: #e9f7f3;
+            padding: 17px;
+            margin-top: 19px;
+            border-radius: 10px;
+            display: flex;
+            justify-content: space-between;
+            gap: 15px;
+            align-items: center;
+        }
+
+        .total strong {
+            color: var(--verde);
+            font-size: 20px;
+        }
+
+        /* =============================================
+           SIN MEDICAMENTOS
+           ============================================= */
+
+        .vacio {
+            text-align: center;
+            background: white;
+            border: 1px solid var(--borde);
+            border-radius: 16px;
+            padding: 55px 25px;
+        }
+
+        .vacio h2 {
+            color: var(--azul);
+        }
+
+        .vacio p {
+            color: var(--gris);
+            line-height: 1.6;
+        }
+
+        .nota {
+            color: var(--gris);
+            font-size: 13px;
+            margin-top: 28px;
+            line-height: 1.7;
+        }
+
+        @media (max-width: 600px) {
+
+            .titulo h1 {
+                font-size: 25px;
+            }
+
+            .contenedor {
+                margin-top: 25px;
+            }
+
+            .dato {
+                flex-direction: column;
+                gap: 5px;
+            }
+
+            .dato strong {
+                text-align: left;
+            }
+        }
+
+    </style>
+</head>
+
+<body>
+
+<!-- ============================================= -->
+<!-- ENCABEZADO -->
+<!-- ============================================= -->
+
+<header class="encabezado">
+
+    <div class="marca">
+        CLÍNICA MÉDICA <span>SANTOS</span>
+    </div>
+
+    <a class="volver"
+       th:href="@{/paciente/dashboard}">
+        ← Volver al portal
+    </a>
+
+</header>
+
+
+<main class="contenedor">
+
+    <!-- ========================================= -->
+    <!-- TÍTULO -->
+    <!-- ========================================= -->
+
+    <section class="titulo">
+
+        <h1>Mis medicamentos</h1>
+
+        <p>
+            Consulta tu historial de medicamentos
+            entregados por la farmacia interna
+            de Clínica Médica SANTOS.
+        </p>
+
+    </section>
+
+
+    <!-- ========================================= -->
+    <!-- RESUMEN -->
+    <!-- ========================================= -->
+
+    <section class="resumen">
+
+        <strong>
+            Historial de medicamentos entregados
+        </strong>
+
+        <div class="contador">
+
+            Registros:
+
+            <span th:text="${medicamentos != null ? medicamentos.size() : 0}">
+                0
+            </span>
+
+        </div>
+
+    </section>
+
+
+    <!-- ========================================= -->
+    <!-- SIN MEDICAMENTOS -->
+    <!-- ========================================= -->
+
+    <section class="vacio"
+             th:if="${medicamentos == null or medicamentos.isEmpty()}">
+
+        <h2>No tienes medicamentos entregados</h2>
+
+        <p>
+            Cuando recibas medicamentos en la
+            farmacia interna, aparecerán aquí
+            junto con su receta y fecha de entrega.
+        </p>
+
+    </section>
+
+
+    <!-- ========================================= -->
+    <!-- HISTORIAL CU-11 -->
+    <!-- ========================================= -->
+
+    <section class="lista"
+             th:if="${medicamentos != null and !medicamentos.isEmpty()}">
+
+        <article class="tarjeta"
+                 th:each="item : ${medicamentos}">
+
+            <!-- CABECERA -->
+
+            <div class="tarjeta-cabecera">
+
+                <h2 th:text="${item.medicamentoEntregado()}">
+                    Nombre del medicamento
+                </h2>
+
+                <div class="fecha">
+
+                    Entregado el:
+
+                    <span th:text="${#temporals.format(item.fechaDespacho(), 'dd/MM/yyyy HH:mm')}">
+                        01/01/2026 10:00
+                    </span>
+
+                </div>
+
+            </div>
+
+
+            <!-- INFORMACIÓN -->
+
+            <div class="tarjeta-cuerpo">
+
+                <span class="etiqueta">
+                    Medicamento entregado
+                </span>
+
+
+                <div class="dato">
+
+                    <span>Número de despacho</span>
+
+                    <strong>
+                        #<span th:text="${item.idDespacho()}">
+                            0
+                        </span>
+                    </strong>
+
+                </div>
+
+
+                <div class="dato">
+
+                    <span>Receta médica</span>
+
+                    <strong>
+                        #<span th:text="${item.idReceta()}">
+                            0
+                        </span>
+                    </strong>
+
+                </div>
+
+
+                <div class="dato">
+
+                    <span>Medicamento recetado</span>
+
+                    <strong th:text="${item.medicamentoOriginal()}">
+                        Medicamento original
+                    </strong>
+
+                </div>
+
+
+                <div class="dato">
+
+                    <span>Medicamento recibido</span>
+
+                    <strong th:text="${item.medicamentoEntregado()}">
+                        Medicamento entregado
+                    </strong>
+
+                </div>
+
+
+                <div class="dato">
+
+                    <span>Cantidad entregada</span>
+
+                    <strong th:text="${item.cantidadEntregada()}">
+                        0
+                    </strong>
+
+                </div>
+
+
+                <div class="dato">
+
+                    <span>Precio unitario registrado</span>
+
+                    <strong>
+                        Q<span th:text="${#numbers.formatDecimal(item.precioUnitario(), 1, 'COMMA', 2, 'POINT')}">
+                            0.00
+                        </span>
+                    </strong>
+
+                </div>
+
+
+                <!-- SUSTITUCIÓN FA02 -->
+
+                <div class="sustitucion"
+                     th:if="${item.razonSustitucion() != null and !item.razonSustitucion().isBlank()}">
+
+                    <strong>
+                        Sustitución de medicamento
+                    </strong>
+
+                    <p>
+                        <span th:text="${item.medicamentoOriginal()}">
+                            Original
+                        </span>
+
+                        fue sustituido por
+
+                        <span th:text="${item.medicamentoEntregado()}">
+                            Alternativo
+                        </span>.
+                    </p>
+
+                    <p>
+                        <strong>Justificación:</strong>
+
+                        <span th:text="${item.razonSustitucion()}">
+                            Razón registrada
+                        </span>
+                    </p>
+
+                </div>
+
+
+                <!-- SUBTOTAL REGISTRADO -->
+
+                <div class="total">
+
+                    <span>Subtotal registrado</span>
+
+                    <strong>
+
+                        Q<span th:text="${#numbers.formatDecimal(item.subtotal(), 1, 'COMMA', 2, 'POINT')}">
+                            0.00
+                        </span>
+
+                    </strong>
+
+                </div>
+
+            </div>
+
+        </article>
+
+    </section>
+
+
+    <!-- ========================================= -->
+    <!-- NOTA INFORMATIVA -->
+    <!-- ========================================= -->
+
+    <p class="nota">
+
+        Este historial muestra únicamente medicamentos
+        que fueron entregados en farmacia interna
+        mediante despachos confirmados.
+
+        Los importes son registros históricos del
+        despacho y no representan un nuevo cobro.
+
+    </p>
+
+</main>
+
+</body>
+</html>

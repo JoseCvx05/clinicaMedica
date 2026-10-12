@@ -13,6 +13,8 @@
 
     <title>Pago de Consulta | SANTOS Clínica médica</title>
 
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Crect width='24' height='24' rx='6' fill='%231B5FA6'/%3E%3Cpath d='M9 4h6v5h5v6h-5v5H9v-5H4V9h5z' fill='white'/%3E%3C/svg%3E">
+
 
     <!-- =================================================
          FUENTE + BOOTSTRAP + TEMA SANTOS
@@ -39,6 +41,8 @@
 
 <body>
 
+<a class="skip-link" href="#contenido" th:if="${pagoExpirado != true}">Saltar al contenido</a>
+
 
 <!-- MARCA -->
 <div class="container pago-container pt-4">
@@ -64,7 +68,7 @@
 
         <div class="d-flex">
 
-            <i class="bi bi-clock-history fs-3 me-3"></i>
+            <i class="bi bi-clock-history fs-3 me-3" aria-hidden="true"></i>
 
             <div>
 
@@ -96,6 +100,7 @@
      ===================================================== -->
 
 <main th:if="${pagoExpirado != true}"
+      id="contenido"
       class="container pago-container py-4 py-lg-5">
 
 
@@ -123,6 +128,7 @@
          role="alert">
 
         <i class="bi me-2"
+           aria-hidden="true"
            th:classappend="${pagoEnProceso == true}
         ? 'bi-hourglass-split'
         : 'bi-exclamation-triangle'">
@@ -163,7 +169,7 @@
 
                         </div>
 
-                        <i class="bi bi-calendar-check fs-3 text-primary"></i>
+                        <i class="bi bi-calendar-check fs-3 text-primary" aria-hidden="true"></i>
 
                     </div>
 
@@ -330,7 +336,7 @@
 
                                    aria-describedby="errorNumeroTarjeta">
 
-                            <i class="bi bi-credit-card icono"></i>
+                            <i class="bi bi-credit-card icono" aria-hidden="true"></i>
 
                             <div id="errorNumeroTarjeta"
                                  class="invalid-feedback"
@@ -484,7 +490,7 @@
                             <div class="d-flex">
 
                                 <i class="bi bi-shield-lock-fill
-                                          text-success me-2"></i>
+                                          text-success me-2" aria-hidden="true"></i>
 
                                 <span>
                                     Tu información de pago está protegida.
@@ -503,7 +509,7 @@
 
                                 class="btn btn-primary btn-lg w-100">
 
-                            <i class="bi bi-lock-fill me-2"></i>
+                            <i class="bi bi-lock-fill me-2" aria-hidden="true"></i>
 
                             <span id="textoBotonPagar">
 
