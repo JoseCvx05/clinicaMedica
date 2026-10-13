@@ -9,35 +9,55 @@
     <meta name="viewport"
           content="width=device-width, initial-scale=1.0">
 
+    <meta name="theme-color" content="#1B5FA6">
+
     <title>
         Cobro de Laboratorio
     </title>
+
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Crect width='24' height='24' rx='6' fill='%231B5FA6'/%3E%3Cpath d='M9 4h6v5h5v6h-5v5H9v-5H4V9h5z' fill='white'/%3E%3C/svg%3E">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
+          rel="stylesheet">
 
 
     <style>
 
         :root {
-            --fondo: #f4f7fb;
+            --font: 'Plus Jakarta Sans', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+
+            --fondo: #f8fafc;
             --tarjeta: #ffffff;
-            --principal: #0f4c81;
-            --principal-hover: #0b3b65;
+            --principal: #1b5fa6;
+            --principal-hover: #124a85;
             --turquesa: #0f766e;
-            --turquesa-hover: #115e59;
-            --texto: #1e293b;
-            --secundario: #64748b;
-            --borde: #dbe3ec;
+            --turquesa-hover: #0b5f58;
+            --texto: #0f172a;
+            --secundario: #475569;
+            --borde: #e2e8f0;
+            --borde-fuerte: #cbd5e1;
+            --banda: #f1f5f9;
 
-            --verde-fondo: #dcfce7;
-            --verde-texto: #166534;
+            --verde-fondo: #f0fdfa;
+            --verde-borde: #99e6d8;
+            --verde-texto: #0f5c55;
 
-            --azul-fondo: #eff6ff;
-            --azul-texto: #1d4ed8;
+            --azul-fondo: #eaf2fb;
+            --azul-borde: #c7dbf0;
+            --azul-texto: #0f2f52;
 
-            --error-fondo: #fee2e2;
+            --error-fondo: #fef2f2;
+            --error-borde: #fecaca;
             --error-texto: #991b1b;
 
-            --aviso-fondo: #fff7ed;
-            --aviso-texto: #9a3412;
+            --aviso-fondo: #fffbeb;
+            --aviso-borde: #fde68a;
+            --aviso-texto: #78350f;
+
+            --anillo: rgba(27, 95, 166, 0.22);
+            --ease: cubic-bezier(0.23, 1, 0.32, 1);
         }
 
 
@@ -49,14 +69,53 @@
         body {
             margin: 0;
 
-            font-family:
-                    Arial,
-                    Helvetica,
-                    sans-serif;
+            min-height: 100dvh;
 
-            background: var(--fondo);
+            font-family: var(--font);
+
+            font-size: 1rem;
+
+            line-height: 1.55;
+
+            background:
+                    radial-gradient(50% 40% at 100% 0%, rgba(15, 118, 110, 0.08), transparent 70%),
+                    radial-gradient(45% 40% at 0% 100%, rgba(27, 95, 166, 0.08), transparent 70%),
+                    var(--fondo);
 
             color: var(--texto);
+
+            -webkit-font-smoothing: antialiased;
+        }
+
+
+        h1, h2, h3 {
+            text-wrap: balance;
+        }
+
+
+        a:focus-visible,
+        button:focus-visible {
+            outline: 3px solid var(--turquesa);
+            outline-offset: 2px;
+        }
+
+
+        .enlace-salto {
+            position: absolute;
+            left: 16px;
+            top: -64px;
+            z-index: 100;
+            padding: 10px 16px;
+            border-radius: 10px;
+            background: var(--texto);
+            color: #fff;
+            font-weight: 600;
+            text-decoration: none;
+        }
+
+
+        .enlace-salto:focus {
+            top: 12px;
         }
 
 
@@ -65,15 +124,24 @@
            ================================================= */
 
         .encabezado {
-            background: var(--principal);
-            color: white;
+            position: sticky;
+            top: 0;
+            z-index: 40;
 
-            padding: 20px 30px;
+            background: rgba(255, 255, 255, 0.92);
+            backdrop-filter: saturate(160%) blur(10px);
+            -webkit-backdrop-filter: saturate(160%) blur(10px);
+
+            border-bottom: 1px solid var(--borde);
+
+            padding: 0 20px;
         }
 
 
         .encabezado-contenido {
             max-width: 1250px;
+
+            min-height: 62px;
 
             margin: auto;
 
@@ -85,17 +153,55 @@
         }
 
 
+        .marca {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+
+        .marca-simbolo {
+            display: grid;
+            place-items: center;
+
+            width: 38px;
+            height: 38px;
+
+            border-radius: 12px;
+
+            background: var(--principal);
+
+            color: #fff;
+        }
+
+
+        .marca-simbolo svg {
+            width: 20px;
+            height: 20px;
+
+            fill: currentColor;
+        }
+
+
         .marca h1 {
             margin: 0;
 
-            font-size: 24px;
+            font-size: 1.1rem;
+
+            font-weight: 800;
+
+            letter-spacing: 0.08em;
+
+            line-height: 1.15;
         }
 
 
         .marca p {
-            margin: 5px 0 0;
+            margin: 0;
 
-            opacity: .85;
+            font-size: 0.78rem;
+
+            color: var(--secundario);
         }
 
 
@@ -106,21 +212,27 @@
         .contenedor {
             max-width: 1250px;
 
-            margin: 30px auto;
+            margin: 0 auto;
 
-            padding: 0 20px 40px;
+            padding: 18px 20px 32px;
         }
 
 
         .titulo {
-            margin-bottom: 22px;
+            margin-bottom: 14px;
         }
 
 
         .titulo h2 {
-            margin: 0 0 6px;
+            margin: 0 0 4px;
 
-            color: var(--principal);
+            font-size: clamp(1.4rem, 2.6vw, 1.9rem);
+
+            font-weight: 800;
+
+            letter-spacing: -0.03em;
+
+            line-height: 1.15;
         }
 
 
@@ -128,6 +240,8 @@
             margin: 0;
 
             color: var(--secundario);
+
+            font-size: 0.95rem;
         }
 
 
@@ -136,11 +250,17 @@
            ================================================= */
 
         .mensaje {
-            padding: 14px 16px;
+            padding: 12px 16px;
 
-            border-radius: 10px;
+            border-radius: 12px;
 
-            margin-bottom: 18px;
+            margin-bottom: 14px;
+
+            font-size: 0.92rem;
+
+            font-weight: 500;
+
+            line-height: 1.45;
         }
 
 
@@ -148,7 +268,7 @@
             background: var(--error-fondo);
             color: var(--error-texto);
 
-            border: 1px solid #fecaca;
+            border: 1px solid var(--error-borde);
         }
 
 
@@ -156,7 +276,10 @@
             background: var(--aviso-fondo);
             color: var(--aviso-texto);
 
-            border: 1px solid #fed7aa;
+            border: 1px solid var(--aviso-borde);
+            border-left: 4px solid #d97706;
+
+            margin-bottom: 0;
         }
 
 
@@ -168,10 +291,10 @@
             display: grid;
 
             grid-template-columns:
-                    minmax(0, 1fr)
-                    minmax(0, 1fr);
+                    minmax(0, 1.15fr)
+                    minmax(0, 0.85fr);
 
-            gap: 22px;
+            gap: 16px;
 
             align-items: start;
         }
@@ -186,18 +309,21 @@
 
             border: 1px solid var(--borde);
 
-            border-radius: 14px;
-
-            box-shadow:
-                    0 4px 12px
-                    rgba(15, 23, 42, .05);
+            border-radius: 18px;
 
             overflow: hidden;
+
+            animation: aparecer 400ms var(--ease) backwards;
+        }
+
+
+        .tarjeta + .tarjeta {
+            animation-delay: 60ms;
         }
 
 
         .tarjeta-encabezado {
-            padding: 20px 24px;
+            padding: 14px 20px;
 
             border-bottom:
                     1px solid var(--borde);
@@ -205,9 +331,13 @@
 
 
         .tarjeta-encabezado h3 {
-            margin: 0 0 5px;
+            margin: 0 0 2px;
 
-            color: var(--principal);
+            font-size: 1.05rem;
+
+            font-weight: 800;
+
+            letter-spacing: -0.01em;
         }
 
 
@@ -216,12 +346,12 @@
 
             color: var(--secundario);
 
-            font-size: 14px;
+            font-size: 0.86rem;
         }
 
 
         .tarjeta-contenido {
-            padding: 24px;
+            padding: 18px 20px 20px;
         }
 
 
@@ -238,38 +368,53 @@
                             minmax(0, 1fr)
                     );
 
-            gap: 14px;
+            gap: 10px;
         }
 
 
         .dato {
-            padding: 14px;
+            padding: 10px 14px;
 
             background: #f8fafc;
 
             border: 1px solid var(--borde);
 
-            border-radius: 10px;
+            border-radius: 12px;
+
+            overflow-wrap: anywhere;
         }
 
 
         .dato strong {
             display: block;
 
-            margin-bottom: 5px;
+            margin-bottom: 2px;
 
             color: var(--secundario);
 
-            font-size: 12px;
+            font-size: 0.7rem;
+
+            font-weight: 700;
+
+            letter-spacing: 0.06em;
 
             text-transform: uppercase;
+        }
+
+
+        .dato span {
+            font-weight: 600;
+
+            font-size: 0.93rem;
         }
 
 
         .numero-orden {
             color: var(--principal);
 
-            font-weight: bold;
+            font-weight: 800;
+
+            font-variant-numeric: tabular-nums;
         }
 
 
@@ -278,9 +423,13 @@
            ================================================= */
 
         .tabla-contenedor {
-            margin-top: 20px;
+            margin-top: 14px;
 
             overflow-x: auto;
+
+            border: 1px solid var(--borde);
+
+            border-radius: 12px;
         }
 
 
@@ -288,12 +437,14 @@
             width: 100%;
 
             border-collapse: collapse;
+
+            font-size: 0.92rem;
         }
 
 
         th,
         td {
-            padding: 12px 10px;
+            padding: 8px 12px;
 
             text-align: left;
 
@@ -302,8 +453,17 @@
         }
 
 
+        tbody tr:last-child td {
+            border-bottom: none;
+        }
+
+
         th {
-            font-size: 12px;
+            font-size: 0.7rem;
+
+            font-weight: 700;
+
+            letter-spacing: 0.06em;
 
             color: var(--secundario);
 
@@ -315,6 +475,10 @@
 
         .precio {
             text-align: right;
+
+            font-variant-numeric: tabular-nums;
+
+            white-space: nowrap;
         }
 
 
@@ -323,11 +487,13 @@
            ================================================= */
 
         .total {
-            margin-top: 20px;
+            margin-top: 14px;
 
-            padding: 18px;
+            padding: 12px 18px;
 
-            border-radius: 12px;
+            border: 1px solid var(--verde-borde);
+
+            border-radius: 14px;
 
             background: var(--verde-fondo);
 
@@ -343,14 +509,18 @@
         .total span {
             color: var(--verde-texto);
 
-            font-weight: bold;
+            font-weight: 700;
         }
 
 
         .total strong {
-            color: var(--verde-texto);
+            color: var(--turquesa);
 
-            font-size: 26px;
+            font-size: 1.6rem;
+
+            font-weight: 800;
+
+            font-variant-numeric: tabular-nums;
         }
 
 
@@ -359,18 +529,18 @@
            ================================================= */
 
         .campo {
-            margin-bottom: 18px;
+            margin-bottom: 14px;
         }
 
 
         .campo label {
             display: block;
 
-            margin-bottom: 7px;
+            margin-bottom: 6px;
 
-            font-size: 13px;
+            font-size: 0.85rem;
 
-            font-weight: bold;
+            font-weight: 700;
         }
 
 
@@ -378,15 +548,36 @@
         .campo input {
             width: 100%;
 
-            padding: 11px 12px;
+            min-height: 44px;
 
-            border: 1px solid var(--borde);
+            padding: 10px 14px;
 
-            border-radius: 9px;
+            border: 1.5px solid var(--borde-fuerte);
+
+            border-radius: 12px;
 
             background: white;
 
-            font-size: 14px;
+            color: var(--texto);
+
+            font: 500 0.95rem/1.4 var(--font);
+
+            transition:
+                    border-color 160ms var(--ease),
+                    box-shadow 160ms var(--ease);
+        }
+
+
+        .campo input::placeholder {
+            color: #64748b;
+
+            opacity: 1;
+        }
+
+
+        .campo select:hover,
+        .campo input:hover {
+            border-color: #94a3b8;
         }
 
 
@@ -395,6 +586,8 @@
             outline: none;
 
             border-color: var(--principal);
+
+            box-shadow: 0 0 0 4px var(--anillo);
         }
 
 
@@ -403,7 +596,7 @@
 
             color: var(--secundario);
 
-            font-size: 12px;
+            font-size: 0.8rem;
         }
 
 
@@ -412,24 +605,34 @@
            ================================================= */
 
         .cambio {
-            margin-top: 12px;
+            margin-bottom: 14px;
 
-            padding: 14px;
+            padding: 10px 16px;
 
-            border-radius: 10px;
+            border: 1px solid var(--azul-borde);
+
+            border-radius: 12px;
 
             background: var(--azul-fondo);
 
             color: var(--azul-texto);
+
+            font-size: 0.9rem;
+
+            font-weight: 600;
         }
 
 
         .cambio strong {
             display: block;
 
-            margin-top: 4px;
+            margin-top: 2px;
 
-            font-size: 22px;
+            font-size: 1.4rem;
+
+            font-weight: 800;
+
+            font-variant-numeric: tabular-nums;
         }
 
 
@@ -444,29 +647,48 @@
 
             gap: 12px;
 
-            margin-top: 22px;
+            margin-top: 16px;
         }
 
 
         .boton {
-            border: none;
+            display: inline-flex;
 
-            border-radius: 9px;
+            align-items: center;
+            justify-content: center;
 
-            padding: 12px 17px;
+            gap: 8px;
+
+            min-height: 46px;
+
+            border: 1.5px solid transparent;
+
+            border-radius: 12px;
+
+            padding: 0 22px;
 
             text-decoration: none;
 
-            font-weight: bold;
-
-            font-size: 14px;
+            font: 700 0.95rem/1 var(--font);
 
             cursor: pointer;
+
+            transition:
+                    background-color 160ms var(--ease),
+                    border-color 160ms var(--ease),
+                    transform 120ms var(--ease);
+        }
+
+
+        .boton:active {
+            transform: scale(0.97);
         }
 
 
         .boton-volver {
-            background: #e2e8f0;
+            background: #ffffff;
+
+            border-color: var(--borde-fuerte);
 
             color: #334155;
         }
@@ -475,33 +697,80 @@
         .boton-pagar {
             background: var(--turquesa);
 
+            border-color: var(--turquesa);
+
             color: white;
         }
 
 
-        .boton-pagar:hover {
-            background: var(--turquesa-hover);
+        @media (hover: hover) and (pointer: fine) {
+
+            .boton-volver:hover {
+                background: var(--banda);
+
+                border-color: #94a3b8;
+            }
+
+            .boton-pagar:hover:not(:disabled) {
+                background: var(--turquesa-hover);
+
+                border-color: var(--turquesa-hover);
+            }
         }
 
 
         .boton-pagar:disabled {
-            opacity: .55;
+            background: #e2e8f0;
+
+            border-color: var(--borde-fuerte);
+
+            color: #334155;
 
             cursor: not-allowed;
+
+            transform: none;
+        }
+
+
+        .boton-pagar:disabled::before {
+            content: "";
+
+            width: 16px;
+            height: 16px;
+
+            border: 2px solid var(--borde-fuerte);
+            border-top-color: var(--principal);
+            border-radius: 50%;
+
+            animation: girar 700ms linear infinite;
         }
 
 
         .oculto {
-            display: none;
+            display: none !important;
         }
 
 
-        @media (max-width: 850px) {
+        @keyframes aparecer {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: none; }
+        }
+
+
+        @keyframes girar {
+            to { transform: rotate(360deg); }
+        }
+
+
+        @media (max-width: 900px) {
 
             .grid-principal {
                 grid-template-columns: 1fr;
             }
+        }
 
+
+        @media (max-width: 560px) {
 
             .datos {
                 grid-template-columns: 1fr;
@@ -509,7 +778,7 @@
 
 
             .acciones {
-                flex-direction: column;
+                flex-direction: column-reverse;
             }
 
 
@@ -517,6 +786,29 @@
                 width: 100%;
 
                 text-align: center;
+            }
+
+
+            .marca p {
+                display: none;
+            }
+        }
+
+
+        @media (prefers-reduced-motion: reduce) {
+
+            .tarjeta {
+                animation: none;
+            }
+
+
+            .boton:active {
+                transform: none;
+            }
+
+
+            .boton-pagar:disabled::before {
+                animation-duration: 1.6s;
             }
         }
 
@@ -526,6 +818,9 @@
 
 
 <body>
+
+
+<a class="enlace-salto" href="#contenido">Saltar al contenido</a>
 
 
 <!-- =====================================================
@@ -538,13 +833,21 @@
 
         <div class="marca">
 
-            <h1>
-                SANTOS
-            </h1>
+            <span class="marca-simbolo" aria-hidden="true">
+                <svg viewBox="0 0 24 24"><path d="M9 3h6v6h6v6h-6v6H9v-6H3V9h6z"/></svg>
+            </span>
 
-            <p>
-                Caja · Cobro de Laboratorio
-            </p>
+            <div>
+
+                <h1>
+                    SANTOS
+                </h1>
+
+                <p>
+                    Caja · Cobro de Laboratorio
+                </p>
+
+            </div>
 
         </div>
 
@@ -554,7 +857,7 @@
 
 
 
-<main class="contenedor">
+<main class="contenedor" id="contenido">
 
 
     <!-- =================================================
@@ -562,6 +865,7 @@
          ================================================= -->
 
     <div class="mensaje mensaje-error"
+         role="alert"
          th:if="${mensajeError != null}"
          th:text="${mensajeError}">
     </div>
@@ -679,7 +983,7 @@
                      ========================================= -->
 
                 <div class="dato"
-                     style="margin-top: 14px;">
+                     style="margin-top: 10px;">
 
                     <strong>
                         Observaciones
@@ -942,6 +1246,7 @@
 
                         <div id="mensajeMonto"
                              class="mensaje mensaje-error oculto"
+                             role="alert"
                              style="margin-top: 12px;">
 
                             El monto recibido no puede ser menor
@@ -987,6 +1292,7 @@
 
                             <div id="mensajeTarjeta"
                                  class="mensaje mensaje-error oculto"
+                                 role="alert"
                                  style="margin-top: 12px;">
 
                                 Ingrese los últimos 4 dígitos de la tarjeta.

@@ -3,6 +3,8 @@ package com.proyecto.clinicamedica.controller;
 import com.proyecto.clinicamedica.dto.cita.CitaWizardDTO;
 import com.proyecto.clinicamedica.dto.cita.ResultadoValidacionCita;
 
+import com.proyecto.clinicamedica.entity.ConsultaMedica;
+
 import com.proyecto.clinicamedica.entity.Cita;
 import com.proyecto.clinicamedica.entity.ReservaTemporalCita;
 import com.proyecto.clinicamedica.entity.Usuario;
@@ -771,6 +773,110 @@ public class CitaWizardController {
         );
     }
 
+
+    // =====================================================
+    // CU-12 FA02 - CANCELAR CITA DE SEGUIMIENTO
+    // =====================================================
+
+    @PostMapping(
+            "/interno/medico/citas/agendar/cancelar-seguimiento"
+    )
+    public String cancelarSeguimiento(
+
+            @ModelAttribute("citaWizard")
+            CitaWizardDTO wizard,
+
+            SessionStatus sessionStatus,
+
+            RedirectAttributes redirectAttributes
+    ) {
+
+        // =================================================
+        // VALIDAR QUE SEA UN SEGUIMIENTO
+        // =================================================
+
+        if (!Boolean.TRUE.equals(
+                wizard.getEsSeguimiento()
+        ) || wizard.getIdConsultaOrigen() == null) {
+
+            sessionStatus.setComplete();
+
+            return "redirect:/interno/medico";
+        }
+
+        try {
+
+            // =================================================
+            // VERIFICAR LA CONSULTA ORIGINAL Y EL MÉDICO
+            // =================================================
+
+            ConsultaMedica consulta =
+                    seguimientoCitaService
+                            .prepararWizardSeguimiento(
+                                    wizard.getIdConsultaOrigen(),
+                                    new CitaWizardDTO()
+                            );
+
+            Integer idCitaOrigen =
+                    consulta.getCita().getId();
+
+            // =================================================
+            // LIBERAR RESERVA TEMPORAL SI EXISTE
+            // =================================================
+
+            String token =
+                    wizard.getTokenReserva();
+
+            if (token != null && !token.isBlank()) {
+
+                ReservaTemporalCita reserva =
+                        reservaTemporalCitaService
+                                .buscarVigente(token)
+                                .orElse(null);
+
+                if (reserva != null
+                        && reserva.getMedico() != null
+                        && reserva.getPaciente() != null
+                        && reserva.getMedico().getId().equals(
+                        consulta.getCita().getMedico().getId()
+                )
+                        && reserva.getPaciente().getId().equals(
+                        consulta.getCita().getPaciente().getId()
+                )) {
+
+                    reservaTemporalCitaService.liberar(token);
+                }
+            }
+
+            // =================================================
+            // DESCARTAR LOS DATOS DEL WIZARD
+            // =================================================
+
+            sessionStatus.setComplete();
+
+            // =================================================
+            // REGRESAR A LA CONSULTA MÉDICA ORIGINAL
+            // =================================================
+
+            return "redirect:/interno/medico/consulta/"
+                    + idCitaOrigen;
+
+        } catch (
+                IllegalArgumentException
+                | IllegalStateException ex
+        ) {
+
+            sessionStatus.setComplete();
+
+            redirectAttributes.addFlashAttribute(
+                    "mensajeError",
+                    ex.getMessage()
+            );
+
+            return "redirect:/interno/medico";
+        }
+    }
+
     // =====================================================
     // VOLVER
     // =====================================================
@@ -1268,15 +1374,19 @@ public class CitaWizardController {
                                 );
 
 
+
                 redirectAttributes.addFlashAttribute(
                         "mensajeExito",
 
-                        "Cita de seguimiento agendada para el "
+                        "Cita de seguimiento No. "
+                                + cita.getId()
+                                + " agendada exitosamente para el "
                                 + fecha
                                 + " a las "
                                 + hora
                                 + ". Se enviará notificación al paciente."
                 );
+
 
 
                 return "redirect:/interno/medico";

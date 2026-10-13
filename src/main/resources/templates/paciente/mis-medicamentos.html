@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="es" xmlns:th="http://www.thymeleaf.org">
 
@@ -8,7 +7,16 @@
     <meta name="viewport"
           content="width=device-width, initial-scale=1.0">
 
+    <meta name="theme-color" content="#1B5FA6">
+
     <title>Mis medicamentos | Clínica Médica SANTOS</title>
+
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Crect width='24' height='24' rx='6' fill='%231B5FA6'/%3E%3Cpath d='M9 4h6v5h5v6h-5v5H9v-5H4V9h5z' fill='white'/%3E%3C/svg%3E">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
+          rel="stylesheet">
 
     <style>
 
@@ -17,14 +25,26 @@
            ============================================= */
 
         :root {
-            --azul: #102a43;
-            --azul-claro: #eaf3f8;
-            --verde: #087f75;
-            --fondo: #f4f7fb;
-            --texto: #263746;
-            --gris: #697b8a;
-            --borde: #e1e8ee;
+            --font: 'Plus Jakarta Sans', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+
+            --ink: #0f172a;
+            --ink-2: #334155;
+            --muted: #475569;
+            --line: #e2e8f0;
+            --line-strong: #cbd5e1;
+
+            --fondo: #f8fafc;
             --blanco: #ffffff;
+            --band: #f1f5f9;
+
+            --azul: #1b5fa6;
+            --azul-oscuro: #124a85;
+            --azul-claro: #eaf2fb;
+            --azul-linea: #c7dbf0;
+            --verde: #0f766e;
+            --verde-claro: #e6f6f3;
+
+            --ease: cubic-bezier(0.23, 1, 0.32, 1);
         }
 
         * {
@@ -33,9 +53,52 @@
 
         body {
             margin: 0;
-            font-family: Arial, sans-serif;
-            background: var(--fondo);
-            color: var(--texto);
+            min-height: 100dvh;
+            font-family: var(--font);
+            font-size: 1rem;
+            line-height: 1.6;
+            color: var(--ink);
+            background:
+                    radial-gradient(50% 40% at 100% 0%, rgba(15, 118, 110, 0.08), transparent 70%),
+                    radial-gradient(45% 40% at 0% 100%, rgba(27, 95, 166, 0.08), transparent 70%),
+                    var(--fondo);
+            -webkit-font-smoothing: antialiased;
+        }
+
+        h1, h2 {
+            color: var(--ink);
+            text-wrap: balance;
+        }
+
+        p {
+            text-wrap: pretty;
+        }
+
+        ::selection {
+            background: var(--azul-linea);
+            color: var(--ink);
+        }
+
+        a:focus-visible {
+            outline: 3px solid var(--verde);
+            outline-offset: 2px;
+        }
+
+        .enlace-salto {
+            position: absolute;
+            left: 16px;
+            top: -64px;
+            z-index: 100;
+            padding: 10px 16px;
+            border-radius: 10px;
+            background: var(--ink);
+            color: #fff;
+            font-weight: 600;
+            text-decoration: none;
+        }
+
+        .enlace-salto:focus {
+            top: 12px;
         }
 
         /* =============================================
@@ -43,36 +106,84 @@
            ============================================= */
 
         .encabezado {
-            background: var(--azul);
-            color: white;
-            padding: 22px 6%;
+            position: sticky;
+            top: 0;
+            z-index: 40;
             display: flex;
             align-items: center;
             justify-content: space-between;
             gap: 15px;
             flex-wrap: wrap;
+            min-height: 68px;
+            padding: 10px max(20px, calc((100% - 1150px) / 2));
+            background: rgba(255, 255, 255, 0.92);
+            backdrop-filter: saturate(160%) blur(10px);
+            -webkit-backdrop-filter: saturate(160%) blur(10px);
+            border-bottom: 1px solid var(--line);
         }
 
         .marca {
-            font-size: 22px;
-            font-weight: bold;
+            display: inline-flex;
+            align-items: center;
+            gap: 12px;
         }
 
-        .marca span {
-            color: #77dfd3;
+        .marca-simbolo {
+            display: grid;
+            place-items: center;
+            width: 40px;
+            height: 40px;
+            border-radius: 13px;
+            background: var(--azul);
+            color: #fff;
+        }
+
+        .marca-simbolo svg {
+            width: 21px;
+            height: 21px;
+            fill: currentColor;
+        }
+
+        .marca-texto {
+            display: grid;
+            font-size: 1.1rem;
+            font-weight: 800;
+            letter-spacing: 0.08em;
+            line-height: 1.15;
+            color: var(--ink);
+        }
+
+        .marca-texto small {
+            font-size: 0.72rem;
+            font-weight: 500;
+            letter-spacing: 0;
+            color: var(--muted);
         }
 
         .volver {
-            color: white;
+            display: inline-flex;
+            align-items: center;
+            min-height: 42px;
+            padding: 0 18px;
+            border: 1.5px solid var(--line-strong);
+            border-radius: 12px;
+            background: var(--blanco);
+            color: var(--ink);
+            font-size: 0.92rem;
+            font-weight: 600;
             text-decoration: none;
-            border: 1px solid #ffffff60;
-            padding: 11px 17px;
-            border-radius: 10px;
-            font-size: 14px;
+            transition: background-color 160ms var(--ease), border-color 160ms var(--ease), transform 120ms var(--ease);
         }
 
-        .volver:hover {
-            background: #ffffff18;
+        .volver:active {
+            transform: scale(0.97);
+        }
+
+        @media (hover: hover) and (pointer: fine) {
+            .volver:hover {
+                background: var(--band);
+                border-color: #94a3b8;
+            }
         }
 
         /* =============================================
@@ -80,50 +191,55 @@
            ============================================= */
 
         .contenedor {
-            width: min(1150px, 92%);
-            margin: 35px auto 60px;
+            width: min(1150px, 100% - 40px);
+            margin: 28px auto 56px;
         }
 
         .titulo {
-            margin-bottom: 27px;
+            margin-bottom: 20px;
         }
 
         .titulo h1 {
-            color: var(--azul);
-            margin: 0 0 9px;
-            font-size: 30px;
+            margin: 0 0 8px;
+            font-size: clamp(1.7rem, 3.6vw, 2.4rem);
+            font-weight: 800;
+            line-height: 1.1;
+            letter-spacing: -0.03em;
         }
 
         .titulo p {
             margin: 0;
-            color: var(--gris);
-            line-height: 1.6;
+            max-width: 62ch;
+            color: var(--muted);
         }
 
         .resumen {
-            background: white;
-            border: 1px solid var(--borde);
-            border-radius: 15px;
-            padding: 22px;
-            margin-bottom: 25px;
             display: flex;
             align-items: center;
             justify-content: space-between;
-            gap: 15px;
+            gap: 12px 15px;
             flex-wrap: wrap;
+            margin-bottom: 20px;
+            padding: 14px 20px;
+            border: 1px solid var(--line);
+            border-radius: 16px;
+            background: var(--blanco);
         }
 
         .resumen strong {
-            color: var(--azul);
-            font-size: 19px;
+            color: var(--ink);
+            font-size: 1.02rem;
+            font-weight: 800;
         }
 
         .contador {
+            padding: 8px 16px;
+            border-radius: 999px;
             background: var(--azul-claro);
-            color: var(--azul);
-            border-radius: 10px;
-            padding: 12px 18px;
-            font-weight: bold;
+            color: var(--azul-oscuro);
+            font-size: 0.9rem;
+            font-weight: 700;
+            font-variant-numeric: tabular-nums;
         }
 
         /* =============================================
@@ -134,73 +250,99 @@
             display: grid;
             grid-template-columns: repeat(
                 auto-fit,
-                minmax(min(100%, 360px), 1fr)
+                minmax(min(100%, 440px), 1fr)
             );
-            gap: 20px;
+            gap: 18px;
         }
 
         .tarjeta {
-            background: white;
-            border: 1px solid var(--borde);
-            border-radius: 16px;
             overflow: hidden;
-            box-shadow: 0 5px 18px #102a4308;
+            border: 1px solid var(--line);
+            border-radius: 20px;
+            background: var(--blanco);
+            animation: aparecer 420ms var(--ease) backwards;
+            transition: transform 200ms var(--ease), box-shadow 200ms var(--ease), border-color 200ms var(--ease);
+        }
+
+        .tarjeta:nth-child(2) { animation-delay: 50ms; }
+        .tarjeta:nth-child(3) { animation-delay: 100ms; }
+        .tarjeta:nth-child(n+4) { animation-delay: 150ms; }
+
+        @media (hover: hover) and (pointer: fine) {
+            .tarjeta:hover {
+                transform: translateY(-2px);
+                border-color: var(--line-strong);
+                box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04), 0 12px 28px -14px rgba(27, 95, 166, 0.22);
+            }
         }
 
         .tarjeta-cabecera {
+            padding: 16px 22px;
             background: var(--azul-claro);
-            padding: 19px 21px;
+            border-bottom: 1px solid var(--azul-linea);
         }
 
         .tarjeta-cabecera h2 {
-            margin: 0 0 8px;
-            color: var(--azul);
-            font-size: 18px;
+            margin: 0 0 4px;
+            font-size: 1.12rem;
+            font-weight: 800;
+            letter-spacing: -0.01em;
             overflow-wrap: anywhere;
         }
 
         .fecha {
-            color: var(--gris);
-            font-size: 13px;
+            color: var(--muted);
+            font-size: 0.85rem;
+            font-variant-numeric: tabular-nums;
         }
 
         .tarjeta-cuerpo {
-            padding: 22px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 14px 20px;
+            padding: 18px 22px 22px;
+        }
+
+        .tarjeta-cuerpo > .etiqueta,
+        .tarjeta-cuerpo > .sustitucion,
+        .tarjeta-cuerpo > .total {
+            grid-column: 1 / -1;
         }
 
         .dato {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            gap: 15px;
-            padding: 11px 0;
-            border-bottom: 1px solid var(--borde);
+            display: grid;
+            gap: 2px;
+            min-width: 0;
+            padding-bottom: 12px;
+            border-bottom: 1px solid var(--line);
         }
 
-        .dato:last-child {
-            border-bottom: none;
-        }
-
-        .dato span {
-            color: var(--gris);
-            font-size: 13px;
+        .dato > span {
+            color: var(--muted);
+            font-size: 0.72rem;
+            font-weight: 700;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
         }
 
         .dato strong {
-            text-align: right;
-            font-size: 14px;
-            color: var(--azul);
+            font-size: 0.95rem;
+            font-weight: 700;
+            color: var(--ink);
+            font-variant-numeric: tabular-nums;
             overflow-wrap: anywhere;
         }
 
         .etiqueta {
-            display: inline-block;
-            background: #dcf5ee;
-            color: #086b52;
-            border-radius: 7px;
-            padding: 7px 10px;
-            font-size: 12px;
-            font-weight: bold;
+            justify-self: start;
+            padding: 6px 12px;
+            border-radius: 999px;
+            background: var(--verde-claro);
+            color: #0f5c55;
+            font-size: 0.72rem;
+            font-weight: 700;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
         }
 
         /* =============================================
@@ -208,21 +350,22 @@
            ============================================= */
 
         .sustitucion {
-            background: #fff8e8;
-            border: 1px solid #f1dfa8;
-            border-radius: 11px;
-            padding: 15px;
-            margin-top: 17px;
+            padding: 14px 16px;
+            border: 1px solid #fde68a;
+            border-left: 4px solid #d97706;
+            border-radius: 12px;
+            background: #fffbeb;
+            color: #78350f;
         }
 
         .sustitucion strong {
-            color: #866117;
+            color: #78350f;
         }
 
         .sustitucion p {
-            margin: 9px 0 0;
-            font-size: 13px;
-            line-height: 1.6;
+            margin: 8px 0 0;
+            font-size: 0.88rem;
+            line-height: 1.55;
             overflow-wrap: anywhere;
         }
 
@@ -231,19 +374,23 @@
            ============================================= */
 
         .total {
-            background: #e9f7f3;
-            padding: 17px;
-            margin-top: 19px;
-            border-radius: 10px;
             display: flex;
             justify-content: space-between;
             gap: 15px;
             align-items: center;
+            padding: 14px 18px;
+            border: 1px solid #99e6d8;
+            border-radius: 14px;
+            background: #f0fdfa;
+            color: var(--ink-2);
+            font-weight: 600;
         }
 
         .total strong {
             color: var(--verde);
-            font-size: 20px;
+            font-size: 1.25rem;
+            font-weight: 800;
+            font-variant-numeric: tabular-nums;
         }
 
         /* =============================================
@@ -251,46 +398,78 @@
            ============================================= */
 
         .vacio {
+            padding: clamp(40px, 8vw, 64px) 24px;
+            border: 1.5px dashed var(--line-strong);
+            border-radius: 24px;
+            background: var(--blanco);
             text-align: center;
-            background: white;
-            border: 1px solid var(--borde);
-            border-radius: 16px;
-            padding: 55px 25px;
+            animation: aparecer 420ms var(--ease) backwards;
         }
 
         .vacio h2 {
-            color: var(--azul);
+            margin: 0 0 8px;
+            font-size: 1.35rem;
+            font-weight: 800;
+            letter-spacing: -0.02em;
         }
 
         .vacio p {
-            color: var(--gris);
-            line-height: 1.6;
+            max-width: 46ch;
+            margin: 0 auto;
+            color: var(--muted);
         }
 
         .nota {
-            color: var(--gris);
-            font-size: 13px;
-            margin-top: 28px;
-            line-height: 1.7;
+            margin: 24px 0 0;
+            padding: 14px 18px;
+            border: 1px solid var(--azul-linea);
+            border-left: 4px solid var(--azul);
+            border-radius: 12px;
+            background: var(--azul-claro);
+            color: #0f2f52;
+            font-size: 0.88rem;
+            line-height: 1.65;
         }
+
+        @keyframes aparecer {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: none; }
+        }
+
+        /* =============================================
+           RESPONSIVO
+           ============================================= */
 
         @media (max-width: 600px) {
 
-            .titulo h1 {
-                font-size: 25px;
+            .marca-texto small {
+                display: none;
             }
 
             .contenedor {
-                margin-top: 25px;
+                margin-top: 20px;
             }
 
-            .dato {
-                flex-direction: column;
-                gap: 5px;
+            .tarjeta-cuerpo {
+                grid-template-columns: 1fr;
+                padding: 16px 18px 20px;
             }
 
-            .dato strong {
-                text-align: left;
+            .tarjeta-cabecera {
+                padding: 14px 18px;
+            }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+
+            .tarjeta,
+            .vacio {
+                animation: none;
+            }
+
+            .tarjeta:hover,
+            .volver:active {
+                transform: none;
             }
         }
 
@@ -299,6 +478,8 @@
 
 <body>
 
+<a class="enlace-salto" href="#contenido">Saltar al contenido</a>
+
 <!-- ============================================= -->
 <!-- ENCABEZADO -->
 <!-- ============================================= -->
@@ -306,7 +487,12 @@
 <header class="encabezado">
 
     <div class="marca">
-        CLÍNICA MÉDICA <span>SANTOS</span>
+        <span class="marca-simbolo" aria-hidden="true">
+            <svg viewBox="0 0 24 24"><path d="M9 3h6v6h6v6h-6v6H9v-6H3V9h6z"/></svg>
+        </span>
+        <span class="marca-texto">
+            CLÍNICA MÉDICA SANTOS
+        </span>
     </div>
 
     <a class="volver"
@@ -317,7 +503,7 @@
 </header>
 
 
-<main class="contenedor">
+<main class="contenedor" id="contenido">
 
     <!-- ========================================= -->
     <!-- TÍTULO -->

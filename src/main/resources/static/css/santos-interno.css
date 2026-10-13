@@ -1,9 +1,12 @@
 /* =========================================================
-   SANTOS · Panel interno
+   SANTOS · Interfaz interna (dashboard, listados y formularios)
    Tema sobre Bootstrap 5.3 (debe cargarse DESPUÉS de Bootstrap).
-   Layout de una sola pantalla: la página mide como mínimo el
-   alto del viewport y solo hace scroll si los módulos del rol
-   realmente no caben.
+
+   Objetivo de layout: ocupar la pantalla sin scroll de página.
+   - Dashboard: la página mide como mínimo el alto del viewport.
+   - Listados: en escritorio la página queda fija al viewport y
+     solo la tabla hace scroll interno (con encabezado fijo).
+   - Controles y formularios compactos para evitar scroll.
    ========================================================= */
 
 :root {
@@ -18,8 +21,9 @@
     --bs-success-rgb: 15, 118, 110;
     --bs-danger-rgb: 185, 28, 28;
     --bs-link-color: #124a85;
+    --bs-form-invalid-color: #b91c1c;
+    --bs-form-invalid-border-color: #b91c1c;
 
-    /* Fondos suaves e iconos de los módulos (se usan las clases de Bootstrap del HTML) */
     --bs-primary-bg-subtle: #eaf2fb;
     --bs-success-bg-subtle: #e6f6f3;
     --bs-warning-bg-subtle: #fef3c7;
@@ -32,15 +36,18 @@
     --sa-muted: #475569;
     --sa-line: #e2e8f0;
     --sa-line-strong: #cbd5e1;
+    --sa-band: #f1f5f9;
     --sa-blue: #1b5fa6;
+    --sa-blue-dark: #124a85;
     --sa-blue-tint: #eaf2fb;
     --sa-blue-line: #c7dbf0;
     --sa-teal: #0f766e;
     --sa-teal-tint: #e6f6f3;
+    --sa-ring: rgba(27, 95, 166, 0.22);
     --sa-ease: cubic-bezier(0.23, 1, 0.32, 1);
 }
 
-/* ---------- Base: pantalla completa, pie al fondo ---------- */
+/* ---------- Base ---------- */
 html, body { min-height: 100dvh; }
 
 body {
@@ -56,7 +63,7 @@ h1, h2, h3 { color: var(--sa-ink); letter-spacing: -0.02em; text-wrap: balance; 
 p { text-wrap: pretty; }
 .text-secondary { color: var(--sa-muted) !important; }
 
-:where(a, button):focus-visible {
+:where(a, button, input, select, textarea):focus-visible {
     outline: 3px solid var(--sa-teal);
     outline-offset: 2px;
     box-shadow: none;
@@ -78,14 +85,13 @@ p { text-wrap: pretty; }
 
 /* ---------- Barra superior (compacta) ---------- */
 .santos-navbar {
-    min-height: 64px;
+    min-height: 60px;
     padding-block: 8px;
     background: rgba(255, 255, 255, 0.92);
     backdrop-filter: saturate(160%) blur(10px);
     -webkit-backdrop-filter: saturate(160%) blur(10px);
     border-bottom: 1px solid var(--sa-line);
 }
-
 .santos-marca {
     display: inline-flex;
     align-items: center;
@@ -99,14 +105,13 @@ p { text-wrap: pretty; }
 .santos-simbolo {
     display: grid;
     place-items: center;
-    width: 40px;
-    height: 40px;
-    border-radius: 13px;
+    width: 38px;
+    height: 38px;
+    border-radius: 12px;
     background: var(--sa-blue);
     color: #fff;
     font-size: 1.2rem;
 }
-
 .santos-avatar {
     display: grid;
     place-items: center;
@@ -126,11 +131,12 @@ p { text-wrap: pretty; }
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    min-height: 44px;
+    min-height: 42px;
     transition: background-color 160ms var(--sa-ease), border-color 160ms var(--sa-ease),
     color 160ms var(--sa-ease), transform 120ms var(--sa-ease);
 }
 .btn:active { transform: scale(0.97); }
+.btn-sm { min-height: 34px; --bs-btn-border-radius: 10px; }
 
 .btn-outline-secondary {
     --bs-btn-color: #334155;
@@ -141,6 +147,8 @@ p { text-wrap: pretty; }
     --bs-btn-active-bg: #e2e8f0;
     --bs-btn-active-border-color: #94a3b8;
     --bs-btn-active-color: #0f172a;
+    --bs-btn-disabled-color: #475569;
+    --bs-btn-disabled-border-color: #cbd5e1;
 }
 .btn-primary {
     --bs-btn-bg: #1b5fa6;
@@ -153,8 +161,60 @@ p { text-wrap: pretty; }
     --bs-btn-active-border-color: #0d3a6b;
     --bs-btn-active-color: #fff;
 }
+.btn-danger {
+    --bs-btn-bg: #b91c1c;
+    --bs-btn-border-color: #b91c1c;
+    --bs-btn-color: #fff;
+    --bs-btn-hover-bg: #991b1b;
+    --bs-btn-hover-border-color: #991b1b;
+    --bs-btn-hover-color: #fff;
+    --bs-btn-active-bg: #7f1d1d;
+    --bs-btn-active-border-color: #7f1d1d;
+    --bs-btn-active-color: #fff;
+}
 
-/* ---------- Bienvenida (franja compacta) ---------- */
+/* ---------- Formularios (compactos) ---------- */
+.form-label { margin-bottom: 0.3rem; font-size: 0.85rem; font-weight: 600; color: var(--sa-ink); }
+.form-text { margin-top: 0.25rem; font-size: 0.78rem; color: var(--sa-muted); }
+
+.form-control,
+.form-select {
+    min-height: 42px;
+    padding-block: 0.45rem;
+    border: 1.5px solid var(--sa-line-strong);
+    border-radius: 12px;
+    background-color: #fff;
+    color: var(--sa-ink);
+    font-size: 0.93rem;
+    font-weight: 500;
+    transition: border-color 160ms var(--sa-ease), box-shadow 160ms var(--sa-ease);
+}
+textarea.form-control { min-height: 0; }
+.form-control::placeholder { color: #64748b; font-weight: 400; opacity: 1; }
+@media (hover: hover) and (pointer: fine) {
+    .form-control:hover, .form-select:hover { border-color: #94a3b8; }
+}
+.form-control:focus,
+.form-select:focus {
+    border-color: var(--sa-blue);
+    background-color: #fff;
+    color: var(--sa-ink);
+    box-shadow: 0 0 0 4px var(--sa-ring);
+}
+.form-control:disabled, .form-select:disabled { background-color: var(--sa-band); color: var(--sa-muted); }
+.form-control.is-invalid, .form-select.is-invalid { border-color: #b91c1c; background-color: #fffafa; }
+.invalid-feedback { font-size: 0.82rem; font-weight: 600; }
+
+/* ---------- Avisos ---------- */
+.alert { --bs-alert-border-radius: 14px; padding: 12px 16px; font-size: 0.93rem; }
+.alert-success { --bs-alert-bg: #ecfdf5; --bs-alert-border-color: #a7f3d0; --bs-alert-color: #064e3b; }
+.alert-danger { --bs-alert-bg: #fef2f2; --bs-alert-border-color: #fecaca; --bs-alert-color: #991b1b; }
+.alert-warning { --bs-alert-bg: #fffbeb; --bs-alert-border-color: #fde68a; --bs-alert-color: #78350f; }
+.alert-info { --bs-alert-bg: #eaf2fb; --bs-alert-border-color: #c7dbf0; --bs-alert-color: #0f2f52; }
+
+/* =========================================================
+   DASHBOARD
+   ========================================================= */
 .santos-bienvenida {
     padding-block: 18px;
     background:
@@ -199,17 +259,10 @@ p { text-wrap: pretty; }
     font-size: 0.97rem;
 }
 
-/* ---------- Contenido ---------- */
-.santos-seccion-titulo {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: baseline;
-    gap: 4px 16px;
-}
+.santos-seccion-titulo { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 16px; }
 .santos-seccion-titulo h2 { margin: 0; font-size: 1.2rem; font-weight: 800; }
 .santos-seccion-titulo p { margin: 0; font-size: 0.93rem; }
 
-/* Rejilla de módulos: tarjetas de ancho acotado que se acomodan según el espacio */
 .santos-modulos {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(300px, 400px));
@@ -230,7 +283,6 @@ p { text-wrap: pretty; }
 .santos-modulos > :nth-child(2) .santos-modulo { animation-delay: 50ms; }
 .santos-modulos > :nth-child(3) .santos-modulo { animation-delay: 100ms; }
 .santos-modulos > :nth-child(n+4) .santos-modulo { animation-delay: 150ms; }
-
 @media (hover: hover) and (pointer: fine) {
     .santos-modulo:hover {
         transform: translateY(-3px);
@@ -238,11 +290,6 @@ p { text-wrap: pretty; }
         box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04), 0 12px 28px -14px rgba(27, 95, 166, 0.22);
     }
 }
-@keyframes sa-aparecer {
-    from { opacity: 0; transform: translateY(8px); }
-    to { opacity: 1; transform: none; }
-}
-
 .santos-modulo .card-body { padding: 1.35rem !important; }
 .santos-modulo h3 { margin-bottom: 6px; font-size: 1.08rem; font-weight: 800; }
 .santos-modulo p { margin-bottom: 16px; font-size: 0.93rem; line-height: 1.5; }
@@ -256,8 +303,6 @@ p { text-wrap: pretty; }
     border-radius: 14px;
     font-size: 1.3rem;
 }
-
-/* Todos los botones de módulo comparten el estilo principal, sin importar su variante */
 .santos-modulo .btn {
     --bs-btn-bg: #1b5fa6;
     --bs-btn-border-color: #1b5fa6;
@@ -271,7 +316,6 @@ p { text-wrap: pretty; }
     width: 100%;
 }
 
-/* ---------- Aviso sin módulos ---------- */
 .santos-aviso {
     display: flex;
     align-items: flex-start;
@@ -286,24 +330,303 @@ p { text-wrap: pretty; }
 .santos-aviso .bi { color: var(--sa-blue); }
 .santos-aviso h3 { color: #0f2f52; }
 
-/* ---------- Pie compacto ---------- */
-.santos-pie {
-    flex-shrink: 0;
-    background: #ffffff;
-    border-top: 1px solid var(--sa-line);
-    color: var(--sa-muted);
-}
+.santos-pie { flex-shrink: 0; background: #ffffff; border-top: 1px solid var(--sa-line); color: var(--sa-muted); }
 .santos-pie strong { color: var(--sa-ink); letter-spacing: 0.08em; }
 
+/* =========================================================
+   LISTADOS (p. ej. mantenimiento de usuarios)
+   ========================================================= */
+.santos-vista-lista { display: flex; flex-direction: column; gap: 14px; }
+.santos-vista-lista > * { flex: none; }
+.santos-vista-lista > .alert { margin-bottom: 0; }
+
+.santos-encabezado-pagina {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px 24px;
+}
+.santos-encabezado-pagina h1 { margin: 0; font-size: 1.5rem; font-weight: 800; letter-spacing: -0.03em; }
+.santos-encabezado-pagina p { font-size: 0.92rem; }
+
+.santos-panel,
+.card.santos-panel {
+    border: 1px solid var(--sa-line);
+    border-radius: 18px;
+    background: #ffffff;
+    box-shadow: 0 1px 2px rgba(15, 23, 42, 0.03);
+    animation: sa-aparecer 380ms var(--sa-ease) backwards;
+}
+.santos-panel > .card-header { border-bottom: 1px solid var(--sa-line); border-radius: 18px 18px 0 0; }
+.santos-panel > .card-footer { border-top: 1px solid var(--sa-line); border-radius: 0 0 18px 18px; }
+.santos-panel-cab { padding: 12px 20px; }
+.santos-panel-cab h2 { margin: 0; font-size: 1.05rem; font-weight: 800; }
+.santos-panel-cab p { font-size: 0.88rem; }
+.santos-panel-pie { padding: 10px 20px; }
+
+/* Filtros en una sola fila (el texto de ayuda no altera la altura) */
+.santos-filtros-cuerpo { padding: 14px 18px 26px; }
+.santos-filtros {
+    display: grid;
+    grid-template-columns: minmax(150px, 1.1fr) minmax(190px, 1.7fr) repeat(3, minmax(120px, 1fr)) auto;
+    gap: 12px;
+    align-items: end;
+}
+.santos-filtros > div { position: relative; min-width: 0; }
+.santos-filtros .form-text {
+    position: absolute;
+    left: 2px;
+    top: 100%;
+    margin: 3px 0 0;
+    font-size: 0.74rem;
+    white-space: nowrap;
+}
+.santos-filtros-acciones { display: flex; gap: 8px; }
+
+/* Tabla compacta con encabezado fijo */
+.santos-tabla {
+    --bs-table-bg: transparent;
+    --bs-table-hover-bg: #f1f5f9;
+    --bs-table-cell-padding-y: 0.55rem;
+    --bs-table-cell-padding-x: 0.75rem;
+    --bs-table-border-color: #e2e8f0;
+    font-size: 0.9rem;
+    color: var(--sa-ink);
+}
+.santos-tabla thead th {
+    position: sticky;
+    top: 0;
+    z-index: 2;
+    background: #f8fafc;
+    border-bottom: 0;
+    box-shadow: inset 0 -1px 0 var(--sa-line);
+    color: var(--sa-muted);
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    white-space: nowrap;
+}
+.santos-orden { color: inherit; text-decoration: none; }
+.santos-orden .bi { font-size: 0.75rem; opacity: 0.7; }
+@media (hover: hover) and (pointer: fine) {
+    .santos-orden:hover { color: var(--sa-blue-dark); }
+}
+
+.santos-rol {
+    padding: 5px 10px;
+    border-radius: 999px;
+    background: var(--sa-blue-tint);
+    color: var(--sa-blue-dark);
+    font-size: 0.78rem;
+    font-weight: 700;
+}
+.santos-estado {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 5px 11px;
+    border: 1px solid var(--sa-line-strong);
+    border-radius: 999px;
+    font-size: 0.78rem;
+    font-weight: 700;
+    line-height: 1;
+}
+.santos-estado::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: currentColor; }
+.santos-estado-activo { background: #ecfdf5; border-color: #a7f3d0; color: #065f46; }
+.santos-estado-inactivo { background: var(--sa-band); border-color: var(--sa-line-strong); color: #334155; }
+
+/* Menú de acciones y paginación */
+.dropdown-menu {
+    --bs-dropdown-border-radius: 14px;
+    --bs-dropdown-border-color: #e2e8f0;
+    --bs-dropdown-link-color: #0f172a;
+    --bs-dropdown-link-hover-bg: #f1f5f9;
+    --bs-dropdown-link-active-bg: #eaf2fb;
+    --bs-dropdown-link-active-color: #0f172a;
+    padding: 6px;
+    box-shadow: 0 12px 28px -12px rgba(15, 23, 42, 0.25);
+    font-size: 0.92rem;
+}
+.dropdown-item { padding: 8px 12px; border-radius: 9px; font-weight: 500; }
+.dropdown-item.text-danger:hover { background: #fef2f2; }
+
+.pagination {
+    --bs-pagination-color: #124a85;
+    --bs-pagination-bg: #ffffff;
+    --bs-pagination-border-color: #cbd5e1;
+    --bs-pagination-hover-color: #0f172a;
+    --bs-pagination-hover-bg: #eaf2fb;
+    --bs-pagination-hover-border-color: #c7dbf0;
+    --bs-pagination-focus-color: #0f172a;
+    --bs-pagination-focus-bg: #eaf2fb;
+    --bs-pagination-focus-box-shadow: 0 0 0 4px rgba(27, 95, 166, 0.22);
+    --bs-pagination-active-bg: #1b5fa6;
+    --bs-pagination-active-border-color: #1b5fa6;
+    --bs-pagination-active-color: #ffffff;
+    --bs-pagination-disabled-color: #475569;
+    --bs-pagination-disabled-bg: #f1f5f9;
+    --bs-pagination-disabled-border-color: #e2e8f0;
+    --bs-pagination-padding-x: 0.75rem;
+    --bs-pagination-padding-y: 0.3rem;
+    --bs-pagination-font-size: 0.88rem;
+    --bs-pagination-border-radius: 10px;
+    flex-wrap: wrap;
+    gap: 4px;
+}
+.pagination .page-link { border-radius: 10px; font-weight: 600; }
+
+/* Modal de confirmación */
+.santos-modal { border: 0; border-radius: 20px; box-shadow: 0 24px 60px -20px rgba(15, 23, 42, 0.4); }
+.santos-modal .modal-header,
+.santos-modal .modal-footer { border-color: var(--sa-line); padding: 14px 20px; }
+.santos-modal .modal-body { padding: 18px 20px; color: var(--sa-ink); }
+
+/* Escritorio con altura suficiente: página fija, solo la tabla hace scroll */
+@media (min-width: 992px) and (min-height: 640px) {
+    body.santos-pagina-lista { height: 100dvh; overflow: hidden; }
+    body.santos-pagina-lista > main { flex: 1 1 0; min-height: 0; }
+    .santos-vista-lista > .santos-tabla-panel { flex: 1 1 0; min-height: 0; }
+    .santos-tabla-panel > .table-responsive { flex: 1 1 auto; min-height: 0; overflow: auto; }
+}
+
+@keyframes sa-aparecer {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: none; }
+}
+
 /* ---------- Responsivo ---------- */
+@media (max-width: 991.98px) {
+    .santos-filtros { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .santos-filtros .form-text { position: static; white-space: normal; }
+    .santos-filtros-cuerpo { padding-bottom: 16px; }
+    .santos-filtros-acciones { grid-column: 1 / -1; justify-content: flex-end; }
+}
 @media (max-width: 767.98px) {
     .santos-bienvenida .container { grid-template-columns: 1fr; row-gap: 6px; }
     .santos-bienvenida p { grid-column: 1; grid-row: auto; }
     .santos-modulos { grid-template-columns: 1fr; }
 }
+@media (max-width: 575.98px) {
+    .santos-filtros { grid-template-columns: 1fr; }
+    .santos-filtros-acciones .btn { flex: 1 1 0; }
+}
 
 /* ---------- Movimiento reducido ---------- */
 @media (prefers-reduced-motion: reduce) {
-    .santos-modulo { animation: none; }
+    .santos-modulo, .santos-panel { animation: none; }
     .santos-modulo:hover, .btn:active { transform: none; }
 }
+
+/* =========================================================
+   FORMULARIOS (crear / editar)
+   Secciones en paneles que se acomodan en una rejilla para
+   ocupar poco alto. Si no caben, la página hace scroll normal
+   y la barra de acciones queda siempre visible abajo.
+   ========================================================= */
+.santos-vista-form { display: flex; flex-direction: column; gap: 12px; }
+.santos-vista-form > * { flex: none; }
+.santos-vista-form > .alert { margin-bottom: 0; }
+
+/* El contenedor externo deja de ser tarjeta: cada sección es su propio panel */
+.card.santos-panel-plano {
+    border: 0;
+    background: transparent;
+    box-shadow: none;
+    animation: none;
+}
+
+.santos-form {
+    display: grid;
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+    gap: 14px;
+    align-items: stretch;
+}
+.santos-form > * { grid-column: 1 / -1; }
+.santos-form > .santos-seccion-credenciales { grid-column: span 5; }
+.santos-form > .santos-seccion-asignacion { grid-column: span 7; }
+.santos-form-nota { margin: 0; }
+
+.santos-seccion-form {
+    min-width: 0;
+    margin: 0;
+    padding: 16px 20px 20px;
+    border: 1px solid var(--sa-line);
+    border-radius: 18px;
+    background: #ffffff;
+    animation: sa-aparecer 380ms var(--sa-ease) backwards;
+}
+.santos-seccion-form + .santos-seccion-form { animation-delay: 50ms; }
+.santos-seccion-form .santos-seccion-titulo { margin-bottom: 12px; }
+.santos-seccion-form .santos-seccion-titulo h2 { font-size: 1.02rem; }
+.santos-seccion-form .santos-seccion-titulo p { font-size: 0.84rem; }
+
+.santos-form-acciones {
+    position: sticky;
+    bottom: 0;
+    z-index: 5;
+    margin: 0;
+    padding: 12px 0 6px;
+    background: linear-gradient(to top, var(--bs-body-bg) 72%, transparent);
+}
+
+.input-group > .btn { min-height: 42px; }
+
+@media (max-width: 991.98px) {
+    .santos-form > .santos-seccion-credenciales,
+    .santos-form > .santos-seccion-asignacion { grid-column: 1 / -1; }
+}
+@media (prefers-reduced-motion: reduce) {
+    .santos-seccion-form { animation: none; }
+}
+
+/* =========================================================
+   COMPONENTES ADICIONALES (caja, recepción, etc.)
+   Variantes de Bootstrap que usan las vistas internas.
+   ========================================================= */
+.btn-success {
+    --bs-btn-bg: #0f766e;
+    --bs-btn-border-color: #0f766e;
+    --bs-btn-color: #ffffff;
+    --bs-btn-hover-bg: #0b5f58;
+    --bs-btn-hover-border-color: #0b5f58;
+    --bs-btn-hover-color: #ffffff;
+    --bs-btn-active-bg: #094a45;
+    --bs-btn-active-border-color: #094a45;
+    --bs-btn-active-color: #ffffff;
+}
+.btn-outline-primary {
+    --bs-btn-color: #124a85;
+    --bs-btn-border-color: #1b5fa6;
+    --bs-btn-hover-bg: #eaf2fb;
+    --bs-btn-hover-border-color: #1b5fa6;
+    --bs-btn-hover-color: #0f2f52;
+    --bs-btn-active-bg: #1b5fa6;
+    --bs-btn-active-border-color: #1b5fa6;
+    --bs-btn-active-color: #ffffff;
+}
+.btn-check:focus-visible + .btn {
+    outline: 3px solid var(--sa-teal);
+    outline-offset: 2px;
+    box-shadow: none;
+}
+.btn-group > .btn { min-height: 42px; }
+
+.input-group-text {
+    border: 1.5px solid var(--sa-line-strong);
+    border-radius: 12px;
+    background: var(--sa-band);
+    color: var(--sa-ink);
+    font-size: 0.93rem;
+    font-weight: 700;
+}
+
+.badge.text-bg-warning {
+    border: 1px solid #fde68a;
+    background-color: #fef3c7 !important;
+    color: #78350f !important;
+    font-weight: 700;
+}
+
+hr { border-color: var(--sa-line); opacity: 1; }

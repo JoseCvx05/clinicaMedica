@@ -635,8 +635,10 @@ public interface CitaRepository
           AND c.fechaHoraCita >= :inicio
           AND c.fechaHoraCita < :fin
 
+          
           AND LOWER(TRIM(c.estadoCita.nombre))
-              <> 'cancelada'
+              IN ('pagada', 'confirmada')
+          
 
         ORDER BY c.fechaHoraCita ASC
         """)

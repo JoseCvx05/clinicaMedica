@@ -418,9 +418,12 @@ public class NotificacionSeguimientoService {
         // CUERPO HTML
         // =================================================
 
+
         String cuerpoHtml =
                 plantillaCorreo
                         .construirCuerpo(
+
+                                cita.getId(),
 
                                 cita.getPaciente()
                                         .getNombreCompleto(),
@@ -442,6 +445,7 @@ public class NotificacionSeguimientoService {
 
                                 cita.getPrioridad()
                         );
+
 
 
         /*

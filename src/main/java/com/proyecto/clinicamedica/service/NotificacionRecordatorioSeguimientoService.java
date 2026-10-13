@@ -238,6 +238,23 @@ public class NotificacionRecordatorioSeguimientoService {
 
 
         // =================================================
+        // CU-12 - SOLO CITAS PAGADAS O CONFIRMADAS
+        // =================================================
+
+        String nombreEstado =
+                cita.getEstadoCita()
+                        .getNombre()
+                        .trim();
+
+        if (!"Pagada".equalsIgnoreCase(nombreEstado)
+                && !"Confirmada".equalsIgnoreCase(nombreEstado)) {
+
+            return;
+        }
+
+
+
+        // =================================================
         // PACIENTE
         // =================================================
 

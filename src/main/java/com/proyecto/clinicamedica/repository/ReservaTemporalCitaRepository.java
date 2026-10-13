@@ -2,6 +2,9 @@ package com.proyecto.clinicamedica.repository;
 
 import com.proyecto.clinicamedica.entity.ReservaTemporalCita;
 
+import jakarta.persistence.LockModeType;
+import org.springframework.data.jpa.repository.Lock;
+
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 import org.springframework.data.jpa.repository.Query;
@@ -38,6 +41,8 @@ public interface ReservaTemporalCitaRepository
     // TOKEN
     // =====================================================
 
+
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
     Optional<ReservaTemporalCita>
     findByTokenReservaAndActivaTrue(
             String tokenReserva

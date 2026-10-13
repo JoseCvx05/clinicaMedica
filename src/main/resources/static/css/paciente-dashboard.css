@@ -1,7 +1,9 @@
 /* =========================================================
-   SANTOS · Dashboard del paciente
+   SANTOS · Dashboard del paciente (versión compacta)
    Vanilla CSS. Conserva los nombres de clase existentes para
    no afectar a paciente-dashboard.js ni a los atributos th:*.
+   Pensado para verse completo en una pantalla, con 4 tarjetas
+   del mismo tamaño en una sola fila en escritorio.
    ========================================================= */
 
 :root {
@@ -27,9 +29,8 @@
     --danger-tint: #fef2f2;
 
     --r-sm: 10px;
-    --r-md: 14px;
-    --r-lg: 20px;
-    --r-xl: 28px;
+    --r-md: 12px;
+    --r-lg: 18px;
 
     --ease: cubic-bezier(0.23, 1, 0.32, 1);
     --shadow: 0 1px 2px rgba(15, 23, 42, 0.04), 0 10px 28px -14px rgba(27, 95, 166, 0.18);
@@ -48,7 +49,7 @@ body {
     flex-direction: column;
     font-family: var(--font);
     font-size: 1rem;
-    line-height: 1.6;
+    line-height: 1.55;
     color: var(--ink);
     background: var(--bg);
     -webkit-font-smoothing: antialiased;
@@ -90,11 +91,11 @@ a { color: var(--blue-dark); }
     align-items: center;
     justify-content: center;
     gap: 8px;
-    min-height: 46px;
-    padding: 0 22px;
+    min-height: 40px;
+    padding: 0 18px;
     border: 1.5px solid transparent;
     border-radius: var(--r-md);
-    font: 600 0.95rem/1 var(--font);
+    font: 600 0.9rem/1 var(--font);
     text-decoration: none;
     cursor: pointer;
     transition: background-color 160ms var(--ease), border-color 160ms var(--ease),
@@ -107,15 +108,15 @@ a { color: var(--blue-dark); }
 .btn-primary { background: var(--blue); border-color: var(--blue); color: #ffffff; }
 .btn-secondary { background: var(--surface); border-color: var(--line-strong); color: var(--ink); }
 .btn-outline-danger {
-    min-height: 42px;
-    padding: 0 16px;
+    min-height: 38px;
+    padding: 0 14px;
     background: var(--surface);
     border-color: #dc2626;
     color: var(--danger);
 }
 .btn-outline-danger svg {
-    width: 18px;
-    height: 18px;
+    width: 17px;
+    height: 17px;
     fill: none;
     stroke: currentColor;
     stroke-width: 1.9;
@@ -138,7 +139,7 @@ a { color: var(--blue-dark); }
     transform: none;
 }
 
-/* ---------- Encabezado ---------- */
+/* ---------- Encabezado (compacto) ---------- */
 .main-header {
     position: sticky;
     top: 0;
@@ -152,47 +153,47 @@ a { color: var(--blue-dark); }
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 24px;
+    gap: 20px;
     width: min(1180px, 100% - 40px);
-    min-height: 72px;
+    min-height: 62px;
     margin-inline: auto;
 }
 
-.brand { display: inline-flex; align-items: center; gap: 12px; text-decoration: none; }
+.brand { display: inline-flex; align-items: center; gap: 10px; text-decoration: none; }
 .brand-simbolo {
     display: grid;
     place-items: center;
-    width: 42px;
-    height: 42px;
+    width: 38px;
+    height: 38px;
     border-radius: var(--r-md);
     background: var(--blue);
     color: #fff;
 }
-.brand-simbolo svg { width: 22px; height: 22px; fill: currentColor; }
+.brand-simbolo svg { width: 20px; height: 20px; fill: currentColor; }
 .brand-texto {
     display: grid;
-    font-size: 1.15rem;
+    font-size: 1.1rem;
     font-weight: 800;
     letter-spacing: 0.08em;
     line-height: 1.15;
     color: var(--ink);
 }
-.brand-texto small { font-size: 0.75rem; font-weight: 500; letter-spacing: 0; color: var(--muted); }
+.brand-texto small { font-size: 0.72rem; font-weight: 500; letter-spacing: 0; color: var(--muted); }
 
-.header-user { display: flex; align-items: center; gap: 20px; }
-.user-info { display: flex; align-items: center; gap: 12px; }
+.header-user { display: flex; align-items: center; gap: 16px; }
+.user-info { display: flex; align-items: center; gap: 10px; }
 .user-avatar {
     display: grid;
     place-items: center;
-    width: 40px;
-    height: 40px;
+    width: 36px;
+    height: 36px;
     border-radius: 50%;
     background: var(--teal-tint);
     color: var(--teal);
 }
 .user-avatar svg {
-    width: 22px;
-    height: 22px;
+    width: 20px;
+    height: 20px;
     fill: none;
     stroke: currentColor;
     stroke-width: 1.75;
@@ -200,165 +201,159 @@ a { color: var(--blue-dark); }
     stroke-linejoin: round;
 }
 .user-datos { display: grid; line-height: 1.25; }
-.user-label { font-size: 0.75rem; font-weight: 500; color: var(--muted); }
-.user-datos strong { font-size: 0.95rem; font-weight: 700; color: var(--ink); }
+.user-label { font-size: 0.72rem; font-weight: 500; color: var(--muted); }
+.user-datos strong { font-size: 0.92rem; font-weight: 700; color: var(--ink); }
 
-/* ---------- Bienvenida ---------- */
-.welcome-section { padding-top: clamp(28px, 5vw, 56px); }
+/* ---------- Bienvenida (franja baja) ---------- */
+.welcome-section { padding-top: 20px; }
 
 .welcome-card {
     position: relative;
     overflow: hidden;
-    padding: clamp(32px, 6vw, 72px);
+    padding: 20px 28px;
     border: 1px solid var(--line);
-    border-radius: var(--r-xl);
+    border-radius: var(--r-lg);
     background:
-            radial-gradient(55% 90% at 100% 0%, rgba(15, 118, 110, 0.10), transparent 65%),
-            radial-gradient(45% 70% at 0% 100%, rgba(27, 95, 166, 0.08), transparent 65%),
+            radial-gradient(55% 140% at 100% 0%, rgba(15, 118, 110, 0.10), transparent 65%),
+            radial-gradient(45% 120% at 0% 100%, rgba(27, 95, 166, 0.07), transparent 65%),
             var(--surface);
 }
 .welcome-card::after {
     content: "";
     position: absolute;
-    right: clamp(-40px, -2vw, -10px);
-    bottom: -50px;
-    width: clamp(160px, 24vw, 280px);
+    right: -12px;
+    bottom: -34px;
+    width: clamp(110px, 15vw, 180px);
     aspect-ratio: 1;
     background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M9 3h6v6h6v6h-6v6H9v-6H3V9h6z' fill='%231B5FA6' fill-opacity='.06'/%3E%3C/svg%3E") center / contain no-repeat;
     pointer-events: none;
 }
-.welcome-card > div { position: relative; z-index: 1; max-width: 60ch; }
+.welcome-card > div { position: relative; z-index: 1; max-width: 62ch; }
 
 .welcome-small {
     display: inline-block;
-    margin-bottom: 20px;
-    padding: 6px 12px;
+    margin-bottom: 8px;
+    padding: 4px 12px;
     border-radius: 999px;
     background: var(--teal-tint);
     color: #0f5c55;
-    font-size: 0.75rem;
+    font-size: 0.7rem;
     font-weight: 700;
     letter-spacing: 0.08em;
     text-transform: uppercase;
 }
 .welcome-card h1 {
-    font-size: clamp(2rem, 4.6vw, 3.1rem);
+    font-size: clamp(1.5rem, 2.8vw, 2.1rem);
     font-weight: 800;
-    line-height: 1.1;
+    line-height: 1.12;
     letter-spacing: -0.03em;
 }
 .welcome-card h1 span { color: var(--blue); }
-.welcome-card p { margin-top: 16px; font-size: 1.1rem; color: var(--ink-2); max-width: 52ch; }
+.welcome-card p { margin-top: 6px; font-size: 0.97rem; color: var(--ink-2); }
 
-/* ---------- Servicios ---------- */
-.services-section { padding-block: clamp(48px, 7vw, 88px) clamp(56px, 8vw, 104px); }
+/* ---------- Servicios (4 tarjetas iguales y compactas) ---------- */
+.services-section { padding-block: 24px 40px; }
 
-.section-header { max-width: 62ch; margin-bottom: clamp(24px, 4vw, 40px); }
-.section-header h2 {
-    font-size: clamp(1.5rem, 3vw, 2.1rem);
-    font-weight: 800;
-    line-height: 1.15;
-    letter-spacing: -0.025em;
+.section-header {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 2px 14px;
+    margin-bottom: 14px;
 }
-.section-header p { margin-top: 10px; font-size: 1.05rem; color: var(--muted); }
+.section-header h2 { font-size: 1.2rem; font-weight: 800; letter-spacing: -0.02em; }
+.section-header p { font-size: 0.92rem; color: var(--muted); }
 
-/* Bento: una tarjeta alta a la izquierda y dos apiladas a la derecha */
-.services-grid { display: grid; grid-template-columns: repeat(12, 1fr); gap: 20px; }
+.services-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(235px, 1fr));
+    gap: 16px;
+}
 
 .service-card {
-    grid-column: span 6;
     display: flex;
     flex-direction: column;
-    align-items: flex-start;
-    gap: 12px;
-    padding: 28px;
+    align-items: stretch;
+    gap: 6px;
+    padding: 20px;
     border: 1px solid var(--line);
     border-radius: var(--r-lg);
     background: var(--surface);
     transition: transform 200ms var(--ease), border-color 200ms var(--ease), box-shadow 200ms var(--ease);
 }
 @media (hover: hover) and (pointer: fine) {
-    .service-card:hover { transform: translateY(-3px); border-color: var(--line-strong); box-shadow: var(--shadow); }
+    .service-card:hover { transform: translateY(-2px); border-color: var(--line-strong); box-shadow: var(--shadow); }
 }
-.service-card h3 { font-size: 1.2rem; font-weight: 700; letter-spacing: -0.01em; }
-.service-card p { color: var(--muted); font-size: 0.97rem; max-width: 46ch; }
+.service-card h3 { font-size: 1.05rem; font-weight: 800; letter-spacing: -0.01em; }
+.service-card p { margin-bottom: 12px; color: var(--muted); font-size: 0.89rem; line-height: 1.5; }
 .service-card > .btn-primary,
-.service-card > .btn-secondary { margin-top: auto; }
-
-.service-card:first-child {
-    grid-row: span 2;
-    padding: clamp(28px, 4vw, 44px);
-    background: var(--blue-tint);
-    border-color: var(--blue-line);
-}
-.service-card:first-child h3 { font-size: clamp(1.4rem, 2.4vw, 1.8rem); letter-spacing: -0.02em; }
-.service-card:first-child p { color: var(--ink-2); font-size: 1.02rem; }
-.service-card:first-child .service-icon { width: 56px; height: 56px; background: var(--surface); }
-.service-card:first-child > .btn-primary { margin-top: 12px; }
+.service-card > .btn-secondary { margin-top: auto; width: 100%; }
 
 .service-icon {
     display: grid;
     place-items: center;
-    width: 48px;
-    height: 48px;
-    margin-bottom: 4px;
+    width: 40px;
+    height: 40px;
+    margin-bottom: 6px;
     border-radius: var(--r-md);
     background: var(--blue-tint);
     color: var(--blue);
 }
 .service-icon svg {
-    width: 24px;
-    height: 24px;
+    width: 21px;
+    height: 21px;
     fill: none;
     stroke: currentColor;
     stroke-width: 1.75;
     stroke-linecap: round;
     stroke-linejoin: round;
 }
+
+/* La acción principal (agendar) resalta solo por color, no por tamaño */
+.service-card:first-child { background: var(--blue-tint); border-color: var(--blue-line); }
+.service-card:first-child .service-icon { background: var(--surface); }
+.service-card:first-child p { color: var(--ink-2); }
+
+/* Mi perfil (aún no disponible) */
 .service-card:last-child { background: var(--band); }
 .service-card:last-child .service-icon { background: var(--surface); color: var(--muted); }
 
-/* ---------- Pie ---------- */
+/* ---------- Pie compacto ---------- */
 .main-footer { background: var(--surface); border-top: 1px solid var(--line); }
 .main-footer .container {
     display: flex;
     flex-wrap: wrap;
     align-items: center;
     justify-content: space-between;
-    gap: 8px 24px;
-    padding-block: 28px;
+    gap: 4px 24px;
+    padding-block: 14px;
     color: var(--muted);
-    font-size: 0.92rem;
+    font-size: 0.88rem;
 }
 .main-footer strong { color: var(--ink); font-weight: 800; letter-spacing: 0.08em; }
 
-/* ---------- Entrada escalonada (solo CSS, sin depender de JS) ---------- */
+/* ---------- Entrada escalonada (solo CSS) ---------- */
 @keyframes aparecer {
-    from { opacity: 0; transform: translateY(10px); }
+    from { opacity: 0; transform: translateY(8px); }
     to { opacity: 1; transform: none; }
 }
 .welcome-card,
-.service-card { animation: aparecer 420ms var(--ease) backwards; }
-.service-card:nth-child(1) { animation-delay: 60ms; }
-.service-card:nth-child(2) { animation-delay: 110ms; }
-.service-card:nth-child(3) { animation-delay: 160ms; }
+.service-card { animation: aparecer 400ms var(--ease) backwards; }
+.service-card:nth-child(1) { animation-delay: 50ms; }
+.service-card:nth-child(2) { animation-delay: 90ms; }
+.service-card:nth-child(3) { animation-delay: 130ms; }
+.service-card:nth-child(4) { animation-delay: 170ms; }
 
 /* ---------- Responsivo ---------- */
-@media (max-width: 900px) {
-    .services-grid { grid-template-columns: 1fr; }
-    .service-card,
-    .service-card:first-child { grid-column: auto; grid-row: auto; }
-}
-
 @media (max-width: 640px) {
-    .header-container { min-height: 64px; gap: 12px; }
+    .header-container { min-height: 58px; gap: 12px; }
     .brand-texto small,
     .user-label,
     .btn-outline-danger span { display: none; }
     .btn-outline-danger { padding: 0 12px; }
-    .service-card { padding: 22px; }
-    .service-card > .btn-primary,
-    .service-card > .btn-secondary { width: 100%; }
+    .welcome-card { padding: 18px 20px; }
+    .services-grid { grid-template-columns: 1fr; gap: 12px; }
+    .service-card { padding: 18px; }
 }
 
 @media (max-width: 400px) {

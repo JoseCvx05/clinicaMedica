@@ -77,31 +77,50 @@ public class PlantillaCorreoCitaSeguimiento {
     }
 
 
+    public String construirCuerpo(
+            String nombrePaciente,
+            String nombreMedico,
+            String especialidad,
+            String sucursal,
+            OffsetDateTime fechaHora,
+            String tipoSeguimiento,
+            String motivo,
+            String prioridad
+    ) {
+        return construirCuerpo(
+                null,
+                nombrePaciente,
+                nombreMedico,
+                especialidad,
+                sucursal,
+                fechaHora,
+                tipoSeguimiento,
+                motivo,
+                prioridad
+        );
+    }
+
+
+
     // =====================================================
     // CUERPO HTML
     // RN-CU11-04
     // RN-GLOBAL-006
     // =====================================================
 
+
     public String construirCuerpo(
-
+            Integer numeroCita,
             String nombrePaciente,
-
             String nombreMedico,
-
             String especialidad,
-
             String sucursal,
-
             OffsetDateTime fechaHora,
-
             String tipoSeguimiento,
-
             String motivo,
-
             String prioridad
-
     ) {
+
 
         // =================================================
         // DATOS SEGUROS PARA HTML
@@ -202,6 +221,30 @@ public class PlantillaCorreoCitaSeguimiento {
                 );
 
 
+        String filaNumeroCita =
+                numeroCita != null && numeroCita > 0
+                        ? """
+                    <tr>
+                        <td style="
+                            padding:7px 0;
+                            font-weight:bold;
+                            color:#546e7a;
+                        ">
+                            Número de cita
+                        </td>
+
+                        <td style="
+                            padding:7px 0;
+                            color:#263238;
+                        ">
+                            <strong>No. %d</strong>
+                        </td>
+                    </tr>
+                    """.formatted(numeroCita)
+                        : "";
+
+
+
         // =================================================
         // HTML
         // =================================================
@@ -233,6 +276,7 @@ public class PlantillaCorreoCitaSeguimiento {
                                background-color:#f3f6f9;
                                padding:30px 15px;
                            ">
+                
 
                         <tr>
                             <td align="center">
@@ -346,21 +390,24 @@ public class PlantillaCorreoCitaSeguimiento {
                                                     Detalles de la cita
                                                 </div>
 
-
-                                                <table width="100%%"
-                                                       cellpadding="0"
-                                                       cellspacing="0"
-                                                       border="0">
-
-                                                    <tr>
-                                                        <td style="
-                                                            padding:7px 0;
-                                                            font-weight:bold;
-                                                            color:#546e7a;
-                                                            width:42%%;
-                                                        ">
-                                                            Tipo de seguimiento
-                                                        </td>
+                                                             <table width="100%%"
+                                                                    cellpadding="0"
+                                                                    cellspacing="0"
+                                                                    border="0">
+                
+                                                                 <!-- CU-12: NÚMERO DE CITA -->
+                                                                 %s
+                
+                                                                 <tr>
+                                                                     <td style="
+                                                                         padding:7px 0;
+                                                                         font-weight:bold;
+                                                                         color:#546e7a;
+                                                                         width:42%%;
+                                                                     ">
+                                                                         Tipo de seguimiento
+                                                                     </td>
+                
 
                                                         <td style="
                                                             padding:7px 0;
@@ -582,6 +629,8 @@ public class PlantillaCorreoCitaSeguimiento {
                 """.formatted(
 
                 pacienteSeguro,
+
+                filaNumeroCita,
 
                 tipoSeguro,
 

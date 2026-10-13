@@ -10,7 +10,11 @@
     <meta name="viewport"
           content="width=device-width, initial-scale=1.0">
 
+    <meta name="theme-color" content="#1B5FA6">
+
     <title>Comprobante de Pago | Caja</title>
+
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Crect width='24' height='24' rx='6' fill='%231B5FA6'/%3E%3Cpath d='M9 4h6v5h5v6h-5v5H9v-5H4V9h5z' fill='white'/%3E%3C/svg%3E">
 
 
     <!-- ==================================================
@@ -29,49 +33,296 @@
           rel="stylesheet">
 
 
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
+          rel="stylesheet">
+
+
+    <!-- Tema SANTOS interno (después de Bootstrap) -->
+    <link rel="stylesheet"
+          th:href="@{/css/santos-interno.css}"
+          href="/css/santos-interno.css">
+
+
     <style>
 
-        body {
-            background-color: #f5f7fa;
+        /* =================================================
+           PÁGINA DE IMPRESIÓN: UNA SOLA HOJA TAMAÑO CARTA
+           ================================================= */
+
+        @page {
+            size: letter portrait;
+            margin: 0.55in;
         }
 
+
+        /* =================================================
+           PANTALLA
+           ================================================= */
 
         .contenedor-comprobante {
-            max-width: 850px;
+            max-width: 880px;
         }
 
 
-        .comprobante {
-            border: 0;
+        .comprobante,
+        .comprobante.shadow-sm {
+            border: 1px solid var(--sa-line);
+            border-radius: 20px;
+            background: #ffffff;
+            box-shadow: 0 1px 2px rgba(15, 23, 42, 0.03) !important;
+            animation: sa-aparecer 380ms var(--sa-ease) backwards;
+        }
+
+
+        .enlace-volver {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 0;
+            color: var(--sa-blue-dark);
+            font-size: 0.9rem;
+            font-weight: 600;
+            text-decoration: none;
+        }
+
+
+        .enlace-volver:hover {
+            text-decoration: underline;
+        }
+
+
+        /* Encabezado del comprobante */
+
+        .comprobante-cab {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px 24px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid var(--sa-line);
+        }
+
+
+        .comprobante-titulo {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+
+
+        .comprobante-icono {
+            display: grid;
+            place-items: center;
+            width: 52px;
+            height: 52px;
             border-radius: 16px;
+            background: var(--sa-blue-tint);
+            color: var(--sa-blue);
+            font-size: 1.6rem;
+        }
+
+
+        .comprobante-titulo h1 {
+            margin: 0;
+            font-size: 1.45rem;
+            font-weight: 800;
+            letter-spacing: -0.025em;
+            line-height: 1.15;
+        }
+
+
+        .comprobante-titulo p {
+            margin: 2px 0 0;
+            font-size: 0.88rem;
+            color: var(--sa-muted);
+        }
+
+
+        .comprobante-transaccion {
+            padding: 8px 16px;
+            border: 1px solid var(--sa-blue-line);
+            border-radius: 14px;
+            background: var(--sa-blue-tint);
+            text-align: right;
+        }
+
+
+        .comprobante-transaccion small {
+            display: block;
+            color: var(--sa-muted) !important;
+            font-size: 0.7rem;
+            font-weight: 700;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+        }
+
+
+        .comprobante-transaccion strong {
+            color: #0f2f52;
+            font-size: 1.15rem;
+            font-weight: 800;
+            font-variant-numeric: tabular-nums;
+            overflow-wrap: anywhere;
+        }
+
+
+        /* Secciones y datos */
+
+        .seccion-titulo {
+            margin: 20px 0 4px;
+            padding-bottom: 6px;
+            border-bottom: 1px solid var(--sa-line-strong);
+            color: var(--sa-muted);
+            font-size: 0.74rem;
+            font-weight: 700;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+        }
+
+
+        .comprobante-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 0 28px;
+        }
+
+
+        .comprobante-grid-pago {
+            grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+        }
+
+
+        .grupo-contenido {
+            display: contents;
         }
 
 
         .dato-comprobante {
-            padding: 10px 0;
-            border-bottom: 1px solid #e9ecef;
+            min-width: 0;
+            padding: 8px 0;
+            border-bottom: 1px solid var(--sa-line);
         }
 
 
-        .dato-comprobante:last-child {
-            border-bottom: none;
+        .dato-comprobante.completo {
+            grid-column: 1 / -1;
+        }
+
+
+        .dato-comprobante small {
+            display: block;
+            color: var(--sa-muted) !important;
+            font-size: 0.7rem;
+            font-weight: 700;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+        }
+
+
+        .dato-comprobante strong {
+            font-weight: 700;
+            font-variant-numeric: tabular-nums;
+            overflow-wrap: anywhere;
+        }
+
+
+        /* Monto pagado */
+
+        .monto-pagado {
+            margin: 18px 0 8px;
+            padding: 14px 20px;
+            border: 1px solid #99e6d8;
+            border-radius: 16px;
+            background: #f0fdfa;
+            text-align: center;
+        }
+
+
+        .monto-pagado small {
+            display: block;
+            color: var(--sa-muted) !important;
+            font-size: 0.74rem;
+            font-weight: 700;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
         }
 
 
         .monto-principal {
             font-size: 2rem;
-            font-weight: 700;
+            font-weight: 800;
+            line-height: 1.2;
+            font-variant-numeric: tabular-nums;
+        }
+
+
+        .pie-comprobante {
+            margin-top: 20px;
+            text-align: center;
+        }
+
+
+        .pie-comprobante p {
+            margin: 0;
+            font-size: 0.82rem;
+            color: var(--sa-muted);
+        }
+
+
+        @media (max-width: 575.98px) {
+
+            .comprobante-grid {
+                grid-template-columns: 1fr;
+            }
+
+
+            .comprobante-transaccion {
+                width: 100%;
+                text-align: left;
+            }
+        }
+
+
+        @media (prefers-reduced-motion: reduce) {
+
+            .comprobante {
+                animation: none;
+            }
         }
 
 
         /* =================================================
            IMPRESIÓN
+           Una sola página carta, solo el comprobante.
            ================================================= */
 
         @media print {
 
+            html {
+                font-size: 10pt;
+            }
+
+
+            html,
             body {
-                background: white;
+                height: auto !important;
+                min-height: 0 !important;
+                background: #ffffff !important;
+            }
+
+
+            body {
+                display: block !important;
+                color: #000000;
+            }
+
+
+            * {
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
             }
 
 
@@ -80,15 +331,72 @@
             }
 
 
-            .container {
+            main.container-xl,
+            .contenedor-comprobante {
                 max-width: 100% !important;
+                margin: 0 !important;
                 padding: 0 !important;
             }
 
 
-            .comprobante {
+            .comprobante,
+            .comprobante.shadow-sm {
+                border: 1px solid #94a3b8 !important;
+                border-radius: 10px;
                 box-shadow: none !important;
-                border: 1px solid #dee2e6 !important;
+                animation: none !important;
+                break-inside: avoid;
+                page-break-inside: avoid;
+            }
+
+
+            .comprobante .card-body {
+                padding: 16px 22px !important;
+            }
+
+
+            .comprobante-cab {
+                padding-bottom: 10px;
+            }
+
+
+            .comprobante-icono {
+                width: 42px;
+                height: 42px;
+                font-size: 1.3rem;
+            }
+
+
+            .comprobante-transaccion,
+            .monto-pagado {
+                background: #ffffff !important;
+                border-color: #94a3b8 !important;
+            }
+
+
+            .seccion-titulo {
+                margin: 12px 0 2px;
+            }
+
+
+            .dato-comprobante {
+                padding: 5px 0;
+            }
+
+
+            .monto-pagado {
+                margin: 12px 0 6px;
+                padding: 8px 16px;
+            }
+
+
+            .monto-principal {
+                font-size: 1.6rem;
+            }
+
+
+            .pie-comprobante {
+                margin-top: 12px;
             }
         }
 
@@ -100,19 +408,48 @@
 <body>
 
 
-<main class="container contenedor-comprobante py-5">
+<a class="skip-link no-imprimir" href="#contenido">Saltar al contenido</a>
+
+
+<!-- =================================================
+     BARRA SUPERIOR
+     ================================================= -->
+
+<nav class="navbar santos-navbar sticky-top no-imprimir">
+
+    <div class="container-xl px-4">
+
+        <span class="navbar-brand santos-marca">
+
+            <span class="santos-simbolo"
+                  aria-hidden="true">
+
+                <i class="bi bi-plus-lg"></i>
+
+            </span>
+
+            <span>SANTOS</span>
+
+        </span>
+
+    </div>
+
+</nav>
+
+
+<main id="contenido" class="container-xl px-4 py-3 contenedor-comprobante">
 
 
     <!-- =================================================
          NAVEGACIÓN
          ================================================= -->
 
-    <div class="no-imprimir mb-4">
+    <div class="no-imprimir mb-3">
 
         <a th:href="@{/interno/caja}"
-           class="text-decoration-none">
+           class="enlace-volver">
 
-            <i class="bi bi-arrow-left me-1"></i>
+            <i class="bi bi-arrow-left" aria-hidden="true"></i>
 
             Volver a Caja
 
@@ -129,7 +466,7 @@
          class="alert alert-success no-imprimir"
          role="alert">
 
-        <i class="bi bi-check-circle-fill me-2"></i>
+        <i class="bi bi-check-circle-fill me-2" aria-hidden="true"></i>
 
         <span th:text="${mensajeExito}">
             Pago registrado exitosamente.
@@ -161,54 +498,61 @@
 
 
                 <!-- =====================================
-                     ENCABEZADO
+                     ENCABEZADO Y NÚMERO DE TRANSACCIÓN
                      ===================================== -->
 
-                <div class="text-center mb-4">
+                <div class="comprobante-cab">
 
 
-                    <i class="bi bi-hospital fs-1 text-primary"></i>
+                    <div class="comprobante-titulo">
 
 
-                    <h1 class="h3 fw-bold mt-2 mb-1">
+                        <span class="comprobante-icono"
+                              aria-hidden="true">
 
-                        Comprobante de Pago
+                            <i class="bi bi-hospital"></i>
 
-                    </h1>
-
-
-                    <p class="text-secondary mb-0">
-
-                        Sistema Informático Hospitalario
-
-                    </p>
-
-                </div>
+                        </span>
 
 
-                <hr>
+                        <div>
+
+                            <h1>
+
+                                Comprobante de Pago
+
+                            </h1>
 
 
-                <!-- =====================================
-                     NÚMERO DE TRANSACCIÓN
-                     ===================================== -->
+                            <p>
 
-                <div class="text-center my-4">
+                                Sistema Informático Hospitalario
 
+                            </p>
 
-                    <small class="text-secondary d-block">
+                        </div>
 
-                        Número de transacción
-
-                    </small>
+                    </div>
 
 
-                    <strong class="fs-5"
-                            th:text="${comprobante.numeroTransaccion}">
+                    <div class="comprobante-transaccion">
 
-                        CAJA-000000
 
-                    </strong>
+                        <small class="text-secondary d-block">
+
+                            Número de transacción
+
+                        </small>
+
+
+                        <strong th:text="${comprobante.numeroTransaccion}">
+
+                            CAJA-000000
+
+                        </strong>
+
+                    </div>
+
 
                 </div>
 
@@ -217,35 +561,41 @@
                      DATOS DEL PACIENTE
                      ===================================== -->
 
-                <h2 class="h5 fw-bold mt-4">
+                <h2 class="seccion-titulo">
 
                     Datos del paciente
 
                 </h2>
 
 
-                <div class="dato-comprobante">
-
-                    <small class="text-secondary d-block">
-                        Paciente
-                    </small>
-
-                    <strong th:text="${comprobante.nombrePaciente}">
-                        Paciente
-                    </strong>
-
-                </div>
+                <div class="comprobante-grid">
 
 
-                <div class="dato-comprobante">
+                    <div class="dato-comprobante">
 
-                    <small class="text-secondary d-block">
-                        Número de cita
-                    </small>
+                        <small class="text-secondary d-block">
+                            Paciente
+                        </small>
 
-                    <strong th:text="${comprobante.numeroCita}">
-                        0
-                    </strong>
+                        <strong th:text="${comprobante.nombrePaciente}">
+                            Paciente
+                        </strong>
+
+                    </div>
+
+
+                    <div class="dato-comprobante">
+
+                        <small class="text-secondary d-block">
+                            Número de cita
+                        </small>
+
+                        <strong th:text="${comprobante.numeroCita}">
+                            0
+                        </strong>
+
+                    </div>
+
 
                 </div>
 
@@ -254,95 +604,83 @@
                      DETALLE DEL SERVICIO
                      ===================================== -->
 
-                <h2 class="h5 fw-bold mt-4">
+                <h2 class="seccion-titulo">
 
                     Detalle de la consulta
 
                 </h2>
 
 
-                <div class="row">
+                <div class="comprobante-grid">
 
 
-                    <div class="col-md-6">
+                    <div class="dato-comprobante">
 
+                        <small class="text-secondary d-block">
+                            Especialidad
+                        </small>
 
-                        <div class="dato-comprobante">
-
-                            <small class="text-secondary d-block">
-                                Especialidad
-                            </small>
-
-                            <strong th:text="${comprobante.especialidad}">
-                                Especialidad
-                            </strong>
-
-                        </div>
-
-
-                        <div class="dato-comprobante">
-
-                            <small class="text-secondary d-block">
-                                Médico
-                            </small>
-
-                            <strong th:text="${comprobante.medico}">
-                                Médico
-                            </strong>
-
-                        </div>
-
+                        <strong th:text="${comprobante.especialidad}">
+                            Especialidad
+                        </strong>
 
                     </div>
 
 
-                    <div class="col-md-6">
+                    <div class="dato-comprobante">
 
+                        <small class="text-secondary d-block">
+                            Médico
+                        </small>
 
-                        <div class="dato-comprobante">
-
-                            <small class="text-secondary d-block">
-                                Sucursal
-                            </small>
-
-                            <strong th:text="${comprobante.sucursal}">
-                                Sucursal
-                            </strong>
-
-                        </div>
-
-
-                        <div class="dato-comprobante">
-
-                            <small class="text-secondary d-block">
-                                Fecha y hora de la cita
-                            </small>
-
-                            <strong th:text="${#temporals.format(
-                                    comprobante.fechaHoraCita,
-                                    'dd/MM/yyyy HH:mm'
-                            )}">
-                                Fecha
-                            </strong>
-
-                        </div>
-
+                        <strong th:text="${comprobante.medico}">
+                            Médico
+                        </strong>
 
                     </div>
 
 
-                </div>
+                    <div class="dato-comprobante">
+
+                        <small class="text-secondary d-block">
+                            Sucursal
+                        </small>
+
+                        <strong th:text="${comprobante.sucursal}">
+                            Sucursal
+                        </strong>
+
+                    </div>
 
 
-                <div class="dato-comprobante">
+                    <div class="dato-comprobante">
 
-                    <small class="text-secondary d-block">
-                        Servicio
-                    </small>
+                        <small class="text-secondary d-block">
+                            Fecha y hora de la cita
+                        </small>
 
-                    <strong th:text="${comprobante.detalleServicio}">
-                        Consulta médica
-                    </strong>
+                        <strong th:text="${#temporals.format(
+                                comprobante.fechaHoraCita,
+                                'dd/MM/yyyy HH:mm'
+                        )}">
+                            Fecha
+                        </strong>
+
+                    </div>
+
+
+                    <div class="dato-comprobante completo">
+
+                        <small class="text-secondary d-block">
+                            Servicio
+                        </small>
+
+                        <strong th:text="${comprobante.detalleServicio}">
+                            Consulta médica
+                        </strong>
+
+                    </div>
+
 
                 </div>
 
@@ -351,49 +689,49 @@
                      INFORMACIÓN DEL PAGO
                      ===================================== -->
 
-                <h2 class="h5 fw-bold mt-4">
+                <h2 class="seccion-titulo">
 
                     Información del pago
 
                 </h2>
 
 
-                <div class="dato-comprobante">
-
-                    <small class="text-secondary d-block">
-                        Forma de pago
-                    </small>
-
-                    <strong th:text="${comprobante.formaPago}">
-                        Efectivo
-                    </strong>
-
-                </div>
+                <div class="comprobante-grid comprobante-grid-pago">
 
 
-                <!-- TARJETA -->
+                    <div class="dato-comprobante">
 
-                <div th:if="${comprobante.esTarjeta()}"
-                     class="dato-comprobante">
+                        <small class="text-secondary d-block">
+                            Forma de pago
+                        </small>
 
-                    <small class="text-secondary d-block">
-                        Referencia de tarjeta
-                    </small>
+                        <strong th:text="${comprobante.formaPago}">
+                            Efectivo
+                        </strong>
 
-                    <strong th:text="${comprobante.referenciaTarjeta}">
-                        **** 1234
-                    </strong>
-
-                </div>
+                    </div>
 
 
-                <!-- EFECTIVO -->
+                    <!-- TARJETA -->
 
-                <div th:if="${comprobante.esEfectivo()}"
-                     class="row">
+                    <div th:if="${comprobante.esTarjeta()}"
+                         class="dato-comprobante">
+
+                        <small class="text-secondary d-block">
+                            Referencia de tarjeta
+                        </small>
+
+                        <strong th:text="${comprobante.referenciaTarjeta}">
+                            **** 1234
+                        </strong>
+
+                    </div>
 
 
-                    <div class="col-md-6">
+                    <!-- EFECTIVO -->
+
+                    <div th:if="${comprobante.esEfectivo()}"
+                         class="grupo-contenido">
 
 
                         <div class="dato-comprobante">
@@ -416,12 +754,6 @@
                             </strong>
 
                         </div>
-
-
-                    </div>
-
-
-                    <div class="col-md-6">
 
 
                         <div class="dato-comprobante">
@@ -454,7 +786,7 @@
 
                 <!-- MONTO TOTAL -->
 
-                <div class="text-center bg-light rounded-3 p-4 my-4">
+                <div class="monto-pagado">
 
 
                     <small class="text-secondary d-block mb-1">
@@ -481,39 +813,45 @@
 
 
                 <!-- =====================================
-                     FECHA TRANSACCIÓN
+                     FECHA TRANSACCIÓN Y CAJERO
                      ===================================== -->
 
-                <div class="dato-comprobante">
-
-                    <small class="text-secondary d-block">
-                        Fecha y hora de la transacción
-                    </small>
-
-                    <strong th:text="${#temporals.format(
-                            comprobante.fechaHoraTransaccion,
-                            'dd/MM/yyyy HH:mm:ss'
-                    )}">
-                        Fecha
-                    </strong>
-
-                </div>
+                <div class="comprobante-grid">
 
 
-                <!-- =====================================
-                     CAJERO
-                     ===================================== -->
+                    <div class="dato-comprobante">
 
-                <div th:if="${comprobante.cajero != null}"
-                     class="dato-comprobante">
+                        <small class="text-secondary d-block">
+                            Fecha y hora de la transacción
+                        </small>
 
-                    <small class="text-secondary d-block">
-                        Cajero
-                    </small>
+                        <strong th:text="${#temporals.format(
+                                comprobante.fechaHoraTransaccion,
+                                'dd/MM/yyyy HH:mm:ss'
+                        )}">
+                            Fecha
+                        </strong>
 
-                    <strong th:text="${comprobante.cajero}">
-                        Cajero
-                    </strong>
+                    </div>
+
+
+                    <!-- =================================
+                         CAJERO
+                         ================================= -->
+
+                    <div th:if="${comprobante.cajero != null}"
+                         class="dato-comprobante">
+
+                        <small class="text-secondary d-block">
+                            Cajero
+                        </small>
+
+                        <strong th:text="${comprobante.cajero}">
+                            Cajero
+                        </strong>
+
+                    </div>
+
 
                 </div>
 
@@ -522,16 +860,16 @@
                      PIE
                      ===================================== -->
 
-                <div class="text-center mt-5">
+                <div class="pie-comprobante">
 
-                    <p class="small text-secondary mb-1">
+                    <p>
 
                         Gracias por utilizar nuestros servicios.
 
                     </p>
 
 
-                    <p class="small text-secondary mb-0">
+                    <p>
 
                         Conserve este comprobante para cualquier consulta.
 
@@ -550,7 +888,7 @@
              ACCIONES
              ================================================= -->
 
-        <div class="row g-3 mt-4 no-imprimir">
+        <div class="row g-3 mt-3 no-imprimir">
 
 
             <!-- IMPRIMIR -->
@@ -558,10 +896,10 @@
             <div class="col-12 col-md-6">
 
                 <button type="button"
-                        class="btn btn-primary btn-lg w-100"
+                        class="btn btn-primary w-100"
                         onclick="window.print();">
 
-                    <i class="bi bi-printer-fill me-2"></i>
+                    <i class="bi bi-printer-fill me-2" aria-hidden="true"></i>
 
                     Imprimir comprobante
 
@@ -575,9 +913,9 @@
             <div class="col-12 col-md-6">
 
                 <a th:href="@{/interno/caja}"
-                   class="btn btn-success btn-lg w-100">
+                   class="btn btn-success w-100">
 
-                    <i class="bi bi-plus-circle me-2"></i>
+                    <i class="bi bi-plus-circle me-2" aria-hidden="true"></i>
 
                     Nuevo Cobro
 
@@ -601,4 +939,4 @@
 
 </body>
 
-</html>
+</html>s

@@ -498,6 +498,16 @@
                      id="errorDisponibilidad">
                 </div>
 
+
+                <!-- CU-12 FA02: CANCELAR SEGUIMIENTO -->
+                <!-- Formulario independiente para no enviar el horario -->
+                <form th:if="${citaWizard.esSeguimiento}"
+                      th:action="@{/interno/medico/citas/agendar/cancelar-seguimiento}"
+                      method="post"
+                      id="formCancelarSeguimiento">
+                </form>
+
+
                 <form th:action="${rutaBaseCitas + '/agendar/horario'}"
                       method="post"
                       id="formHorario">
@@ -568,8 +578,24 @@
 
                         </button>
 
+
+                        <!-- CU-12 FA02: VOLVER A LA CONSULTA ORIGINAL -->
                         <div th:if="${citaWizard.esSeguimiento}">
+
+                            <button type="submit"
+                                    form="formCancelarSeguimiento"
+                                    formnovalidate
+                                    class="btn btn-outline-secondary">
+
+                                <i class="bi bi-arrow-left me-2"
+                                   aria-hidden="true"></i>
+
+                                Volver a la consulta médica
+
+                            </button>
+
                         </div>
+
 
                         <button type="submit"
                                 id="btnContinuarHorario"
