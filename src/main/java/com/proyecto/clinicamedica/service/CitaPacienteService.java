@@ -1,13 +1,16 @@
+
 package com.proyecto.clinicamedica.service;
 
 import com.proyecto.clinicamedica.entity.Cita;
 import com.proyecto.clinicamedica.entity.Usuario;
 import com.proyecto.clinicamedica.repository.CitaRepository;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.OffsetDateTime;
+import java.time.ZoneId;
 import java.util.List;
 
 
@@ -29,10 +32,19 @@ public class CitaPacienteService {
 
     private final CitaRepository citaRepository;
 
+    // =====================================================
+    // ZONA HORARIA DE LA CLÍNICA
+    // =====================================================
+
+    private final ZoneId zonaHoraria;
+
 
     public CitaPacienteService(
             UsuarioActualService usuarioActualService,
-            CitaRepository citaRepository
+            CitaRepository citaRepository,
+
+            @Value("${cita.zona-horaria:America/Guatemala}")
+            String zonaHoraria
     ) {
 
         this.usuarioActualService =
@@ -40,6 +52,9 @@ public class CitaPacienteService {
 
         this.citaRepository =
                 citaRepository;
+
+        this.zonaHoraria =
+                ZoneId.of(zonaHoraria);
     }
 
 
@@ -86,11 +101,38 @@ public class CitaPacienteService {
                 cita.getSucursal()
                         .getNombre(),
 
-                cita.getFechaHoraCita(),
+                // =========================================
+                // FECHA Y HORA LOCAL DE GUATEMALA
+                // =========================================
+                // Mantiene el mismo instante almacenado,
+                // pero presenta la hora en la zona
+                // horaria configurada para la clínica.
+
+                convertirAZonaHoraria(
+                        cita.getFechaHoraCita()
+                ),
 
                 cita.getEstadoCita()
                         .getNombre()
         );
+    }
+
+
+    // =====================================================
+    // CONVERTIR FECHA A ZONA HORARIA DE LA CLÍNICA
+    // =====================================================
+
+    private OffsetDateTime convertirAZonaHoraria(
+            OffsetDateTime fechaHora
+    ) {
+
+        if (fechaHora == null) {
+            return null;
+        }
+
+        return fechaHora
+                .atZoneSameInstant(zonaHoraria)
+                .toOffsetDateTime();
     }
 
 

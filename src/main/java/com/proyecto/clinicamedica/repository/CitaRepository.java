@@ -650,4 +650,35 @@ public interface CitaRepository
             @Param("fin")
             OffsetDateTime fin
     );
+
+
+    // =====================================================
+    // CU-13 - PROTEGER CITAS ANTES DE DESACTIVAR
+    // UNA ESPECIALIDAD DE UNA SUCURSAL
+    // =====================================================
+
+    @Query("""
+            SELECT COUNT(c) > 0
+            FROM Cita c
+
+            WHERE c.sucursal.id = :idSucursal
+
+              AND c.especialidad.id = :idEspecialidad
+
+              AND LOWER(TRIM(c.estadoCita.nombre))
+                  NOT IN (
+                      'cancelada',
+                      'atención finalizada',
+                      'no asistió'
+                  )
+            """)
+    boolean existeCitaNoCerradaEnSucursalEspecialidad(
+
+            @Param("idSucursal")
+            Integer idSucursal,
+
+            @Param("idEspecialidad")
+            Integer idEspecialidad
+    );
+
 }

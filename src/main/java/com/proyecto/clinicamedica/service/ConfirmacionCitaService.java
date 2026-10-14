@@ -1,7 +1,7 @@
 package com.proyecto.clinicamedica.service;
 
 import com.proyecto.clinicamedica.dto.cita.CitaWizardDTO;
-
+import com.proyecto.clinicamedica.repository.SucursalEspecialidadRepository;
 import com.proyecto.clinicamedica.entity.Cita;
 import com.proyecto.clinicamedica.entity.EstadoCita;
 import com.proyecto.clinicamedica.entity.ReservaTemporalCita;
@@ -65,6 +65,13 @@ public class ConfirmacionCitaService {
 
     private final EstadoCitaRepository estadoCitaRepository;
 
+    // =====================================================
+// CU-03 / CU-13 - PROTECCIÓN DE SEDE Y ESPECIALIDAD
+// =====================================================
+
+    private final SucursalEspecialidadRepository
+            sucursalEspecialidadRepository;
+
     private final ReservaTemporalCitaService
             reservaTemporalCitaService;
 
@@ -80,11 +87,13 @@ public class ConfirmacionCitaService {
     // CONSTRUCTOR
     // =====================================================
 
+
     public ConfirmacionCitaService(
             CitaRepository citaRepository,
             EstadoCitaRepository estadoCitaRepository,
             SeguimientoCitaService seguimientoCitaService,
             ReservaTemporalCitaService reservaTemporalCitaService,
+            SucursalEspecialidadRepository sucursalEspecialidadRepository,
 
             @Value("${cita.pago.duracion-minutos:10}")
             int duracionPagoMinutos,
@@ -105,14 +114,16 @@ public class ConfirmacionCitaService {
         this.seguimientoCitaService =
                 seguimientoCitaService;
 
+        this.sucursalEspecialidadRepository =
+                sucursalEspecialidadRepository;
+
         this.duracionPagoMinutos =
                 duracionPagoMinutos;
 
         this.zonaHoraria =
-                ZoneId.of(
-                        zonaHoraria
-                );
+                ZoneId.of(zonaHoraria);
     }
+
 
 
     // =====================================================
@@ -224,6 +235,20 @@ public class ConfirmacionCitaService {
                     "La reserva no pertenece al paciente autenticado."
             );
         }
+
+
+        // =================================================
+        // CU-03 / CU-13 - VALIDAR ASIGNACIÓN ACTIVA
+        // =================================================
+        //
+        // Impide confirmar una cita cuando su sede
+        // y especialidad fueron desactivadas.
+        // =================================================
+
+        validarAsignacionActivaParaConfirmacion(
+                reserva
+        );
+
 
 
         // =================================================
@@ -584,6 +609,20 @@ public class ConfirmacionCitaService {
         }
 
 
+
+        // =================================================
+        // CU-03 / CU-13 - VALIDAR ASIGNACIÓN ACTIVA
+        // =================================================
+        //
+        // También protege las citas creadas
+        // por Recepción y las de seguimiento.
+        // =================================================
+
+        validarAsignacionActivaParaConfirmacion(
+                reserva
+        );
+
+
         // =================================================
         // ESTADO PENDIENTE DE PAGO
         // =================================================
@@ -777,4 +816,65 @@ public class ConfirmacionCitaService {
 
         return citaGuardada;
     }
+
+
+    // =====================================================
+    // CU-03 / CU-13
+    // VALIDAR SEDE Y ESPECIALIDAD ANTES DE CONFIRMAR
+    // =====================================================
+    //
+    // Utiliza un bloqueo de PostgreSQL para coordinar
+    // la creación de citas con la desactivación
+    // de asignaciones realizada por Administración.
+    //
+    // La transacción debe continuar abierta hasta
+    // guardar la cita.
+    // =====================================================
+
+    private void validarAsignacionActivaParaConfirmacion(
+            ReservaTemporalCita reserva
+    ) {
+
+        // ================================================
+        // VALIDAR DATOS DE LA RESERVA
+        // ================================================
+
+        if (reserva == null
+                || reserva.getSucursal() == null
+                || reserva.getSucursal().getId() == null
+                || reserva.getEspecialidad() == null
+                || reserva.getEspecialidad().getId() == null) {
+
+            throw new ReservaCitaInvalidaException(
+                    "La reserva no tiene una sede "
+                            + "o especialidad válida."
+            );
+        }
+
+        // ================================================
+        // CONSULTAR ASIGNACIÓN ACTIVA CON BLOQUEO
+        // ================================================
+
+        Integer idSucursal =
+                reserva.getSucursal().getId();
+
+        Integer idEspecialidad =
+                reserva.getEspecialidad().getId();
+
+        sucursalEspecialidadRepository
+                .buscarActivaParaConfirmarConBloqueo(
+                        idSucursal,
+                        idEspecialidad
+                )
+                .orElseThrow(
+                        () -> new ReservaCitaInvalidaException(
+                                "La especialidad seleccionada "
+                                        + "ya no está disponible "
+                                        + "en esta sede. "
+                                        + "Seleccione otra especialidad "
+                                        + "o sede para agendar su cita."
+                        )
+                );
+    }
+
 }

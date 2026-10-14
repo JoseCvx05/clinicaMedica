@@ -105,10 +105,6 @@ public class CatalogoCitaService {
     // PASO 2 - ESPECIALIDADES POR SUCURSAL
     // =====================================================
 
-    @Cacheable(
-            value = "citaEspecialidadesPorSucursal",
-            key = "#idSucursal"
-    )
     public List<OpcionCatalogoCitaDTO> listarEspecialidades(
             Integer idSucursal
     ) {

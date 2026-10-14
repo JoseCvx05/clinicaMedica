@@ -15,7 +15,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.OffsetDateTime;
 import java.time.ZoneId;
 import java.util.List;
-
+import java.time.LocalDate;
 
 /**
  * =========================================================
@@ -594,6 +594,8 @@ public class RecepcionCitaService {
         }
 
 
+
+
         Usuario recepcionista =
                 usuarioActualService
                         .obtenerUsuarioActual();
@@ -684,6 +686,25 @@ public class RecepcionCitaService {
 
             return ResultadoLlegada.error(
                     MENSAJE_OPERACION_NO_PERMITIDA
+            );
+        }
+
+
+        // =================================================
+        // VALIDAR FECHA DE LA CITA
+        // =================================================
+        // La llegada solo puede registrarse el día
+        // programado de la cita.
+
+        if (cita.getFechaHoraCita() == null
+                || !cita.getFechaHoraCita()
+                .atZoneSameInstant(zonaHoraria)
+                .toLocalDate()
+                .equals(LocalDate.now(zonaHoraria))) {
+
+            return ResultadoLlegada.error(
+                    "La llegada del paciente solo puede registrarse "
+                            + "el día programado de la cita."
             );
         }
 

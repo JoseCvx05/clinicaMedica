@@ -9,10 +9,11 @@ import org.springframework.http.HttpHeaders;
 
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
-
+import org.springframework.security.config.ObjectPostProcessor;
+import org.springframework.security.web.csrf.CsrfFilter;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
-
+import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
 
 import org.springframework.security.web.SecurityFilterChain;
@@ -181,6 +182,36 @@ public class SecurityConfig {
                                 .hasRole(
                                         "ADMINISTRADOR"
                                 )
+
+
+
+                                // =========================
+                                // CU-13
+                                // CONFIGURACIÓN DE SEDES
+                                // Y ESPECIALIDADES
+                                // =========================
+                                //
+                                // Acceso exclusivo:
+                                // ADMINISTRADOR
+                                //
+                                // Protege:
+                                // - Listado de asignaciones.
+                                // - Formulario de creación.
+                                // - Registro de asignaciones.
+                                // - Eliminación o desactivación.
+                                // - Todas las rutas derivadas.
+                                //
+                                // =========================
+
+                                .requestMatchers(
+                                        "/branch-specialty",
+                                        "/branch-specialty/**"
+                                )
+
+                                .hasRole(
+                                        "ADMINISTRADOR"
+                                )
+
 
 
                                 // =========================
@@ -454,28 +485,111 @@ public class SecurityConfig {
                 )
 
 
+
                 // =========================================
-                // CSRF
+                // CSRF - PROTECCIÓN DE FORMULARIOS WEB
                 // =========================================
                 //
-                // CU-09 NO se excluye de CSRF.
+                // El sistema utiliza JWT desde cookie HttpOnly.
                 //
-                // Todos los POST internos de Laboratorio
-                // deberán enviar correctamente el token.
+                // Aunque Spring Security reconoce el JWT como
+                // Bearer Token, las solicitudes del navegador
+                // deben mantener protección CSRF.
+                //
+                // No se modifica la autenticación JWT.
                 //
                 // =========================================
+
 
                 .csrf(
-
                         csrf -> csrf
+
+                                // Guardar el token CSRF en cookie HttpOnly
+                                // independiente de la sesión HTTP.
+                                .csrfTokenRepository(
+                                        new CookieCsrfTokenRepository()
+                                )
+
+
+                                // =========================================
+                                // JWT STATELESS - ESTABILIDAD DEL TOKEN CSRF
+                                // =========================================
+                                //
+                                // La autenticación JWT se procesa en cada petición.
+                                //
+                                // Evitamos que esa autenticación vuelva a generar
+                                // continuamente el token CSRF del navegador.
+                                //
+                                // NO desactiva el filtro CSRF.
+                                // NO elimina la validación del token en los POST.
+                                //
+                                // =========================================
+
+                                .sessionAuthenticationStrategy(
+                                        (authentication, request, response) -> {
+                                            // No renovar el CSRF por cada petición JWT.
+                                        }
+                                )
+
 
                                 .ignoringRequestMatchers(
 
                                         "/api/public/**",
-
                                         "/api/interno/login"
                                 )
+
+                                .withObjectPostProcessor(
+                                        new ObjectPostProcessor<CsrfFilter>() {
+
+                                            @Override
+                                            public <O extends CsrfFilter> O postProcess(
+                                                    O filtro
+                                            ) {
+
+                                                filtro.setRequireCsrfProtectionMatcher(
+                                                        request -> {
+
+                                                            String metodo =
+                                                                    request.getMethod();
+
+                                                            // Métodos de lectura
+                                                            if ("GET".equalsIgnoreCase(metodo)
+                                                                    || "HEAD".equalsIgnoreCase(metodo)
+                                                                    || "OPTIONS".equalsIgnoreCase(metodo)
+                                                                    || "TRACE".equalsIgnoreCase(metodo)) {
+
+                                                                return false;
+                                                            }
+
+                                                            String ruta =
+                                                                    request.getServletPath();
+
+                                                            // Rutas públicas de API
+                                                            if ("/api/public".equals(ruta)
+                                                                    || ruta.startsWith("/api/public/")) {
+
+                                                                return false;
+                                                            }
+
+                                                            // Login interno
+                                                            if ("/api/interno/login".equals(ruta)) {
+
+                                                                return false;
+                                                            }
+
+                                                            // POST, PUT, PATCH y DELETE
+                                                            // requieren CSRF aunque exista
+                                                            // una cookie JWT válida.
+                                                            return true;
+                                                        }
+                                                );
+
+                                                return filtro;
+                                            }
+                                        }
+                                )
                 )
+
 
 
                 // =========================================
