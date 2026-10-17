@@ -91,4 +91,30 @@ public interface DetalleOrdenLaboratorioRepository
     countByOrdenLaboratorio_Id(
             Integer idOrdenLaboratorio
     );
+
+
+    // =====================================================
+    // CU-14 - VERIFICAR EXAMEN UTILIZADO EN ÓRDENES
+    // =====================================================
+    //
+    // Comprueba si un examen del catálogo aparece
+    // en alguna orden de laboratorio registrada.
+    //
+    // Incluye órdenes históricas.
+    //
+    // Permite aplicar las reglas de protección antes
+    // de desactivar un examen de laboratorio.
+    //
+    // IMPORTANTE:
+    //
+    // - No modifica órdenes existentes.
+    // - No altera precios históricos.
+    // - No elimina detalles.
+    //
+    // =====================================================
+
+    boolean existsByExamenLaboratorio_Id(
+            Integer idExamenLaboratorio
+    );
+
 }

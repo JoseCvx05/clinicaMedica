@@ -157,5 +157,53 @@ public interface SucursalEspecialidadRepository
 
 
 
+    // =====================================================
+    // CU-14 - PROTEGER ESPECIALIDADES ASIGNADAS
+    // =====================================================
+    //
+    // Comprueba si una especialidad tiene al menos
+    // una asignación ACTIVA en cualquier sucursal.
+    //
+    // Se utiliza antes de desactivar una especialidad
+    // desde el mantenimiento de catálogos.
+    //
+    // SEGURIDAD:
+    //
+    // - Evita desactivar especialidades utilizadas.
+    // - Protege configuraciones del CU-03 y CU-13.
+    // - No modifica ninguna asignación existente.
+    // - No elimina registros históricos.
+    //
+    // =====================================================
+
+    boolean existsByEspecialidad_IdAndActivoTrue(
+            Integer idEspecialidad
+    );
+
+
+
+    // =====================================================
+    // CU-14 - PROTEGER SUCURSALES CON ESPECIALIDADES
+    // =====================================================
+    //
+    // Comprueba si una sucursal tiene asignaciones
+    // activas de especialidades médicas.
+    //
+    // IMPORTANTE:
+    //
+    // - Consulta todas las especialidades asignadas.
+    // - No modifica las relaciones existentes.
+    // - No elimina registros históricos.
+    // - Protege la configuración realizada en CU-13.
+    //
+    // Antes de desactivar una sucursal, las asignaciones
+    // activas deberán resolverse desde el CU-13.
+    //
+    // =====================================================
+
+    boolean existsBySucursal_IdAndActivoTrue(
+            Integer idSucursal
+    );
+
 
 }

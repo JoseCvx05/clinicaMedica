@@ -1,4 +1,3 @@
-
 package com.proyecto.clinicamedica.entity;
 
 import jakarta.persistence.Column;

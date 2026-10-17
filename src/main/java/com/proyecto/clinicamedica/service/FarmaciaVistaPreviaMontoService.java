@@ -215,6 +215,34 @@ public class FarmaciaVistaPreviaMontoService {
             }
 
 
+            // ---------------------------------------------
+            // CU-14 - PROTEGER MEDICAMENTO ORIGINAL INACTIVO
+            // ---------------------------------------------
+            //
+            // Se valida el medicamento original de la
+            // receta directamente desde el backend.
+            //
+            // Impide calcular el monto de nuevos despachos
+            // cuando el medicamento original está inactivo,
+            // incluso ante solicitudes manipuladas.
+            //
+            // No modifica recetas ni inventarios.
+            // ---------------------------------------------
+
+            Medicamento medicamentoOriginal =
+                    detalle.getMedicamento();
+
+            if (medicamentoOriginal == null
+                    || !medicamentoOriginal.estaActivo()) {
+
+                throw new IllegalStateException(
+                        "No se puede calcular el despacho "
+                                + "porque el medicamento original "
+                                + "se encuentra inactivo."
+                );
+            }
+
+
             Medicamento entregado =
                     medicamentoRepository.findById(
                             linea.getIdMedicamentoEntregado()

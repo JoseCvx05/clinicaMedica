@@ -111,6 +111,17 @@ public class InventarioFarmacia {
 
 
     // =====================================================
+    // CU-14 - ESTADO ACTIVO / INACTIVO DEL INVENTARIO
+    // =====================================================
+
+    @Column(
+            name = "activo",
+            nullable = false
+    )
+    private Boolean activo = true;
+
+
+    // =====================================================
     // CONTROL DE CONCURRENCIA
     // RNF-025
     // =====================================================
@@ -153,10 +164,17 @@ public class InventarioFarmacia {
     // VALIDACIONES JPA
     // =====================================================
 
+
     @PrePersist
     private void prepararCreacion() {
+
+        if (activo == null) {
+            activo = true;
+        }
+
         validar();
     }
+
 
     @PreUpdate
     private void prepararActualizacion() {
@@ -378,4 +396,18 @@ public class InventarioFarmacia {
     public Long getVersion() {
         return version;
     }
+
+
+    // =====================================================
+    // CU-14 - GETTER Y SETTER DEL ESTADO
+    // =====================================================
+
+    public Boolean getActivo() {
+        return activo;
+    }
+
+    public void setActivo(Boolean activo) {
+        this.activo = activo;
+    }
+
 }

@@ -1,0 +1,407 @@
+
+<!DOCTYPE html>
+<html lang="es"
+      xmlns:th="http://www.thymeleaf.org">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>
+        Crear Inventario | Clínica Médica SANTOS
+    </title>
+
+    <!-- =====================================================
+         BOOTSTRAP 5
+         ===================================================== -->
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+          rel="stylesheet">
+
+    <style>
+
+        body {
+            background-color: #f1f5f9;
+            font-family: Arial, sans-serif;
+        }
+
+        .encabezado {
+            background: linear-gradient(
+                    135deg,
+                    #0f172a,
+                    #1e3a8a
+            );
+            color: white;
+            padding: 25px;
+            border-radius: 12px;
+            margin-bottom: 25px;
+        }
+
+        .tarjeta {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.06);
+        }
+
+        .form-label {
+            font-weight: 600;
+        }
+
+        .texto-ayuda {
+            font-size: 13px;
+            color: #64748b;
+        }
+
+        .campo-obligatorio {
+            color: #dc2626;
+        }
+
+        .botones {
+            display: flex;
+            justify-content: flex-end;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+    </style>
+
+</head>
+
+<body>
+
+<div class="container py-4">
+
+    <!-- =====================================================
+         CU-14 - ENCABEZADO
+         ===================================================== -->
+
+    <div class="encabezado">
+
+        <h2 class="mb-2">
+            Crear Inventario de Medicamentos
+        </h2>
+
+        <p class="mb-0">
+            CU-14 - Catálogo 8 de 9
+        </p>
+
+        <p class="small mt-2 mb-0">
+            Clínica Médica SANTOS
+        </p>
+
+    </div>
+
+
+    <!-- =====================================================
+         CU-14 - FORMULARIO
+         ===================================================== -->
+
+    <div class="tarjeta">
+
+        <h4 class="mb-3">
+            Datos del inventario
+        </h4>
+
+        <p class="text-muted mb-4">
+            Seleccione el medicamento, la sucursal
+            y las existencias iniciales.
+        </p>
+
+
+        <!-- =================================================
+             MENSAJES DE ERROR DEL SERVICE
+             ================================================= -->
+
+        <div th:if="${mensajeError}"
+             class="alert alert-danger"
+             role="alert">
+
+            <strong>
+                No se pudo registrar el inventario.
+            </strong>
+
+            <div th:text="${mensajeError}">
+                Error de validación.
+            </div>
+
+        </div>
+
+
+        <!-- =================================================
+             FORMULARIO DE CREACIÓN
+             ================================================= -->
+
+        <form th:action="@{/admin/inventario-farmacia/nuevo}"
+              th:object="${formulario}"
+              method="post">
+
+
+            <!-- =============================================
+                 PROTECCIÓN CSRF
+                 ============================================= -->
+
+            <input th:if="${_csrf != null}"
+                   type="hidden"
+                   th:name="${_csrf.parameterName}"
+                   th:value="${_csrf.token}">
+
+
+            <!-- =============================================
+                 MEDICAMENTO
+                 ============================================= -->
+
+            <div class="mb-4">
+
+                <label for="idMedicamento"
+                       class="form-label">
+
+                    Medicamento
+
+                    <span class="campo-obligatorio">
+                        *
+                    </span>
+
+                </label>
+
+
+                <select th:field="*{idMedicamento}"
+                        id="idMedicamento"
+                        class="form-select"
+                        th:classappend="${#fields.hasErrors('idMedicamento')}
+                            ? 'is-invalid'
+                            : ''"
+                        required>
+
+                    <option value="">
+                        Seleccione un medicamento
+                    </option>
+
+                    <option th:each="medicamento : ${medicamentos}"
+                            th:value="${medicamento.id}"
+                            th:text="${medicamento.nombre}">
+                    </option>
+
+                </select>
+
+
+                <div class="invalid-feedback"
+                     th:if="${#fields.hasErrors('idMedicamento')}"
+                     th:errors="*{idMedicamento}">
+
+                    Debe seleccionar un medicamento.
+
+                </div>
+
+
+                <div class="texto-ayuda mt-2">
+                    Se muestran únicamente los medicamentos
+                    activos del catálogo.
+                </div>
+
+            </div>
+
+
+            <!-- =============================================
+                 SUCURSAL
+                 ============================================= -->
+
+            <div class="mb-4">
+
+                <label for="idSucursal"
+                       class="form-label">
+
+                    Sucursal
+
+                    <span class="campo-obligatorio">
+                        *
+                    </span>
+
+                </label>
+
+
+                <select th:field="*{idSucursal}"
+                        id="idSucursal"
+                        class="form-select"
+                        th:classappend="${#fields.hasErrors('idSucursal')}
+                            ? 'is-invalid'
+                            : ''"
+                        required>
+
+                    <option value="">
+                        Seleccione una sucursal
+                    </option>
+
+                    <option th:each="sucursal : ${sucursales}"
+                            th:value="${sucursal.id}"
+                            th:text="${sucursal.nombre}">
+                    </option>
+
+                </select>
+
+
+                <div class="invalid-feedback"
+                     th:if="${#fields.hasErrors('idSucursal')}"
+                     th:errors="*{idSucursal}">
+
+                    Debe seleccionar una sucursal.
+
+                </div>
+
+
+                <div class="texto-ayuda mt-2">
+                    El inventario se registra de forma
+                    independiente para cada sucursal.
+                </div>
+
+            </div>
+
+
+            <!-- =============================================
+                 CANTIDAD INICIAL
+                 ============================================= -->
+
+            <div class="mb-4">
+
+                <label for="cantidadInicial"
+                       class="form-label">
+
+                    Existencias iniciales
+
+                    <span class="campo-obligatorio">
+                        *
+                    </span>
+
+                </label>
+
+
+                <input type="number"
+                       th:field="*{cantidadInicial}"
+                       id="cantidadInicial"
+                       class="form-control"
+                       th:classappend="${#fields.hasErrors('cantidadInicial')}
+                           ? 'is-invalid'
+                           : ''"
+                       min="0"
+                       max="2147483647"
+                       step="1"
+                       placeholder="Ejemplo: 50"
+                       required>
+
+
+                <div class="invalid-feedback"
+                     th:if="${#fields.hasErrors('cantidadInicial')}"
+                     th:errors="*{cantidadInicial}">
+
+                    La cantidad inicial no es válida.
+
+                </div>
+
+
+                <div class="texto-ayuda mt-2">
+
+                    Ingrese la cantidad disponible
+                    al momento de crear el inventario.
+
+                    Puede ingresar 0 cuando todavía
+                    no tenga existencias.
+
+                </div>
+
+            </div>
+
+
+            <!-- =============================================
+                 INFORMACIÓN DEL ESTADO
+                 ============================================= -->
+
+            <div class="alert alert-info">
+
+                <strong>
+                    Estado inicial: Activo
+                </strong>
+
+                <p class="mb-0 mt-2">
+
+                    Los nuevos inventarios se registran
+                    automáticamente como activos.
+
+                    El sistema verificará que no exista
+                    previamente el mismo medicamento
+                    en la sucursal seleccionada.
+
+                </p>
+
+            </div>
+
+
+            <!-- =============================================
+                 INFORMACIÓN DE AUDITORÍA
+                 ============================================= -->
+
+            <div class="alert alert-light border">
+
+                <strong>
+                    Registro de movimientos
+                </strong>
+
+                <p class="mb-0 mt-2">
+
+                    Al guardar, el sistema registrará
+                    un movimiento inicial con las
+                    existencias ingresadas y el usuario
+                    responsable de la operación.
+
+                </p>
+
+            </div>
+
+
+            <!-- =============================================
+                 BOTONES
+                 ============================================= -->
+
+            <hr class="my-4">
+
+            <div class="botones">
+
+                <!-- CANCELAR -->
+
+                <a th:href="@{/admin/inventario-farmacia}"
+                   class="btn btn-outline-secondary px-4">
+
+                    Cancelar
+
+                </a>
+
+
+                <!-- CREAR -->
+
+                <button type="submit"
+                        class="btn btn-success px-4">
+
+                    Crear Inventario
+
+                </button>
+
+            </div>
+
+        </form>
+
+    </div>
+
+</div>
+
+
+<!-- =====================================================
+     BOOTSTRAP JAVASCRIPT
+     ===================================================== -->
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js">
+</script>
+
+</body>
+</html>

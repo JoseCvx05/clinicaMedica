@@ -6,7 +6,7 @@ import com.proyecto.clinicamedica.entity.Cita;
 import com.proyecto.clinicamedica.entity.EstadoCita;
 import com.proyecto.clinicamedica.entity.ReservaTemporalCita;
 import com.proyecto.clinicamedica.entity.Usuario;
-
+import java.math.BigDecimal;
 import com.proyecto.clinicamedica.exception.ReservaCitaInvalidaException;
 import com.proyecto.clinicamedica.exception.ReservaExpiradaException;
 
@@ -95,7 +95,7 @@ public class ConfirmacionCitaService {
             ReservaTemporalCitaService reservaTemporalCitaService,
             SucursalEspecialidadRepository sucursalEspecialidadRepository,
 
-            @Value("${cita.pago.duracion-minutos:10}")
+            @Value("${cita.pago.duracion-minutos:5}")
             int duracionPagoMinutos,
 
             @Value("${cita.zona-horaria:America/Guatemala}")
@@ -301,6 +301,23 @@ public class ConfirmacionCitaService {
 
         cita.setEspecialidad(
                 reserva.getEspecialidad()
+        );
+
+
+        // =====================================================
+        // CU-14 - CATÁLOGO 9
+        // CONSERVAR PRECIO ACORDADO - PORTAL WEB
+        // =====================================================
+        //
+        // El precio procede de la reserva temporal
+        // y fue obtenido previamente desde PostgreSQL.
+        //
+        // No se recibe ningún precio del navegador.
+        //
+        // =====================================================
+
+        cita.setPrecioConsultaAcordado(
+                obtenerPrecioAcordadoDeReserva(reserva)
         );
 
 
@@ -673,6 +690,24 @@ public class ConfirmacionCitaService {
         );
 
 
+
+        // =====================================================
+        // CU-14 - CATÁLOGO 9
+        // CONSERVAR PRECIO ACORDADO - PERSONAL INTERNO
+        // =====================================================
+        //
+        // Se utiliza la misma validación que el Portal.
+        //
+        // Protege las citas creadas por Recepción y
+        // las citas de seguimiento.
+        //
+        // =====================================================
+
+        cita.setPrecioConsultaAcordado(
+                obtenerPrecioAcordadoDeReserva(reserva)
+        );
+
+
         cita.setFechaHoraCita(
                 reserva.getFechaHoraInicio()
         );
@@ -875,6 +910,71 @@ public class ConfirmacionCitaService {
                                         + "o sede para agendar su cita."
                         )
                 );
+    }
+
+
+
+    // =====================================================
+    // CU-14 - CATÁLOGO 9
+    // OBTENER PRECIO ACORDADO DE LA RESERVA
+    // =====================================================
+    //
+    // SEGURIDAD:
+    //
+    // - Se utiliza exclusivamente el precio reservado.
+    // - No se acepta un monto enviado por el navegador.
+    // - No se consulta una tarifa diferente.
+    // - No se inventan precios cuando falta información.
+    //
+    // Compatible con los diferentes canales de
+    // confirmación de citas.
+    //
+    // =====================================================
+
+    private BigDecimal obtenerPrecioAcordadoDeReserva(
+            ReservaTemporalCita reserva
+    ) {
+
+        // -------------------------------------------------
+        // 1. VALIDAR RESERVA
+        // -------------------------------------------------
+
+        if (reserva == null) {
+
+            throw new ReservaCitaInvalidaException(
+                    "La reserva temporal no está disponible."
+            );
+        }
+
+        // -------------------------------------------------
+        // 2. OBTENER PRECIO GUARDADO
+        // -------------------------------------------------
+
+        BigDecimal precio =
+                reserva.getPrecioConsultaReservado();
+
+        // -------------------------------------------------
+        // 3. VALIDAR PRECIO
+        // -------------------------------------------------
+
+        if (precio == null
+                || precio.compareTo(BigDecimal.ZERO) <= 0
+                || precio.scale() > 2
+                || precio.compareTo(
+                new BigDecimal("99999999.99")
+        ) > 0) {
+
+            throw new ReservaCitaInvalidaException(
+                    "La reserva no contiene una tarifa válida. "
+                            + "Seleccione nuevamente el horario."
+            );
+        }
+
+        // -------------------------------------------------
+        // 4. DEVOLVER PRECIO ACORDADO
+        // -------------------------------------------------
+
+        return precio;
     }
 
 }

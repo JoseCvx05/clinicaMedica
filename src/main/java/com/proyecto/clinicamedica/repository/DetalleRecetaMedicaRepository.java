@@ -69,4 +69,31 @@ public interface DetalleRecetaMedicaRepository
             Integer idRecetaMedica,
             Integer idMedicamento
     );
+
+
+    // =====================================================
+    // CU-14 - VERIFICAR MEDICAMENTO EN RECETAS MÉDICAS
+    // =====================================================
+    //
+    // Comprueba si un medicamento del catálogo
+    // está relacionado con alguna receta médica.
+    //
+    // Incluye recetas históricas.
+    //
+    // Se utilizará para verificar dependencias
+    // antes de realizar operaciones administrativas.
+    //
+    // IMPORTANTE:
+    //
+    // - No modifica recetas existentes.
+    // - No altera precios históricos.
+    // - No elimina detalles de recetas.
+    // - No modifica inventarios.
+    //
+    // =====================================================
+
+    boolean existsByMedicamento_Id(
+            Integer idMedicamento
+    );
+
 }

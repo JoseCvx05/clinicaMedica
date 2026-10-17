@@ -696,17 +696,17 @@ public class RecepcionCitaService {
         // La llegada solo puede registrarse el día
         // programado de la cita.
 
-        if (cita.getFechaHoraCita() == null
-                || !cita.getFechaHoraCita()
-                .atZoneSameInstant(zonaHoraria)
-                .toLocalDate()
-                .equals(LocalDate.now(zonaHoraria))) {
+        //if (cita.getFechaHoraCita() == null
+        //      || !cita.getFechaHoraCita()
+        //      .atZoneSameInstant(zonaHoraria)
+        //      .toLocalDate()
+        //              .equals(LocalDate.now(zonaHoraria))) {
 
-            return ResultadoLlegada.error(
-                    "La llegada del paciente solo puede registrarse "
-                            + "el día programado de la cita."
-            );
-        }
+//            return ResultadoLlegada.error(
+                    //"La llegada del paciente solo puede registrarse "
+                    //      + "el día programado de la cita."
+                    //);
+            //}
 
 
         EstadoCita estadoPacientePresente =

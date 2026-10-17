@@ -5,6 +5,8 @@ import com.proyecto.clinicamedica.dto.AccionAuditoria;
 import com.proyecto.clinicamedica.dto.RegistroAuditoria;
 import com.proyecto.clinicamedica.dto.SolicitudDespachoFarmaciaDTO;
 
+import com.proyecto.clinicamedica.repository.MovimientoInventarioFarmaciaRepository;
+
 import com.proyecto.clinicamedica.entity.Despacho;
 import com.proyecto.clinicamedica.entity.DetalleDespacho;
 import com.proyecto.clinicamedica.entity.DetalleRecetaMedica;
@@ -19,6 +21,8 @@ import com.proyecto.clinicamedica.repository.InventarioFarmaciaRepository;
 import com.proyecto.clinicamedica.repository.MedicamentoRepository;
 import com.proyecto.clinicamedica.repository.RecetaMedicaRepository;
 import com.proyecto.clinicamedica.event.DespachoConfirmadoFarmaciaEvent;
+
+import com.proyecto.clinicamedica.entity.MovimientoInventarioFarmacia;
 
 import org.springframework.context.ApplicationEventPublisher;
 import jakarta.persistence.EntityManager;
@@ -118,6 +122,15 @@ public class FarmaciaDespachoService {
     private final ApplicationEventPublisher
             eventPublisher;
 
+
+    // =====================================================
+    // CU-14 - REGISTRO DE SALIDAS DE INVENTARIO
+    // =====================================================
+
+    private final MovimientoInventarioFarmaciaRepository
+            movimientoInventarioRepository;
+
+
     @PersistenceContext
     private EntityManager entityManager;
 
@@ -138,7 +151,9 @@ public class FarmaciaDespachoService {
             DetalleDespachoRepository detalleDespachoRepository,
             AuditoriaService auditoriaService,
             ApplicationEventPublisher eventPublisher,
-            FarmaciaCalculoMontoService calculoMontoService
+            FarmaciaCalculoMontoService calculoMontoService,
+            MovimientoInventarioFarmaciaRepository movimientoInventarioRepository
+
     ) {
 
         this.solicitudValidador = solicitudValidador;
@@ -154,6 +169,8 @@ public class FarmaciaDespachoService {
         this.auditoriaService = auditoriaService;
         this.eventPublisher = eventPublisher;
         this.calculoMontoService = calculoMontoService;
+        this.movimientoInventarioRepository = movimientoInventarioRepository;
+
 
     }
 
@@ -357,6 +374,39 @@ public class FarmaciaDespachoService {
                 throw new IllegalStateException(
                         "Uno de los medicamentos no pertenece "
                                 + "a la receta seleccionada."
+                );
+            }
+
+
+            // ---------------------------------------------
+            // CU-14 - PROTEGER MEDICAMENTO ORIGINAL INACTIVO
+            // ---------------------------------------------
+            //
+            // El medicamento original proviene de la
+            // receta almacenada en PostgreSQL.
+            //
+            // No se permite continuar con un nuevo
+            // despacho cuando el medicamento original
+            // fue desactivado en el catálogo.
+            //
+            // Esta validación también protege contra
+            // solicitudes manipuladas desde el navegador.
+            //
+            // No modifica recetas, inventarios ni
+            // despachos históricos.
+            //
+            // ---------------------------------------------
+
+            Medicamento medicamentoOriginal =
+                    detalle.getMedicamento();
+
+            if (medicamentoOriginal == null
+                    || !medicamentoOriginal.estaActivo()) {
+
+                throw new IllegalStateException(
+                        "No se puede despachar esta receta "
+                                + "porque el medicamento original "
+                                + "se encuentra inactivo."
                 );
             }
 
@@ -630,6 +680,32 @@ public class FarmaciaDespachoService {
                                     )
                             );
 
+
+            // =====================================================
+            // CU-14 - PROTEGER INVENTARIO INACTIVO
+            // =====================================================
+            //
+            // No permitir despachos desde inventarios
+            // desactivados administrativamente.
+            //
+            // La validación se realiza después de obtener
+            // el inventario con bloqueo de escritura.
+            //
+            // No modifica existencias ni despachos previos.
+            //
+            // =====================================================
+
+            if (!Boolean.TRUE.equals(inventario.getActivo())) {
+
+                throw new IllegalStateException(
+                        "No se puede despachar el medicamento #"
+                                + idMedicamento
+                                + " porque su inventario está inactivo "
+                                + "en esta sucursal."
+                );
+            }
+
+
             if (!inventario.tieneStockSuficiente(
                     cantidadSolicitada
             )) {
@@ -722,6 +798,15 @@ public class FarmaciaDespachoService {
         List<String> alertasStockMinimo =
                 new ArrayList<>();
 
+
+        // =====================================================
+        // CU-14 - MOVIMIENTOS DE SALIDA DEL DESPACHO
+        // =====================================================
+
+        List<MovimientoInventarioFarmacia> movimientosSalida =
+                new ArrayList<>();
+
+
         for (Map.Entry<Integer, Integer> entrada
                 : cantidadesPorMedicamento.entrySet()) {
 
@@ -743,9 +828,43 @@ public class FarmaciaDespachoService {
             //
             // ---------------------------------------------
 
+
+            // =====================================================
+            // CU-14 - CONSERVAR EXISTENCIAS ANTERIORES
+            // =====================================================
+
+            Integer stockAnterior =
+                    inventario.getCantidadDisponible();
+
+            // =====================================================
+            // CU-11 - DESCONTAR EXISTENCIAS
+            // =====================================================
+
             inventario.descontar(
                     entrada.getValue()
             );
+
+            // =====================================================
+            // CU-14 - PREPARAR MOVIMIENTO DE SALIDA
+            // =====================================================
+
+            MovimientoInventarioFarmacia movimientoSalida =
+                    new MovimientoInventarioFarmacia(
+                            inventario,
+                            farmaceutico,
+                            MovimientoInventarioFarmacia.TipoMovimiento.SALIDA,
+                            entrada.getValue(),
+                            stockAnterior,
+                            inventario.getCantidadDisponible(),
+                            "CU11_DESPACHO_FARMACIA",
+                            String.valueOf(despacho.getId()),
+                            "Salida por despacho confirmado CU-11."
+                    );
+
+            movimientosSalida.add(
+                    movimientoSalida
+            );
+
 
             if (inventario.alcanzoStockMinimo()) {
 
@@ -766,6 +885,23 @@ public class FarmaciaDespachoService {
 
         inventarioRepository.saveAllAndFlush(
                 inventarios.values()
+        );
+
+
+        // =====================================================
+        // CU-14 - GUARDAR MOVIMIENTOS DE SALIDA
+        // =====================================================
+        //
+        // Los movimientos se guardan dentro de la
+        // misma transacción del despacho CU-11.
+        //
+        // Si falla el despacho o el movimiento,
+        // se revierte toda la operación.
+        //
+        // =====================================================
+
+        movimientoInventarioRepository.saveAllAndFlush(
+                movimientosSalida
         );
 
         // -------------------------------------------------

@@ -1,3 +1,4 @@
+
 package com.proyecto.clinicamedica.service;
 
 import com.proyecto.clinicamedica.entity.Cita;
@@ -10,11 +11,15 @@ import com.proyecto.clinicamedica.repository.PagoRepository;
 
 import com.proyecto.clinicamedica.service.correo.PlantillaCorreoPago;
 
+import jakarta.mail.MessagingException;
+import jakarta.mail.internet.MimeMessage;
+
 import org.springframework.beans.factory.annotation.Value;
 
 import org.springframework.mail.MailException;
-import org.springframework.mail.SimpleMailMessage;
+import org.springframework.mail.MailPreparationException;
 import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.mail.javamail.MimeMessageHelper;
 
 import org.springframework.stereotype.Service;
 
@@ -35,6 +40,8 @@ import java.time.OffsetDateTime;
  *
  * - Crear la notificación del comprobante.
  * - Intentar el primer envío.
+ * - Enviar comprobante institucional HTML.
+ * - Mantener alternativa de texto plano.
  * - Registrar Enviado/Fallido.
  *
  * Si falla:
@@ -44,11 +51,23 @@ import java.time.OffsetDateTime;
  * - La notificación queda Fallida.
  * - El scheduler realizará los reintentos.
  *
+ * SEGURIDAD:
+ *
+ * - No modifica montos.
+ * - No genera nuevas transacciones.
+ * - No modifica el estado de la cita.
+ * - Mantiene el control contra duplicados.
+ * - Conserva la trazabilidad de notificaciones.
+ *
  * =========================================================
  */
 @Service
 public class NotificacionPagoService {
 
+
+    // =====================================================
+    // CONSTANTES
+    // =====================================================
 
     public static final String TIPO_NOTIFICACION =
             "COMPROBANTE_PAGO";
@@ -57,6 +76,10 @@ public class NotificacionPagoService {
     public static final String TABLA_REFERENCIA =
             "pago";
 
+
+    // =====================================================
+    // DEPENDENCIAS
+    // =====================================================
 
     private final JavaMailSender mailSender;
 
@@ -69,6 +92,10 @@ public class NotificacionPagoService {
 
     private final String correoRemitente;
 
+
+    // =====================================================
+    // CONSTRUCTOR
+    // =====================================================
 
     public NotificacionPagoService(
 
@@ -83,6 +110,7 @@ public class NotificacionPagoService {
 
             @Value("${spring.mail.username}")
             String correoRemitente
+
     ) {
 
         this.mailSender =
@@ -114,7 +142,6 @@ public class NotificacionPagoService {
     ) {
 
         if (idPago == null) {
-
             return;
         }
 
@@ -143,13 +170,10 @@ public class NotificacionPagoService {
                         .buscarParaNotificacion(
                                 idPago
                         )
-                        .orElse(
-                                null
-                        );
+                        .orElse(null);
 
 
         if (pago == null) {
-
             return;
         }
 
@@ -162,13 +186,10 @@ public class NotificacionPagoService {
                 cita.getPaciente();
 
 
-        /*
-         * IMPORTANTE:
-         *
-         * Si en Usuario tu getter se llama distinto,
-         * por ejemplo getCorreoElectronico(), cambia
-         * únicamente esta línea.
-         */
+        // =================================================
+        // OBTENER CORREO DEL PACIENTE
+        // =================================================
+
         String correoPaciente =
                 paciente.getCorreoElectronico();
 
@@ -199,8 +220,7 @@ public class NotificacionPagoService {
 
 
         notificacion.setAsunto(
-                plantillaCorreo
-                        .construirAsunto()
+                plantillaCorreo.construirAsunto()
         );
 
 
@@ -231,28 +251,44 @@ public class NotificacionPagoService {
 
 
         // =================================================
-        // PRIMER INTENTO
+        // PRIMER INTENTO DE ENVÍO
         // =================================================
 
         try {
 
-            SimpleMailMessage mensaje =
+            // =============================================
+            // CONSTRUIR MENSAJE HTML
+            // =============================================
+
+            MimeMessage mensaje =
                     construirMensaje(
                             notificacion,
                             pago
                     );
 
 
+            // =============================================
+            // ENVIAR CORREO
+            // =============================================
+
             mailSender.send(
                     mensaje
             );
 
+
+            // =============================================
+            // REGISTRAR ENVÍO EXITOSO
+            // =============================================
 
             marcarEnviado(
                     notificacion
             );
 
         } catch (MailException ex) {
+
+            // =============================================
+            // REGISTRAR FALLO DE ENVÍO
+            // =============================================
 
             marcarFallido(
                     notificacion,
@@ -261,6 +297,10 @@ public class NotificacionPagoService {
         }
 
 
+        // =================================================
+        // GUARDAR RESULTADO
+        // =================================================
+
         notificacionCorreoRepository.save(
                 notificacion
         );
@@ -268,10 +308,24 @@ public class NotificacionPagoService {
 
 
     // =====================================================
-    // CONSTRUIR MENSAJE
+    // CONSTRUIR MENSAJE HTML
+    // =====================================================
+    //
+    // CU-04:
+    //
+    // Se reemplaza SimpleMailMessage por MimeMessage.
+    //
+    // El correo incluye:
+    //
+    // - Versión de texto plano.
+    // - Versión HTML institucional.
+    //
+    // Gmail y otros clientes compatibles mostrarán
+    // preferentemente la versión HTML.
+    //
     // =====================================================
 
-    private SimpleMailMessage construirMensaje(
+    private MimeMessage construirMensaje(
             NotificacionCorreo notificacion,
             Pago pago
     ) {
@@ -280,56 +334,138 @@ public class NotificacionPagoService {
                 pago.getCita();
 
 
-        SimpleMailMessage mensaje =
-                new SimpleMailMessage();
+        try {
+
+            // =============================================
+            // CREAR MENSAJE MIME
+            // =============================================
+
+            MimeMessage mensaje =
+                    mailSender.createMimeMessage();
 
 
-        mensaje.setFrom(
-                correoRemitente
-        );
+            MimeMessageHelper helper =
+                    new MimeMessageHelper(
+                            mensaje,
+                            true,
+                            "UTF-8"
+                    );
 
 
-        mensaje.setTo(
-                notificacion.getDestinatarioCorreo()
-        );
+            // =============================================
+            // REMITENTE
+            // =============================================
+
+            helper.setFrom(
+                    correoRemitente
+            );
 
 
-        mensaje.setSubject(
-                notificacion.getAsunto()
-        );
+            // =============================================
+            // DESTINATARIO
+            // =============================================
+
+            helper.setTo(
+                    notificacion.getDestinatarioCorreo()
+            );
 
 
-        mensaje.setText(
-                plantillaCorreo
-                        .construirCuerpo(
+            // =============================================
+            // ASUNTO
+            // =============================================
 
-                                cita.getPaciente()
-                                        .getNombreCompleto(),
-
-                                pago.getNumeroTransaccion(),
-
-                                cita.getMedico()
-                                        .getNombreCompleto(),
-
-                                cita.getEspecialidad()
-                                        .getNombre(),
-
-                                cita.getSucursal()
-                                        .getNombre(),
-
-                                cita.getFechaHoraCita(),
-
-                                pago.getMonto(),
-
-                                pago.getFormaPago()
-                                        .getNombre(),
-
-                                pago.getFechaHoraPago()
-                        )
-        );
+            helper.setSubject(
+                    notificacion.getAsunto()
+            );
 
 
-        return mensaje;
+            // =============================================
+            // CONSTRUIR VERSIÓN EN TEXTO
+            // =============================================
+
+            String cuerpoTexto =
+                    plantillaCorreo.construirCuerpo(
+
+                            cita.getPaciente()
+                                    .getNombreCompleto(),
+
+                            pago.getNumeroTransaccion(),
+
+                            cita.getMedico()
+                                    .getNombreCompleto(),
+
+                            cita.getEspecialidad()
+                                    .getNombre(),
+
+                            cita.getSucursal()
+                                    .getNombre(),
+
+                            cita.getFechaHoraCita(),
+
+                            pago.getMonto(),
+
+                            pago.getFormaPago()
+                                    .getNombre(),
+
+                            pago.getFechaHoraPago()
+                    );
+
+
+            // =============================================
+            // CONSTRUIR VERSIÓN HTML
+            // =============================================
+
+            String cuerpoHtml =
+                    plantillaCorreo.construirCuerpoHtml(
+
+                            cita.getPaciente()
+                                    .getNombreCompleto(),
+
+                            pago.getNumeroTransaccion(),
+
+                            cita.getMedico()
+                                    .getNombreCompleto(),
+
+                            cita.getEspecialidad()
+                                    .getNombre(),
+
+                            cita.getSucursal()
+                                    .getNombre(),
+
+                            cita.getFechaHoraCita(),
+
+                            pago.getMonto(),
+
+                            pago.getFormaPago()
+                                    .getNombre(),
+
+                            pago.getFechaHoraPago()
+                    );
+
+
+            // =============================================
+            // CONFIGURAR TEXTO + HTML
+            // =============================================
+
+            helper.setText(
+                    cuerpoTexto,
+                    cuerpoHtml
+            );
+
+
+            return mensaje;
+
+        } catch (MessagingException ex) {
+
+            // =============================================
+            // CONSERVAR MANEJO DE ERRORES DE CORREO
+            // =============================================
+
+            throw new MailPreparationException(
+                    "No fue posible preparar el comprobante HTML.",
+                    ex
+            );
+        }
     }
 
 
@@ -440,4 +576,5 @@ public class NotificacionPagoService {
                 500
         );
     }
+
 }

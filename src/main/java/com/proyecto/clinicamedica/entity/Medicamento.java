@@ -268,14 +268,44 @@ public class Medicamento {
         }
 
 
-        if (precio.compareTo(
-                BigDecimal.ZERO
-        ) < 0) {
+
+        // -------------------------------------------------
+        // PRECIO - VALIDACIONES CU-14
+        // -------------------------------------------------
+        //
+        // Reglas:
+        //
+        // - Obligatorio (validado anteriormente).
+        // - Mayor que cero.
+        // - Precisión máxima 10,2.
+        // - Máximo 8 dígitos enteros.
+        // - Máximo 2 decimales significativos.
+        //
+        // -------------------------------------------------
+
+        if (precio.compareTo(BigDecimal.ZERO) <= 0) {
 
             throw new IllegalStateException(
-                    "El precio del medicamento no puede ser negativo."
+                    "El precio del medicamento debe ser mayor a 0."
             );
         }
+
+        if (precio.compareTo(
+                new BigDecimal("99999999.99")
+        ) > 0) {
+
+            throw new IllegalStateException(
+                    "El precio del medicamento supera el máximo permitido."
+            );
+        }
+
+        if (precio.stripTrailingZeros().scale() > 2) {
+
+            throw new IllegalStateException(
+                    "El precio del medicamento debe tener como máximo 2 decimales."
+            );
+        }
+
 
 
         // -------------------------------------------------

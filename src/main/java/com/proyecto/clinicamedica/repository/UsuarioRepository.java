@@ -92,6 +92,26 @@ public interface UsuarioRepository
 
 
     // =====================================================
+    // CU-14 - PROTEGER ESPECIALIDADES EN USO
+    // =====================================================
+    //
+    // Comprueba si existen médicos activos asignados
+    // a una especialidad, independientemente de la
+    // sucursal a la que pertenezcan.
+    //
+    // Se utilizará antes de desactivar una especialidad
+    // para evitar afectar médicos que todavía la usan.
+    //
+    // No modifica usuarios ni registros existentes.
+    // =====================================================
+
+    boolean existsByActivoTrueAndRol_NombreIgnoreCaseAndEspecialidad_Id(
+            String nombreRol,
+            Integer idEspecialidad
+    );
+
+
+    // =====================================================
     // VALIDACIONES DE UNICIDAD - CREACIÓN
     // =====================================================
 
@@ -212,4 +232,51 @@ public interface UsuarioRepository
             @Param("id")
             Integer id
     );
+
+
+    // =====================================================
+    // CU-14 - PROTEGER SUCURSALES CON USUARIOS ACTIVOS
+    // =====================================================
+    //
+    // Verifica si una sucursal tiene usuarios activos
+    // asignados, independientemente de su rol.
+    //
+    // Protege:
+    // - Médicos.
+    // - Enfermeros.
+    // - Recepcionistas.
+    // - Cajeros.
+    // - Demás personal asignado a la sede.
+    //
+    // No modifica usuarios ni sucursales.
+    // =====================================================
+
+    boolean existsBySucursal_IdAndActivoTrue(
+            Integer idSucursal
+    );
+
+
+    // =====================================================
+    // CU-14 - PROTEGER ROLES ASIGNADOS A USUARIOS
+    // =====================================================
+    //
+    // Comprueba si existe algún usuario que tenga
+    // asignado el rol indicado.
+    //
+    // IMPORTANTE:
+    //
+    // - Incluye usuarios activos e inactivos.
+    // - Protege las relaciones del CU-01.
+    // - Evita desactivar roles todavía asignados.
+    // - No modifica usuarios.
+    // - No modifica permisos.
+    // - No modifica registros históricos.
+    //
+    // =====================================================
+
+    boolean existsByRol_Id(
+            Integer idRol
+    );
+
+
 }

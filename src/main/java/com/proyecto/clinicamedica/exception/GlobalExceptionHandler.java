@@ -1,14 +1,22 @@
+
 package com.proyecto.clinicamedica.exception;
 
 import com.proyecto.clinicamedica.dto.ErrorResponse;
+
 import jakarta.servlet.http.HttpServletRequest;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
+
+import org.springframework.web.HttpRequestMethodNotSupportedException;
+
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+
 import org.springframework.web.servlet.resource.NoResourceFoundException;
+
 import java.time.OffsetDateTime;
 
 /**
@@ -25,6 +33,8 @@ import java.time.OffsetDateTime;
  * - Errores de Bean Validation.
  * - JSON inválido.
  * - Argumentos inválidos.
+ * - Recursos no encontrados.
+ * - Métodos HTTP no permitidos.
  * - Errores inesperados.
  *
  * Posteriormente podremos agregar excepciones específicas
@@ -36,6 +46,7 @@ import java.time.OffsetDateTime;
  * - SRP.
  * - Reutilización.
  * - Separación de responsabilidades.
+ *
  * =========================================================
  */
 @RestControllerAdvice
@@ -63,7 +74,6 @@ public class GlobalExceptionHandler {
         String mensaje =
                 "Los datos ingresados no son válidos.";
 
-
         /*
          * Recuperamos el primer error encontrado.
          *
@@ -88,7 +98,6 @@ public class GlobalExceptionHandler {
             }
         }
 
-
         ErrorResponse response =
                 new ErrorResponse(
                         OffsetDateTime.now(),
@@ -99,12 +108,10 @@ public class GlobalExceptionHandler {
                         request.getRequestURI()
                 );
 
-
         return ResponseEntity
                 .status(HttpStatus.BAD_REQUEST)
                 .body(response);
     }
-
 
     /**
      * =====================================================
@@ -134,12 +141,10 @@ public class GlobalExceptionHandler {
                         request.getRequestURI()
                 );
 
-
         return ResponseEntity
                 .status(HttpStatus.BAD_REQUEST)
                 .body(response);
     }
-
 
     /**
      * =====================================================
@@ -150,8 +155,7 @@ public class GlobalExceptionHandler {
      * desde otras partes de la aplicación.
      */
     @ExceptionHandler(IllegalArgumentException.class)
-    public ResponseEntity<ErrorResponse>
-    manejarArgumentoInvalido(
+    public ResponseEntity<ErrorResponse> manejarArgumentoInvalido(
             IllegalArgumentException exception,
             HttpServletRequest request
     ) {
@@ -166,11 +170,11 @@ public class GlobalExceptionHandler {
                         request.getRequestURI()
                 );
 
-
         return ResponseEntity
                 .status(HttpStatus.BAD_REQUEST)
                 .body(response);
     }
+
     /**
      * =====================================================
      * RECURSO / RUTA NO ENCONTRADA
@@ -206,6 +210,55 @@ public class GlobalExceptionHandler {
                 .body(response);
     }
 
+    /**
+     * =====================================================
+     * MÉTODO HTTP NO PERMITIDO
+     * =====================================================
+     *
+     * CU-14 - SEGURIDAD DE OPERACIONES
+     *
+     * Se ejecuta cuando una ruta existe, pero el método
+     * HTTP utilizado no está permitido.
+     *
+     * Ejemplo:
+     *
+     * GET /admin/estados-cita/delete/1
+     *
+     * La desactivación requiere POST, por lo tanto
+     * la solicitud GET debe responder HTTP 405.
+     *
+     * IMPORTANTE:
+     *
+     * - No ejecuta operaciones de modificación.
+     * - No cambia registros en PostgreSQL.
+     * - No reemplaza la seguridad de Spring Security.
+     * - No reemplaza las validaciones del Service.
+     * - Conserva los métodos permitidos en la cabecera
+     *   Allow de la respuesta HTTP.
+     *
+     * =====================================================
+     */
+    @ExceptionHandler(HttpRequestMethodNotSupportedException.class)
+    public ResponseEntity<ErrorResponse> manejarMetodoNoPermitido(
+            HttpRequestMethodNotSupportedException exception,
+            HttpServletRequest request
+    ) {
+
+        ErrorResponse response =
+                new ErrorResponse(
+                        OffsetDateTime.now(),
+                        HttpStatus.METHOD_NOT_ALLOWED.value(),
+                        "Método HTTP no permitido",
+                        "El método HTTP utilizado no está permitido para esta operación.",
+                        null,
+                        request.getRequestURI()
+                );
+
+        return ResponseEntity
+                .status(HttpStatus.METHOD_NOT_ALLOWED)
+                .headers(exception.getHeaders())
+                .body(response);
+    }
 
     /**
      * =====================================================
@@ -219,10 +272,12 @@ public class GlobalExceptionHandler {
      * - Rutas internas.
      * - Clases Java.
      * - Información sensible.
+     *
+     * Este manejador se utiliza cuando ninguna excepción
+     * específica anterior puede resolver el error.
      */
     @ExceptionHandler(Exception.class)
-    public ResponseEntity<ErrorResponse>
-    manejarErrorGeneral(
+    public ResponseEntity<ErrorResponse> manejarErrorGeneral(
             Exception exception,
             HttpServletRequest request
     ) {
@@ -237,11 +292,8 @@ public class GlobalExceptionHandler {
                         request.getRequestURI()
                 );
 
-
         return ResponseEntity
-                .status(
-                        HttpStatus.INTERNAL_SERVER_ERROR
-                )
+                .status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(response);
     }
 }

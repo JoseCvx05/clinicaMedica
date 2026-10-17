@@ -82,14 +82,23 @@ public class ExamenLaboratorio {
     private String nombre;
 
 
+
     // =====================================================
     // DESCRIPCIÓN
     // =====================================================
+    //
+    // CU-14:
+    // Campo opcional.
+    // Longitud máxima: 500 caracteres.
+    //
+    // =====================================================
 
     @Column(
-            name = "descripcion"
+            name = "descripcion",
+            length = 500
     )
     private String descripcion;
+
 
 
     // =====================================================

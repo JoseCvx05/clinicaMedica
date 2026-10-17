@@ -1,10 +1,9 @@
+
 package com.proyecto.clinicamedica.service;
 
-import com.proyecto.clinicamedica.config.CacheConfig;
 import com.proyecto.clinicamedica.entity.Sucursal;
 import com.proyecto.clinicamedica.repository.SucursalRepository;
 
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -26,7 +25,14 @@ import java.util.Optional;
  * - Buscar sucursales activas por ID.
  * - Buscar sucursales activas por nombre.
  * - Verificar existencia de sucursales activas.
- * - Mantener en caché el catálogo de sucursales.
+ *
+ * CU-14:
+ *
+ * Las consultas de este servicio se realizan directamente
+ * en PostgreSQL para reflejar los cambios del catálogo.
+ *
+ * No se utiliza caché en listarActivas(), evitando
+ * mostrar sucursales desactualizadas.
  *
  * =========================================================
  */
@@ -60,12 +66,11 @@ public class SucursalService {
     // =====================================================
 
     /**
-     * La primera llamada consulta PostgreSQL.
+     * Consulta directamente PostgreSQL.
      *
-     * Las llamadas posteriores utilizan la caché
-     * mientras esta continúe vigente.
+     * Esto permite reflejar las altas y bajas lógicas
+     * realizadas desde el mantenimiento del CU-14.
      */
-    @Cacheable(CacheConfig.SUCURSALES)
     public List<Sucursal> listarActivas() {
 
         return sucursalRepository

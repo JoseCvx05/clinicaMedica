@@ -681,4 +681,150 @@ public interface CitaRepository
             Integer idEspecialidad
     );
 
+
+    // =====================================================
+    // CU-14 - PROTEGER ESPECIALIDADES EN USO
+    // =====================================================
+    //
+    // Verifica si existen citas no cerradas asociadas
+    // a una especialidad en CUALQUIER sucursal.
+    //
+    // Incluye:
+    // - Citas pendientes de pago.
+    // - Citas pagadas.
+    // - Citas confirmadas.
+    // - Citas en proceso de atención.
+    // - Citas de seguimiento no cerradas.
+    //
+    // No considera bloqueantes:
+    // - Cancelada.
+    // - Atención finalizada.
+    // - No asistió.
+    //
+    // Conserva las citas históricas.
+    // No modifica ningún registro.
+    // =====================================================
+
+    @Query("""
+            SELECT COUNT(c) > 0
+            FROM Cita c
+
+            WHERE c.especialidad.id = :idEspecialidad
+
+              AND LOWER(TRIM(c.estadoCita.nombre))
+                  NOT IN (
+                      'cancelada',
+                      'atención finalizada',
+                      'no asistió'
+                  )
+            """)
+    boolean existeCitaNoCerradaEnEspecialidad(
+
+            @Param("idEspecialidad")
+            Integer idEspecialidad
+    );
+
+
+    // =====================================================
+    // CU-14 - PROTEGER SUCURSALES CON CITAS NO CERRADAS
+    // =====================================================
+    //
+    // Comprueba si existen citas pendientes o en proceso
+    // dentro de una sucursal.
+    //
+    // Incluye:
+    // - Pendiente de pago.
+    // - Pagada.
+    // - Confirmada.
+    // - Paciente presente.
+    // - En espera.
+    // - Consulta en proceso.
+    // - Citas de seguimiento no cerradas.
+    //
+    // No bloquea únicamente por citas históricas:
+    // - Cancelada.
+    // - Atención finalizada.
+    // - No asistió.
+    //
+    // SEGURIDAD:
+    //
+    // - No modifica citas.
+    // - No elimina registros.
+    // - Protege los CU-03 al CU-08.
+    //
+    // =====================================================
+
+    @Query("""
+            SELECT COUNT(c) > 0
+            FROM Cita c
+
+            WHERE c.sucursal.id = :idSucursal
+
+              AND LOWER(TRIM(c.estadoCita.nombre))
+                  NOT IN (
+                      'cancelada',
+                      'atención finalizada',
+                      'no asistió'
+                  )
+            """)
+    boolean existeCitaNoCerradaEnSucursal(
+
+            @Param("idSucursal")
+            Integer idSucursal
+    );
+
+
+    // =====================================================
+    // CU-14 - PROTEGER ESTADOS DE CITA EN USO
+    // =====================================================
+    //
+    // Verifica si existen citas relacionadas con
+    // un estado determinado.
+    //
+    // Incluye citas activas e históricas.
+    //
+    // No modifica ni elimina registros.
+    //
+    // Esta consulta será utilizada por el
+    // mantenimiento administrativo para impedir
+    // modificaciones incompatibles con el flujo
+    // de atención de pacientes.
+    //
+    // =====================================================
+
+    @Query("""
+            SELECT COUNT(c) > 0
+            FROM Cita c
+            WHERE c.estadoCita.id = :idEstadoCita
+            """)
+    boolean existeCitaAsociadaAEstado(
+
+            @Param("idEstadoCita")
+            Integer idEstadoCita
+    );
+
+
+    // =====================================================
+    // CU-14 - CATÁLOGO 9
+    // PROTEGER CITAS ANTIGUAS SIN PRECIO ACORDADO
+    // =====================================================
+    //
+    // Detecta citas pendientes de pago que todavía
+    // no tienen un precio histórico almacenado.
+    //
+    // Permite impedir modificaciones de tarifas
+    // que podrían alterar sus importes.
+    //
+    // No modifica citas ni pagos existentes.
+    //
+    // =====================================================
+
+    boolean existsBySucursal_IdAndEspecialidad_IdAndPrecioConsultaAcordadoIsNullAndEstadoCita_NombreIgnoreCase(
+            Integer idSucursal,
+            Integer idEspecialidad,
+            String nombreEstado
+    );
+
+
+
 }

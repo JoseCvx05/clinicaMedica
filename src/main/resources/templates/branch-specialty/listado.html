@@ -243,10 +243,6 @@
 
             <div class="d-flex flex-wrap gap-2">
 
-                <a th:href="@{/admin/dashboard}"
-                   class="btn btn-outline-secondary">
-                    Volver a Administración
-                </a>
 
                 <a th:href="@{/branch-specialty/create}"
                    class="btn btn-principal">
@@ -438,6 +434,31 @@
                         )}"
                            class="btn btn-sm btn-outline-primary">
                             Consultar
+                        </a>
+
+
+                        <!-- =====================================================
+                             CU-14 - CATÁLOGO 9
+                             EDITAR PRECIO DE CONSULTA
+                             ===================================================== -->
+                        <!--
+                             Permite modificar el precio configurado para
+                             una especialidad dentro de una sucursal.
+
+                             SEGURIDAD:
+                             - Solo aparece en asignaciones activas.
+                             - El Service valida al Administrador.
+                             - Protege citas antiguas pendientes de pago.
+                             - Conserva los precios acordados.
+                             - Registra auditoría.
+                             ===================================================== -->
+
+                        <a th:if="${asignacion.activo}"
+                           th:href="@{/branch-specialty/edit/{id}(id=${asignacion.id})}"
+                           class="btn btn-sm btn-outline-warning ms-1">
+
+                            Editar Precio
+
                         </a>
 
 
@@ -643,9 +664,28 @@
 
         </nav>
 
+
     </section>
 
+    <!-- =====================================================
+         CU-14 - REGRESAR AL PANEL DE CATÁLOGOS
+         ===================================================== -->
+
+    <div class="mt-3 mb-4">
+
+        <a th:href="@{/admin/catalogos}"
+           class="btn btn-outline-secondary">
+
+            &#8592; Regresar a Catálogos
+
+        </a>
+
+    </div>
+
 </main>
+
+
+
 
 
 <!-- =====================================================

@@ -1,0 +1,933 @@
+
+<!DOCTYPE html>
+<html lang="es"
+      xmlns:th="http://www.thymeleaf.org">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>
+        Medicamentos | Clínica Médica SANTOS
+    </title>
+
+    <!-- =====================================================
+         BOOTSTRAP 5
+         ===================================================== -->
+
+    <link
+            href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+            rel="stylesheet">
+
+    <!-- =====================================================
+         ESTILOS DEL SISTEMA
+         ===================================================== -->
+
+    <style>
+
+        body {
+            background: #f1f5f9;
+            font-family: Arial, sans-serif;
+            color: #1e293b;
+        }
+
+        .encabezado {
+            background: linear-gradient(
+                    135deg,
+                    #0f172a,
+                    #1e40af
+            );
+            color: white;
+            padding: 28px;
+            border-radius: 14px;
+            margin-bottom: 25px;
+        }
+
+        .encabezado h2 {
+            font-weight: 700;
+            margin-bottom: 6px;
+        }
+
+        .encabezado p {
+            margin-bottom: 0;
+            opacity: 0.85;
+        }
+
+        .tarjeta {
+            background: white;
+            border: 1px solid #e2e8f0;
+            border-radius: 14px;
+            padding: 24px;
+            margin-bottom: 24px;
+            box-shadow: 0 3px 12px rgba(0, 0, 0, 0.05);
+        }
+
+        .titulo-seccion {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: #0f172a;
+            margin-bottom: 18px;
+        }
+
+        .form-label {
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        .form-control,
+        .form-select {
+            border-radius: 8px;
+        }
+
+        .btn {
+            border-radius: 8px;
+        }
+
+        .table thead th {
+            background: #eaf0f8;
+            color: #334155;
+            font-size: 0.88rem;
+            white-space: nowrap;
+            vertical-align: middle;
+        }
+
+        .table tbody td {
+            vertical-align: middle;
+            font-size: 0.9rem;
+        }
+
+        .nombre-medicamento {
+            font-weight: 700;
+            color: #1e40af;
+        }
+
+        .descripcion {
+            max-width: 280px;
+            overflow-wrap: anywhere;
+            color: #64748b;
+            font-size: 0.85rem;
+        }
+
+        .precio {
+            font-weight: 700;
+            color: #15803d;
+            white-space: nowrap;
+        }
+
+        .badge {
+            font-size: 0.78rem;
+            padding: 7px 11px;
+        }
+
+        .acciones {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            flex-wrap: wrap;
+        }
+
+        .acciones form {
+            margin: 0;
+        }
+
+        .paginacion-info {
+            font-size: 0.9rem;
+            color: #64748b;
+        }
+
+        .pagination .page-link {
+            color: #1d4ed8;
+        }
+
+        .pagination .active .page-link {
+            background: #1d4ed8;
+            border-color: #1d4ed8;
+            color: white;
+        }
+
+        .badge-controlado {
+            background: #fee2e2;
+            color: #991b1b;
+            border: 1px solid #fecaca;
+        }
+
+        .badge-no-controlado {
+            background: #e2e8f0;
+            color: #475569;
+            border: 1px solid #cbd5e1;
+        }
+
+        @media (max-width: 768px) {
+
+            .encabezado {
+                padding: 20px;
+            }
+
+            .tarjeta {
+                padding: 15px;
+            }
+
+            .encabezado h2 {
+                font-size: 1.4rem;
+            }
+        }
+
+    </style>
+
+</head>
+
+<body>
+
+<div class="container-fluid px-3 px-lg-4 py-4">
+
+    <!-- =====================================================
+         ENCABEZADO
+         ===================================================== -->
+
+    <div class="encabezado">
+
+        <div class="d-flex flex-column flex-md-row
+                    justify-content-between
+                    align-items-md-center gap-3">
+
+            <div>
+
+                <h2>
+                    Catálogo de Medicamentos
+                </h2>
+
+                <p>
+                    CU-14 | Administración de Catálogos
+                </p>
+
+                <p class="mt-2">
+                    Clínica Médica SANTOS
+                </p>
+
+            </div>
+
+            <div class="d-flex gap-2 flex-wrap">
+
+                <a th:href="@{/admin/medicamentos/create}"
+                   class="btn btn-light fw-bold">
+
+                    + Nuevo Medicamento
+
+                </a>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- =====================================================
+         MENSAJES DE CONFIRMACIÓN
+         ===================================================== -->
+
+    <div th:if="${mensajeExito != null}"
+         class="alert alert-success alert-dismissible fade show"
+         role="alert">
+
+        <strong>Operación exitosa.</strong>
+
+        <span th:text="${mensajeExito}"></span>
+
+        <button type="button"
+                class="btn-close"
+                data-bs-dismiss="alert"
+                aria-label="Cerrar">
+        </button>
+
+    </div>
+
+    <!-- =====================================================
+         MENSAJES DE ERROR
+         ===================================================== -->
+
+    <div th:if="${mensajeError != null}"
+         class="alert alert-danger alert-dismissible fade show"
+         role="alert">
+
+        <strong>No se pudo completar la operación.</strong>
+
+        <span th:text="${mensajeError}"></span>
+
+        <button type="button"
+                class="btn-close"
+                data-bs-dismiss="alert"
+                aria-label="Cerrar">
+        </button>
+
+    </div>
+
+    <!-- =====================================================
+         FILTROS DE MEDICAMENTOS
+         ===================================================== -->
+
+    <div class="tarjeta">
+
+        <h5 class="titulo-seccion">
+            Buscar y filtrar medicamentos
+        </h5>
+
+        <form th:action="@{/admin/medicamentos}"
+              method="get">
+
+            <div class="row g-3">
+
+                <!-- ========================================
+                     BÚSQUEDA GENERAL
+                     ======================================== -->
+
+                <div class="col-md-5">
+
+                    <label for="texto"
+                           class="form-label">
+
+                        Buscar medicamento
+
+                    </label>
+
+                    <input
+                            type="text"
+                            id="texto"
+                            name="texto"
+                            class="form-control"
+                            maxlength="200"
+                            placeholder="Nombre, descripción o unidad"
+                            th:value="${textoBusqueda}">
+
+                </div>
+
+                <!-- ========================================
+                     FILTRO POR ESTADO
+                     ======================================== -->
+
+                <div class="col-md-3">
+
+                    <label for="estado"
+                           class="form-label">
+
+                        Estado
+
+                    </label>
+
+                    <select
+                            id="estado"
+                            name="estado"
+                            class="form-select">
+
+                        <option value="todos"
+                                th:selected="${estadoFiltro == 'todos'}">
+
+                            Todos
+
+                        </option>
+
+                        <option value="activos"
+                                th:selected="${estadoFiltro == 'activos'}">
+
+                            Activos
+
+                        </option>
+
+                        <option value="inactivos"
+                                th:selected="${estadoFiltro == 'inactivos'}">
+
+                            Inactivos
+
+                        </option>
+
+                    </select>
+
+                </div>
+
+                <!-- ========================================
+                     FILTRO DE MEDICAMENTOS CONTROLADOS
+                     ======================================== -->
+
+                <div class="col-md-4">
+
+                    <label for="controlado"
+                           class="form-label">
+
+                        Tipo de medicamento
+
+                    </label>
+
+                    <select
+                            id="controlado"
+                            name="controlado"
+                            class="form-select">
+
+                        <option
+                                value="todos"
+                                th:selected="${controladoFiltro == 'todos'}">
+
+                            Todos
+
+                        </option>
+
+                        <option
+                                value="controlados"
+                                th:selected="${controladoFiltro == 'controlados'}">
+
+                            Controlados
+
+                        </option>
+
+                        <option
+                                value="no-controlados"
+                                th:selected="${controladoFiltro == 'no-controlados'}">
+
+                            No controlados
+
+                        </option>
+
+                    </select>
+
+                </div>
+
+            </div>
+
+            <!-- ============================================
+                 BOTONES DE BÚSQUEDA
+                 ============================================ -->
+
+            <div class="d-flex gap-2 flex-wrap mt-4">
+
+                <button
+                        type="submit"
+                        class="btn btn-primary">
+
+                    Buscar
+
+                </button>
+
+                <a th:href="@{/admin/medicamentos}"
+                   class="btn btn-outline-secondary">
+
+                    Limpiar filtros
+
+                </a>
+
+            </div>
+
+        </form>
+
+    </div>
+
+    <!-- =====================================================
+         TABLA DE MEDICAMENTOS
+         ===================================================== -->
+
+    <div class="tarjeta">
+
+        <div class="d-flex justify-content-between
+                    align-items-center flex-wrap gap-2 mb-3">
+
+            <h5 class="titulo-seccion mb-0">
+                Medicamentos registrados
+            </h5>
+
+            <span class="badge text-bg-primary">
+
+                Total:
+
+                <span th:text="${totalRegistros}">
+                    0
+                </span>
+
+            </span>
+
+        </div>
+
+        <div class="table-responsive">
+
+            <table class="table table-bordered table-hover">
+
+                <!-- ========================================
+                     ENCABEZADO
+                     ======================================== -->
+
+                <thead>
+
+                <tr>
+
+                    <th>ID</th>
+
+                    <th>Medicamento</th>
+
+                    <th>Descripción</th>
+
+                    <th>Precio</th>
+
+                    <th>Unidad</th>
+
+                    <th>Controlado</th>
+
+                    <th>Stock mínimo</th>
+
+                    <th>Estado</th>
+
+                    <th>Acciones</th>
+
+                </tr>
+
+                </thead>
+
+                <!-- ========================================
+                     REGISTROS
+                     ======================================== -->
+
+                <tbody>
+
+                <tr th:each="medicamento : ${medicamentos}">
+
+                    <!-- ID -->
+
+                    <td th:text="${medicamento.id}">
+                        1
+                    </td>
+
+                    <!-- NOMBRE -->
+
+                    <td>
+
+                        <span class="nombre-medicamento"
+                              th:text="${medicamento.nombre}">
+
+                            Paracetamol 500 mg
+
+                        </span>
+
+                    </td>
+
+                    <!-- DESCRIPCIÓN -->
+
+                    <td class="descripcion"
+                        th:text="${medicamento.descripcion}">
+
+                        Descripción del medicamento
+
+                    </td>
+
+                    <!-- PRECIO -->
+
+                    <td>
+
+                        <span class="precio">
+
+                            Q
+
+                            <span
+                                    th:text="${#numbers.formatDecimal(
+                                    medicamento.precio,
+                                    1,
+                                    'COMMA',
+                                    2,
+                                    'POINT'
+                                )}">
+
+                                0.00
+
+                            </span>
+
+                        </span>
+
+                    </td>
+
+                    <!-- UNIDAD -->
+
+                    <td th:text="${medicamento.unidad}">
+
+                        Tableta
+
+                    </td>
+
+                    <!-- ====================================
+                         MEDICAMENTO CONTROLADO
+                         ==================================== -->
+
+                    <td>
+
+                        <span
+                                th:if="${medicamento.esControlado}"
+                                class="badge badge-controlado">
+
+                            Controlado
+
+                        </span>
+
+                        <span
+                                th:unless="${medicamento.esControlado}"
+                                class="badge badge-no-controlado">
+
+                            No controlado
+
+                        </span>
+
+                    </td>
+
+                    <!-- ====================================
+                         STOCK MÍNIMO CONFIGURADO
+                         ==================================== -->
+
+                    <td>
+
+                        <span
+                                th:if="${medicamento.stockMinimo != null}"
+                                th:text="${medicamento.stockMinimo}">
+
+                            0
+
+                        </span>
+
+                        <span
+                                th:unless="${medicamento.stockMinimo != null}"
+                                class="text-muted">
+
+                            No configurado
+
+                        </span>
+
+                    </td>
+
+                    <!-- ====================================
+                         ESTADO
+                         ==================================== -->
+
+                    <td>
+
+                        <span
+                                th:if="${medicamento.activo}"
+                                class="badge text-bg-success">
+
+                            Activo
+
+                        </span>
+
+                        <span
+                                th:unless="${medicamento.activo}"
+                                class="badge text-bg-secondary">
+
+                            Inactivo
+
+                        </span>
+
+                    </td>
+
+                    <!-- ====================================
+                         ACCIONES ADMINISTRATIVAS
+                         ==================================== -->
+
+                    <td>
+
+                        <div class="acciones">
+
+                            <!-- EDITAR -->
+
+                            <a
+                                    th:href="@{/admin/medicamentos/edit/{id}(
+                                    id=${medicamento.id}
+                                )}"
+                                    class="btn btn-warning btn-sm">
+
+                                Editar
+
+                            </a>
+
+                            <!-- =================================
+                                 DESACTIVAR
+                                 ================================= -->
+
+                            <form
+                                    th:if="${medicamento.activo}"
+                                    th:action="@{/admin/medicamentos/delete/{id}(
+                                    id=${medicamento.id}
+                                )}"
+                                    method="post"
+                                    th:attr="data-nombre=${medicamento.nombre}"
+                                    onsubmit="return confirmarDesactivacion(this);">
+
+                                <!-- TOKEN CSRF -->
+
+                                <input
+                                        th:if="${_csrf != null}"
+                                        type="hidden"
+                                        th:name="${_csrf.parameterName}"
+                                        th:value="${_csrf.token}">
+
+                                <button
+                                        type="submit"
+                                        class="btn btn-danger btn-sm">
+
+                                    Desactivar
+
+                                </button>
+
+                            </form>
+
+                            <!-- MEDICAMENTO INACTIVO -->
+
+                            <span
+                                    th:unless="${medicamento.activo}"
+                                    class="text-muted small">
+
+                                Desactivado
+
+                            </span>
+
+                        </div>
+
+                    </td>
+
+                </tr>
+
+                <!-- ========================================
+                     SIN RESULTADOS
+                     ======================================== -->
+
+                <tr th:if="${#lists.isEmpty(medicamentos)}">
+
+                    <td colspan="9"
+                        class="text-center py-5">
+
+                        <div class="text-muted">
+
+                            <h5>
+                                No se encontraron resultados.
+                            </h5>
+
+                            <p class="mb-0">
+
+                                Modifique los filtros o registre
+                                un nuevo medicamento.
+
+                            </p>
+
+                        </div>
+
+                    </td>
+
+                </tr>
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+
+
+
+
+        <!-- =================================================
+             INFORMACIÓN DE PAGINACIÓN
+             ================================================= -->
+
+        <div class="paginacion-info mt-3">
+
+            Registros encontrados:
+
+            <strong th:text="${totalRegistros}">
+                0
+            </strong>
+
+            <span th:if="${totalPaginas > 0}">
+
+                | Página
+
+                <strong th:text="${paginaActual + 1}">
+                    1
+                </strong>
+
+                de
+
+                <strong th:text="${totalPaginas}">
+                    1
+                </strong>
+
+            </span>
+
+        </div>
+
+        <!-- =================================================
+             PAGINACIÓN
+             ================================================= -->
+
+        <nav th:if="${totalPaginas > 1}"
+             class="mt-4"
+             aria-label="Paginación de medicamentos">
+
+            <ul class="pagination justify-content-center flex-wrap">
+
+                <!-- ANTERIOR -->
+
+                <li
+                        class="page-item"
+                        th:classappend="${paginaActual == 0} ? 'disabled'">
+
+                    <a
+                            class="page-link"
+                            th:href="${paginaActual > 0}
+                            ? @{/admin/medicamentos(
+                                page=${paginaActual - 1},
+                                texto=${textoBusqueda},
+                                estado=${estadoFiltro},
+                                controlado=${controladoFiltro}
+                            )}
+                            : '#'">
+
+                        Anterior
+
+                    </a>
+
+                </li>
+
+                <!-- NÚMEROS DE PÁGINA -->
+
+                <li
+                        th:each="numero : ${#numbers.sequence(
+                        0,
+                        totalPaginas - 1
+                    )}"
+                        class="page-item"
+                        th:classappend="${numero == paginaActual} ? 'active'">
+
+                    <a
+                            class="page-link"
+                            th:href="@{/admin/medicamentos(
+                            page=${numero},
+                            texto=${textoBusqueda},
+                            estado=${estadoFiltro},
+                            controlado=${controladoFiltro}
+                        )}"
+                            th:text="${numero + 1}">
+
+                        1
+
+                    </a>
+
+                </li>
+
+                <!-- SIGUIENTE -->
+
+                <li
+                        class="page-item"
+                        th:classappend="${paginaActual >= totalPaginas - 1}
+                        ? 'disabled'">
+
+                    <a
+                            class="page-link"
+                            th:href="${paginaActual < totalPaginas - 1}
+                            ? @{/admin/medicamentos(
+                                page=${paginaActual + 1},
+                                texto=${textoBusqueda},
+                                estado=${estadoFiltro},
+                                controlado=${controladoFiltro}
+                            )}
+                            : '#'">
+
+                        Siguiente
+
+                    </a>
+
+                </li>
+
+            </ul>
+
+        </nav>
+
+    </div>
+
+
+
+    <!-- =====================================================
+            CU-14 - REGRESAR AL PANEL DE CATÁLOGOS
+            ===================================================== -->
+
+    <a th:href="@{/admin/catalogos}"
+       class="btn btn-outline-secondary">
+
+        <i class="bi bi-arrow-left me-2"></i>
+
+        Regresar a Catálogos
+
+    </a>
+
+    <br>
+    <br>
+
+    <!-- =====================================================
+         INFORMACIÓN IMPORTANTE
+         ===================================================== -->
+
+    <div class="alert alert-info">
+
+        <strong>Información importante:</strong>
+
+        Los cambios de precio del catálogo se aplican
+        a nuevas operaciones, respetando los precios
+        históricos almacenados en recetas y despachos.
+
+        La desactivación de medicamentos está protegida
+        cuando existen unidades disponibles en inventario
+        o cantidades pendientes en recetas activas.
+
+    </div>
+
+    <!-- =====================================================
+         ADVERTENCIA DE MEDICAMENTOS CONTROLADOS
+         ===================================================== -->
+
+    <div class="alert alert-warning">
+
+        <strong>Medicamentos controlados:</strong>
+
+        El indicador de controlado identifica los medicamentos
+        que requieren controles especiales.
+
+        Este catálogo no autoriza ni realiza despachos
+        y no modifica las existencias de farmacia.
+
+    </div>
+
+</div>
+
+<!-- =========================================================
+     BOOTSTRAP JAVASCRIPT
+     ========================================================= -->
+
+<script
+        src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js">
+</script>
+
+<!-- =========================================================
+     CONFIRMACIÓN DE DESACTIVACIÓN
+     ========================================================= -->
+
+<script>
+
+    function confirmarDesactivacion(formulario) {
+
+        const nombre =
+            formulario.dataset.nombre || "este medicamento";
+
+        return window.confirm(
+            "¿Está seguro que desea desactivar el medicamento \"" +
+            nombre +
+            "\"?\n\n" +
+            "Esta acción no se puede deshacer desde este módulo.\n\n" +
+            "El sistema verificará existencias y recetas pendientes."
+        );
+    }
+
+</script>
+
+</body>
+</html>

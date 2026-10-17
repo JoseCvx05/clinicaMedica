@@ -1,0 +1,682 @@
+
+<!DOCTYPE html>
+<html lang="es"
+      xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>Inventario de Medicamentos | Clínica Médica SANTOS</title>
+
+    <!-- =====================================================
+         BOOTSTRAP 5
+         ===================================================== -->
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+          rel="stylesheet">
+
+    <style>
+        body {
+            background-color: #f1f5f9;
+            font-family: Arial, sans-serif;
+        }
+
+        .encabezado {
+            background: linear-gradient(135deg, #0f172a, #1e3a8a);
+            color: white;
+            padding: 25px;
+            border-radius: 12px;
+            margin-bottom: 25px;
+        }
+
+        .tarjeta {
+            background: white;
+            border-radius: 12px;
+            padding: 25px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.06);
+        }
+
+        .table thead {
+            background-color: #1e3a8a;
+        }
+
+        .table thead th {
+            background-color: #1e3a8a;
+            color: white;
+            vertical-align: middle;
+        }
+
+        .table td {
+            vertical-align: middle;
+        }
+
+        .stock {
+            font-weight: bold;
+            font-size: 16px;
+        }
+
+        .stock-bajo {
+            color: #dc2626;
+        }
+
+        .stock-normal {
+            color: #15803d;
+        }
+
+        .badge {
+            font-size: 12px;
+            padding: 7px 10px;
+        }
+
+
+        /* =====================================================
+           CU-14 - ORGANIZACIÓN DE BOTONES DE INVENTARIO
+           ===================================================== */
+
+        .acciones-inventario {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(155px, 1fr));
+            gap: 8px;
+            min-width: 340px;
+            max-width: 420px;
+            margin: 0 auto;
+            align-items: stretch;
+        }
+
+        /* BOTONES DE ACCIÓN */
+
+        .acciones-inventario > a {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            min-height: 40px;
+            padding: 8px;
+            margin: 0 !important;
+            border-radius: 7px;
+            font-size: 13px;
+            font-weight: 600;
+            text-align: center;
+            white-space: normal;
+        }
+
+        /* BOTÓN DESACTIVAR */
+
+        .acciones-inventario > form {
+            grid-column: 1 / -1;
+            justify-self: center;
+            width: 160px;
+            margin: 0 !important;
+        }
+
+        .acciones-inventario > form button {
+            width: 100%;
+            min-height: 38px;
+            border-radius: 7px;
+            font-weight: 600;
+        }
+
+        /* INVENTARIOS INACTIVOS */
+
+        .acciones-inventario > .badge {
+            grid-column: 1 / -1;
+            justify-self: center;
+            margin-top: 3px;
+        }
+
+    </style>
+</head>
+
+<body>
+
+<div class="container-fluid py-4 px-3 px-lg-5">
+
+    <!-- =====================================================
+         CU-14 - ENCABEZADO
+         ===================================================== -->
+
+    <div class="encabezado">
+
+        <h2 class="mb-2">
+            Inventario de Medicamentos
+        </h2>
+
+        <p class="mb-0">
+            CU-14 - Catálogo 8 de 9 |
+            Clínica Médica SANTOS
+        </p>
+
+        <p class="small mt-2 mb-0">
+            Administración de existencias por medicamento
+            y sucursal.
+        </p>
+
+    </div>
+
+
+    <!-- =====================================================
+         MENSAJES DE RESULTADO
+         ===================================================== -->
+
+    <div th:if="${mensajeExito}"
+         class="alert alert-success alert-dismissible fade show"
+         role="alert">
+
+        <span th:text="${mensajeExito}"></span>
+
+        <button type="button"
+                class="btn-close"
+                data-bs-dismiss="alert"
+                aria-label="Cerrar">
+        </button>
+
+    </div>
+
+
+    <div th:if="${mensajeError}"
+         class="alert alert-danger"
+         role="alert">
+
+        <span th:text="${mensajeError}"></span>
+
+    </div>
+
+
+    <!-- =====================================================
+         CU-14 - FILTROS DE BÚSQUEDA
+         ===================================================== -->
+
+    <div class="tarjeta mb-4">
+
+        <h5 class="mb-3">
+            Buscar inventarios
+        </h5>
+
+        <form method="get"
+              th:action="@{/admin/inventario-farmacia}">
+
+            <div class="row g-3">
+
+                <!-- BUSCAR MEDICAMENTO -->
+
+                <div class="col-md-5">
+
+                    <label for="busqueda"
+                           class="form-label">
+                        Medicamento
+                    </label>
+
+                    <input type="text"
+                           id="busqueda"
+                           name="busqueda"
+                           class="form-control"
+                           placeholder="Buscar medicamento..."
+                           th:value="${busqueda}"
+                           maxlength="200">
+
+                </div>
+
+
+                <!-- FILTRAR SUCURSAL -->
+
+                <div class="col-md-4">
+
+                    <label for="idSucursal"
+                           class="form-label">
+                        Sucursal
+                    </label>
+
+                    <select id="idSucursal"
+                            name="idSucursal"
+                            class="form-select">
+
+                        <option value="">
+                            Todas las sucursales
+                        </option>
+
+                        <option th:each="sucursal : ${sucursales}"
+                                th:value="${sucursal.id}"
+                                th:text="${sucursal.nombre}"
+                                th:selected="${idSucursal != null
+                                    and idSucursal == sucursal.id}">
+                        </option>
+
+                    </select>
+
+                </div>
+
+
+                <!-- BOTONES -->
+
+                <div class="col-md-3 d-flex align-items-end gap-2">
+
+                    <button type="submit"
+                            class="btn btn-primary flex-fill">
+                        Buscar
+                    </button>
+
+                    <a th:href="@{/admin/inventario-farmacia}"
+                       class="btn btn-outline-secondary">
+                        Limpiar
+                    </a>
+
+                </div>
+
+            </div>
+
+        </form>
+
+    </div>
+
+
+    <!-- =====================================================
+         CU-14 - LISTADO DE INVENTARIOS
+         ===================================================== -->
+
+    <div class="tarjeta">
+
+        <div class="d-flex flex-wrap
+                    justify-content-between
+                    align-items-center
+                    gap-3 mb-4">
+
+            <div>
+
+                <h5 class="mb-1">
+                    Inventarios registrados
+                </h5>
+
+                <span class="text-muted small">
+                    Total:
+                    <strong th:text="${totalElementos}">
+                        0
+                    </strong>
+                    registros
+                </span>
+
+            </div>
+
+
+            <!-- CREAR NUEVO INVENTARIO -->
+
+            <a th:href="@{/admin/inventario-farmacia/nuevo}"
+               class="btn btn-success">
+
+                + Crear Inventario
+
+            </a>
+
+        </div>
+
+
+        <!-- =================================================
+             TABLA DE INVENTARIO
+             ================================================= -->
+
+        <div class="table-responsive">
+
+            <table class="table table-bordered
+                          table-hover align-middle">
+
+                <thead>
+
+                <tr>
+                    <th>ID</th>
+                    <th>Medicamento</th>
+                    <th>Sucursal</th>
+                    <th>Existencias</th>
+                    <th>Estado</th>
+                    <th>Alerta de stock</th>
+                    <th>Acciones</th>
+
+                </tr>
+
+                </thead>
+
+                <tbody>
+
+                <!-- =================================================
+                     MOSTRAR INVENTARIOS
+                     ================================================= -->
+
+                <tr th:each="inventario : ${inventarios}">
+
+                    <!-- ID -->
+
+                    <td th:text="${inventario.id}">
+                        1
+                    </td>
+
+
+                    <!-- MEDICAMENTO -->
+
+                    <td th:text="${inventario.medicamento.nombre}">
+                        Medicamento
+                    </td>
+
+
+                    <!-- SUCURSAL -->
+
+                    <td th:text="${inventario.sucursal.nombre}">
+                        Sucursal
+                    </td>
+
+
+                    <!-- CANTIDAD DISPONIBLE -->
+
+                    <td>
+
+                        <span class="stock"
+                              th:classappend="${inventario.alcanzoStockMinimo()}
+                                  ? 'stock-bajo'
+                                  : 'stock-normal'"
+                              th:text="${inventario.cantidadDisponible}">
+                            0
+                        </span>
+
+                    </td>
+
+
+                    <!-- ESTADO -->
+
+                    <td>
+
+                        <span th:if="${inventario.activo}"
+                              class="badge bg-success">
+                            Activo
+                        </span>
+
+                        <span th:unless="${inventario.activo}"
+                              class="badge bg-secondary">
+                            Inactivo
+                        </span>
+
+                    </td>
+
+
+                    <!-- ALERTA DE STOCK -->
+
+                    <td>
+
+                        <span th:if="${inventario.alcanzoStockMinimo()}"
+                              class="badge bg-danger">
+                            Stock mínimo
+                        </span>
+
+                        <span th:unless="${inventario.alcanzoStockMinimo()}"
+                              class="badge bg-success">
+                            Normal
+                        </span>
+
+                    </td>
+
+
+                    <!-- =====================================================
+                         CU-14 - REGISTRAR ENTRADA DE INVENTARIO
+                         ===================================================== -->
+
+                    <td class="text-center">
+
+                        <div class="acciones-inventario">
+
+                        <a th:if="${inventario.activo}"
+                           th:href="@{/admin/inventario-farmacia/{id}/entrada(id=${inventario.id})}"
+                           class="btn btn-primary btn-sm">
+
+                            Registrar Entrada
+
+                        </a>
+
+
+                        <!-- =====================================================
+                             CU-14 - AJUSTAR EXISTENCIAS DE INVENTARIO
+                             ===================================================== -->
+
+                        <a th:if="${inventario.activo}"
+                           th:href="@{/admin/inventario-farmacia/{id}/ajuste(id=${inventario.id})}"
+                           class="btn btn-warning btn-sm ms-1">
+
+                            Ajustar Existencias
+
+                        </a>
+
+
+
+                        <!-- =====================================================
+                             CU-14 - CONSULTAR HISTORIAL DE INVENTARIO
+                             ===================================================== -->
+                        <!--
+                             El historial puede consultarse tanto en
+                             inventarios activos como inactivos.
+
+                             No modifica existencias ni movimientos.
+                             ===================================================== -->
+
+                        <a th:href="@{/admin/inventario-farmacia/{id}/historial(id=${inventario.id})}"
+                           class="btn btn-info btn-sm ms-1">
+
+                            Ver Historial
+
+                        </a>
+
+
+
+                        <!-- =====================================================
+                             CU-14 - CATÁLOGO 8
+                             CONSULTAR RESUMEN MENSUAL DE INVENTARIO
+                             ===================================================== -->
+                        <!--
+                             Permite consultar:
+                             - Existencias iniciales y finales.
+                             - Entradas y salidas.
+                             - Ajustes positivos y negativos.
+                             - Movimientos del período.
+
+                             Disponible para inventarios activos e inactivos.
+                             No modifica las existencias.
+                             ===================================================== -->
+
+                        <a th:href="@{/admin/inventario-farmacia/{id}/resumen-mensual(id=${inventario.id})}"
+                           class="btn btn-primary btn-sm ms-1">
+
+                            Resumen Mensual
+
+                        </a>
+
+                        <!-- =====================================================
+                             CU-14 - DESACTIVACIÓN LÓGICA DE INVENTARIO
+                             ===================================================== -->
+
+                        <form th:if="${inventario.activo}"
+                              th:action="@{/admin/inventario-farmacia/{id}/desactivar(id=${inventario.id})}"
+                              method="post"
+                              class="d-inline-block ms-1"
+                              onsubmit="return confirm('¿Está seguro que desea desactivar este inventario? Esta acción no se puede deshacer desde este módulo.');">
+
+                            <!-- PROTECCIÓN CSRF -->
+
+                            <input th:if="${_csrf != null}"
+                                   type="hidden"
+                                   th:name="${_csrf.parameterName}"
+                                   th:value="${_csrf.token}">
+
+                            <!-- BOTÓN DESACTIVAR -->
+
+                            <button type="submit"
+                                    class="btn btn-danger btn-sm">
+
+                                Desactivar
+
+                            </button>
+
+                        </form>
+
+
+
+                            <span th:unless="${inventario.activo}"
+                                  class="badge bg-secondary">
+
+    No disponible
+
+</span>
+
+                            <!-- FIN DE ACCIONES ORGANIZADAS -->
+                        </div>
+
+                    </td>
+
+
+
+                </tr>
+
+
+                <!-- =================================================
+                     FA01 - SIN RESULTADOS
+                     ================================================= -->
+
+                <tr th:if="${#lists.isEmpty(inventarios)}">
+
+                    <td colspan="7"
+                        class="text-center text-muted py-4">
+
+                        No se encontraron resultados.
+
+                    </td>
+
+                </tr>
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+
+        <!-- =================================================
+             PAGINACIÓN
+             ================================================= -->
+
+        <div class="d-flex flex-wrap
+                    justify-content-between
+                    align-items-center
+                    gap-3 mt-3">
+
+            <span class="text-muted small">
+
+                Página
+
+                <strong th:text="${totalPaginas == 0
+                    ? 0
+                    : paginaActual + 1}">
+                    1
+                </strong>
+
+                de
+
+                <strong th:text="${totalPaginas}">
+                    1
+                </strong>
+
+            </span>
+
+
+            <div class="d-flex gap-2">
+
+                <!-- ANTERIOR -->
+
+                <a th:if="${paginaActual > 0}"
+                   th:href="@{/admin/inventario-farmacia(
+                       pagina=${paginaActual - 1},
+                       busqueda=${busqueda},
+                       idSucursal=${idSucursal}
+                   )}"
+                   class="btn btn-outline-primary btn-sm">
+
+                    Anterior
+
+                </a>
+
+                <span th:unless="${paginaActual > 0}"
+                      class="btn btn-outline-secondary btn-sm disabled">
+                    Anterior
+                </span>
+
+
+                <!-- SIGUIENTE -->
+
+                <a th:if="${paginaActual + 1 < totalPaginas}"
+                   th:href="@{/admin/inventario-farmacia(
+                       pagina=${paginaActual + 1},
+                       busqueda=${busqueda},
+                       idSucursal=${idSucursal}
+                   )}"
+                   class="btn btn-outline-primary btn-sm">
+
+                    Siguiente
+
+                </a>
+
+                <span th:unless="${paginaActual + 1 < totalPaginas}"
+                      class="btn btn-outline-secondary btn-sm disabled">
+                    Siguiente
+                </span>
+
+            </div>
+
+        </div>
+
+
+        <!-- =================================================
+             INFORMACIÓN DE SEGURIDAD
+             ================================================= -->
+
+        <hr class="my-4">
+
+        <div class="alert alert-info mb-0">
+
+            <strong>Información:</strong>
+
+            El inventario se administra por sucursal.
+            Las existencias se encuentran protegidas
+            mediante validaciones del backend.
+
+            Las operaciones de mantenimiento deberán
+            conservar los registros de auditoría
+            y movimientos de inventario.
+
+        </div>
+
+    </div>
+
+    <br>
+    <br>
+
+    <!-- =====================================================
+             CU-14 - REGRESAR AL PANEL DE CATÁLOGOS
+             ===================================================== -->
+
+    <a th:href="@{/admin/catalogos}"
+       class="btn btn-outline-secondary">
+
+        <i class="bi bi-arrow-left me-2"></i>
+
+        Regresar a Catálogos
+
+    </a>
+
+
+</div>
+
+
+<!-- =====================================================
+     BOOTSTRAP JAVASCRIPT
+     ===================================================== -->
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js">
+</script>
+
+</body>
+</html>

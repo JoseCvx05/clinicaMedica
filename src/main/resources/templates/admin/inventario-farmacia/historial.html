@@ -1,0 +1,567 @@
+
+<!DOCTYPE html>
+<html lang="es"
+      xmlns:th="http://www.thymeleaf.org">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>
+        Historial de Inventario | Clínica Médica SANTOS
+    </title>
+
+    <!-- =====================================================
+         BOOTSTRAP 5
+         ===================================================== -->
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+          rel="stylesheet">
+
+    <style>
+
+        body {
+            background-color: #f1f5f9;
+            font-family: Arial, sans-serif;
+        }
+
+        .encabezado {
+            background: linear-gradient(
+                    135deg,
+                    #0f172a,
+                    #1e3a8a
+            );
+            color: white;
+            padding: 25px;
+            border-radius: 12px;
+            margin-bottom: 25px;
+        }
+
+        .tarjeta {
+            background: white;
+            border-radius: 12px;
+            padding: 25px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.06);
+        }
+
+        .table thead th {
+            background-color: #1e3a8a;
+            color: white;
+            vertical-align: middle;
+            white-space: nowrap;
+        }
+
+        .table td {
+            vertical-align: middle;
+        }
+
+        .badge {
+            font-size: 12px;
+            padding: 7px 10px;
+        }
+
+        .stock {
+            font-weight: bold;
+        }
+
+        .valor-positivo {
+            color: #15803d;
+            font-weight: bold;
+        }
+
+        .valor-negativo {
+            color: #dc2626;
+            font-weight: bold;
+        }
+
+        .resumen {
+            background-color: #eff6ff;
+            border: 1px solid #bfdbfe;
+            border-radius: 10px;
+            padding: 20px;
+        }
+
+    </style>
+
+</head>
+
+<body>
+
+<div class="container-fluid py-4 px-3 px-lg-5">
+
+    <!-- =====================================================
+         CU-14 - ENCABEZADO
+         ===================================================== -->
+
+    <div class="encabezado">
+
+        <h2 class="mb-2">
+            Historial de Movimientos de Inventario
+        </h2>
+
+        <p class="mb-0">
+            CU-14 - Catálogo 8 de 9
+        </p>
+
+        <p class="small mt-2 mb-0">
+            Clínica Médica SANTOS
+        </p>
+
+    </div>
+
+
+    <!-- =====================================================
+         INFORMACIÓN GENERAL DEL INVENTARIO
+         ===================================================== -->
+
+    <div class="tarjeta mb-4">
+
+        <h5 class="mb-3">
+            Información del inventario
+        </h5>
+
+        <div class="row g-3">
+
+            <!-- IDENTIFICADOR -->
+
+            <div class="col-md-4">
+
+                <div class="resumen h-100">
+
+                    <div class="text-muted mb-2">
+                        Inventario
+                    </div>
+
+                    <h4 class="mb-0">
+
+                        #<span th:text="${idInventario}">
+                            1
+                        </span>
+
+                    </h4>
+
+                </div>
+
+            </div>
+
+
+            <!-- EXISTENCIAS ACTUALES -->
+
+            <div class="col-md-4">
+
+                <div class="resumen h-100">
+
+                    <div class="text-muted mb-2">
+                        Existencias actuales
+                    </div>
+
+                    <h4 class="text-primary mb-0"
+                        th:text="${stockActual}">
+                        0
+                    </h4>
+
+                </div>
+
+            </div>
+
+
+            <!-- ESTADO -->
+
+            <div class="col-md-4">
+
+                <div class="resumen h-100">
+
+                    <div class="text-muted mb-2">
+                        Estado del inventario
+                    </div>
+
+                    <span th:if="${activo == true}"
+                          class="badge bg-success">
+                        Activo
+                    </span>
+
+                    <span th:unless="${activo == true}"
+                          class="badge bg-secondary">
+                        Inactivo
+                    </span>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- =====================================================
+         CU-14 - TABLA DE MOVIMIENTOS
+         ===================================================== -->
+
+    <div class="tarjeta">
+
+        <div class="d-flex flex-wrap
+                    justify-content-between
+                    align-items-center
+                    gap-3 mb-4">
+
+            <div>
+
+                <h5 class="mb-1">
+                    Movimientos registrados
+                </h5>
+
+                <span class="text-muted small">
+
+                    Total:
+
+                    <strong th:text="${totalElementos}">
+                        0
+                    </strong>
+
+                    movimientos
+
+                </span>
+
+            </div>
+
+
+            <!-- VOLVER AL INVENTARIO -->
+
+            <a th:href="@{/admin/inventario-farmacia}"
+               class="btn btn-outline-primary">
+
+                Volver al Inventario
+
+            </a>
+
+        </div>
+
+
+        <!-- =================================================
+             TABLA CON HISTORIAL
+             ================================================= -->
+
+        <div class="table-responsive">
+
+            <table class="table table-bordered
+                          table-hover align-middle">
+
+                <thead>
+
+                <tr>
+
+                    <th>ID</th>
+                    <th>Fecha y hora</th>
+                    <th>Movimiento</th>
+                    <th>Cantidad</th>
+                    <th>Stock anterior</th>
+                    <th>Stock nuevo</th>
+                    <th>Usuario responsable</th>
+                    <th>Origen</th>
+                    <th>Referencia</th>
+                    <th>Observaciones</th>
+
+                </tr>
+
+                </thead>
+
+                <tbody>
+
+                <!-- =================================================
+                     MOSTRAR MOVIMIENTOS
+                     ================================================= -->
+
+                <tr th:each="movimiento : ${movimientos}">
+
+                    <!-- ID MOVIMIENTO -->
+
+                    <td th:text="${movimiento.id}">
+                        1
+                    </td>
+
+
+                    <!-- FECHA Y HORA -->
+
+                    <td class="text-nowrap">
+
+                        <span th:text="${movimiento.fechaHora != null
+                            ? #temporals.format(
+                                movimiento.fechaHora,
+                                'dd/MM/yyyy HH:mm:ss'
+                              )
+                            : 'Sin fecha'}">
+
+                            16/10/2026 00:00:00
+
+                        </span>
+
+                    </td>
+
+
+                    <!-- TIPO DE MOVIMIENTO -->
+
+                    <td>
+
+                        <th:block th:switch="${movimiento.tipoMovimiento.name()}">
+
+                            <span th:case="'INICIAL'"
+                                  class="badge bg-info text-dark">
+                                INICIAL
+                            </span>
+
+                            <span th:case="'ENTRADA'"
+                                  class="badge bg-success">
+                                ENTRADA
+                            </span>
+
+                            <span th:case="'SALIDA'"
+                                  class="badge bg-danger">
+                                SALIDA
+                            </span>
+
+                            <span th:case="'AJUSTE'"
+                                  class="badge bg-warning text-dark">
+                                AJUSTE
+                            </span>
+
+                            <span th:case="*"
+                                  class="badge bg-secondary"
+                                  th:text="${movimiento.tipoMovimiento}">
+                                Otro
+                            </span>
+
+                        </th:block>
+
+                    </td>
+
+
+                    <!-- CANTIDAD MODIFICADA -->
+
+                    <td>
+
+                        <span th:class="${movimiento.stockNuevo
+                                              >= movimiento.stockAnterior}
+                                ? 'valor-positivo'
+                                : 'valor-negativo'">
+
+                            <span th:text="${movimiento.stockNuevo
+                                                    > movimiento.stockAnterior
+                                    ? '+'
+                                    : (movimiento.stockNuevo
+                                       < movimiento.stockAnterior
+                                            ? '-'
+                                            : '')}">
+                            </span>
+
+                            <span th:text="${movimiento.cantidad}">
+                                0
+                            </span>
+
+                        </span>
+
+                    </td>
+
+
+                    <!-- STOCK ANTERIOR -->
+
+                    <td>
+
+                        <span th:text="${movimiento.stockAnterior}">
+                            0
+                        </span>
+
+                    </td>
+
+
+                    <!-- STOCK NUEVO -->
+
+                    <td>
+
+                        <span class="stock"
+                              th:text="${movimiento.stockNuevo}">
+                            0
+                        </span>
+
+                    </td>
+
+
+                    <!-- USUARIO RESPONSABLE -->
+
+                    <td th:text="${movimiento.usuario.nombreUsuario}">
+                        Administrador
+                    </td>
+
+
+                    <!-- ORIGEN -->
+
+                    <td th:text="${movimiento.origen}">
+                        CU14_ENTRADA_INVENTARIO
+                    </td>
+
+
+                    <!-- REFERENCIA -->
+
+                    <td th:text="${movimiento.idReferencia != null
+                        ? movimiento.idReferencia
+                        : '-'}">
+                        -
+                    </td>
+
+
+                    <!-- OBSERVACIONES -->
+
+                    <td th:text="${movimiento.observaciones != null
+                        and !movimiento.observaciones.isBlank()
+                            ? movimiento.observaciones
+                            : '-'}">
+                        -
+                    </td>
+
+                </tr>
+
+
+                <!-- =================================================
+                     FA01 - SIN MOVIMIENTOS
+                     ================================================= -->
+
+                <tr th:if="${#lists.isEmpty(movimientos)}">
+
+                    <td colspan="10"
+                        class="text-center text-muted py-4">
+
+                        No se encontraron movimientos
+                        para este inventario.
+
+                    </td>
+
+                </tr>
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+
+        <!-- =====================================================
+             CU-14 - PAGINACIÓN DEL HISTORIAL
+             ===================================================== -->
+
+        <div class="d-flex flex-wrap
+                    justify-content-between
+                    align-items-center
+                    gap-3 mt-4">
+
+            <span class="text-muted small">
+
+                Página
+
+                <strong th:text="${totalPaginas == 0
+                    ? 0
+                    : paginaActual + 1}">
+                    1
+                </strong>
+
+                de
+
+                <strong th:text="${totalPaginas}">
+                    1
+                </strong>
+
+            </span>
+
+
+            <div class="d-flex gap-2">
+
+                <!-- ANTERIOR -->
+
+                <a th:if="${paginaActual > 0}"
+                   th:href="@{/admin/inventario-farmacia/{id}/historial(
+                       id=${idInventario},
+                       pagina=${paginaActual - 1}
+                   )}"
+                   class="btn btn-outline-primary btn-sm">
+
+                    Anterior
+
+                </a>
+
+                <span th:unless="${paginaActual > 0}"
+                      class="btn btn-outline-secondary btn-sm disabled">
+
+                    Anterior
+
+                </span>
+
+
+                <!-- SIGUIENTE -->
+
+                <a th:if="${paginaActual + 1 < totalPaginas}"
+                   th:href="@{/admin/inventario-farmacia/{id}/historial(
+                       id=${idInventario},
+                       pagina=${paginaActual + 1}
+                   )}"
+                   class="btn btn-outline-primary btn-sm">
+
+                    Siguiente
+
+                </a>
+
+                <span th:unless="${paginaActual + 1 < totalPaginas}"
+                      class="btn btn-outline-secondary btn-sm disabled">
+
+                    Siguiente
+
+                </span>
+
+            </div>
+
+        </div>
+
+
+        <!-- =====================================================
+             INFORMACIÓN SOBRE TRAZABILIDAD
+             ===================================================== -->
+
+        <hr class="my-4">
+
+        <div class="alert alert-info mb-0">
+
+            <strong>
+                Historial de inventario
+            </strong>
+
+            <p class="mb-0 mt-2">
+
+                Esta sección permite consultar los movimientos
+                registrados de cada inventario.
+
+                Se conservan las cantidades anteriores,
+                las nuevas existencias, el usuario responsable
+                y el origen de cada operación.
+
+                La consulta del historial no modifica
+                las existencias actuales.
+
+            </p>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<!-- =====================================================
+     BOOTSTRAP JAVASCRIPT
+     ===================================================== -->
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js">
+</script>
+
+</body>
+</html>

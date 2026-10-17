@@ -3,7 +3,7 @@ package com.proyecto.clinicamedica.entity;
 import jakarta.persistence.*;
 
 import java.time.OffsetDateTime;
-
+import java.math.BigDecimal;
 /**
  * =========================================================
  * ENTIDAD: CITA
@@ -105,6 +105,35 @@ public class Cita {
             name = "fecha_hora_fin"
     )
     private OffsetDateTime fechaHoraFin;
+
+
+
+    // =====================================================
+    // CU-14 - CATÁLOGO 9
+    // PRECIO DE CONSULTA ACORDADO
+    // =====================================================
+    //
+    // Conserva el precio establecido durante la
+    // reserva temporal y confirmado al agendar.
+    //
+    // SEGURIDAD:
+    //
+    // - El precio se obtiene desde PostgreSQL.
+    // - No se acepta desde el navegador.
+    // - No debe cambiar por modificaciones futuras
+    //   en el catálogo Sucursal-Especialidad.
+    // - Los registros históricos pueden tener NULL.
+    //
+    // No modifica los pagos ya realizados.
+    //
+    // =====================================================
+
+    @Column(
+            name = "precio_consulta_acordado",
+            precision = 10,
+            scale = 2
+    )
+    private BigDecimal precioConsultaAcordado;
 
 
     // =====================================================
@@ -455,4 +484,21 @@ public class Cita {
     ) {
         this.modificadoPor = modificadoPor;
     }
+
+
+    // =====================================================
+    // CU-14 - PRECIO DE CONSULTA ACORDADO
+    // =====================================================
+
+    public BigDecimal getPrecioConsultaAcordado() {
+        return precioConsultaAcordado;
+    }
+
+    public void setPrecioConsultaAcordado(
+            BigDecimal precioConsultaAcordado
+    ) {
+        this.precioConsultaAcordado =
+                precioConsultaAcordado;
+    }
+
 }

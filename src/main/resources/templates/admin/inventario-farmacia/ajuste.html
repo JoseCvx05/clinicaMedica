@@ -1,0 +1,454 @@
+
+<!DOCTYPE html>
+<html lang="es"
+      xmlns:th="http://www.thymeleaf.org">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>
+        Ajustar Inventario | Clínica Médica SANTOS
+    </title>
+
+    <!-- =====================================================
+         BOOTSTRAP 5
+         ===================================================== -->
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+          rel="stylesheet">
+
+    <style>
+
+        body {
+            background-color: #f1f5f9;
+            font-family: Arial, sans-serif;
+        }
+
+        .encabezado {
+            background: linear-gradient(
+                    135deg,
+                    #0f172a,
+                    #1e3a8a
+            );
+            color: white;
+            padding: 25px;
+            border-radius: 12px;
+            margin-bottom: 25px;
+        }
+
+        .tarjeta {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.06);
+        }
+
+        .form-label {
+            font-weight: 600;
+        }
+
+        .stock-actual {
+            font-size: 28px;
+            font-weight: bold;
+            color: #1e40af;
+        }
+
+        .texto-ayuda {
+            font-size: 13px;
+            color: #64748b;
+        }
+
+        .campo-obligatorio {
+            color: #dc2626;
+        }
+
+        .botones {
+            display: flex;
+            justify-content: flex-end;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+    </style>
+
+</head>
+
+<body>
+
+<div class="container py-4">
+
+    <!-- =====================================================
+         CU-14 - ENCABEZADO
+         ===================================================== -->
+
+    <div class="encabezado">
+
+        <h2 class="mb-2">
+            Ajustar Existencias de Inventario
+        </h2>
+
+        <p class="mb-0">
+            CU-14 - Catálogo 8 de 9
+        </p>
+
+        <p class="small mt-2 mb-0">
+            Clínica Médica SANTOS
+        </p>
+
+    </div>
+
+
+    <!-- =====================================================
+         FORMULARIO DE AJUSTE
+         ===================================================== -->
+
+    <div class="tarjeta">
+
+        <h4 class="mb-3">
+            Datos del ajuste
+        </h4>
+
+        <p class="text-muted mb-4">
+            Indique las nuevas existencias del inventario
+            y el motivo de la corrección.
+        </p>
+
+
+        <!-- =================================================
+             ERRORES DEL BACKEND
+             ================================================= -->
+
+        <div th:if="${mensajeError}"
+             class="alert alert-danger"
+             role="alert">
+
+            <strong>
+                No se pudo registrar el ajuste.
+            </strong>
+
+            <div th:text="${mensajeError}">
+                Error de validación.
+            </div>
+
+        </div>
+
+
+        <!-- =================================================
+             INVENTARIO INACTIVO
+             ================================================= -->
+
+        <div th:if="${activo != true}"
+             class="alert alert-danger">
+
+            <strong>
+                Inventario inactivo
+            </strong>
+
+            <p class="mb-0 mt-2">
+                No se pueden modificar las existencias
+                de un inventario desactivado.
+            </p>
+
+        </div>
+
+
+        <!-- =================================================
+             INFORMACIÓN ACTUAL
+             ================================================= -->
+
+        <div class="row g-3 mb-4">
+
+            <!-- IDENTIFICADOR -->
+
+            <div class="col-md-6">
+
+                <div class="border rounded p-3 h-100">
+
+                    <p class="text-muted mb-2">
+                        Inventario seleccionado
+                    </p>
+
+                    <h5 class="mb-0">
+
+                        #<span th:text="${idInventario}">
+                            1
+                        </span>
+
+                    </h5>
+
+                </div>
+
+            </div>
+
+
+            <!-- EXISTENCIAS ACTUALES -->
+
+            <div class="col-md-6">
+
+                <div class="border rounded p-3 h-100">
+
+                    <p class="text-muted mb-2">
+                        Existencias actuales
+                    </p>
+
+                    <span class="stock-actual"
+                          th:text="${stockActual}">
+                        0
+                    </span>
+
+                    <span class="text-muted">
+                        unidades
+                    </span>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- =================================================
+             FORMULARIO
+             ================================================= -->
+
+        <form method="post"
+              th:action="@{/admin/inventario-farmacia/{id}/ajuste(id=${idInventario})}"
+              th:object="${formulario}">
+
+
+            <!-- =============================================
+                 PROTECCIÓN CSRF
+                 ============================================= -->
+
+            <input th:if="${_csrf != null}"
+                   type="hidden"
+                   th:name="${_csrf.parameterName}"
+                   th:value="${_csrf.token}">
+
+
+            <!-- =============================================
+                 NUEVO STOCK
+                 ============================================= -->
+
+            <div class="mb-4">
+
+                <label for="nuevoStock"
+                       class="form-label">
+
+                    Nuevas existencias
+
+                    <span class="campo-obligatorio">
+                        *
+                    </span>
+
+                </label>
+
+
+                <input type="number"
+                       id="nuevoStock"
+                       th:field="*{nuevoStock}"
+                       class="form-control"
+                       th:classappend="${#fields.hasErrors('nuevoStock')}
+                           ? 'is-invalid'
+                           : ''"
+                       min="0"
+                       max="2147483647"
+                       step="1"
+                       placeholder="Ingrese el stock final"
+                       required
+                       th:disabled="${activo != true}">
+
+
+                <div class="invalid-feedback"
+                     th:if="${#fields.hasErrors('nuevoStock')}"
+                     th:errors="*{nuevoStock}">
+
+                    Las nuevas existencias no son válidas.
+
+                </div>
+
+
+                <div class="texto-ayuda mt-2">
+
+                    Ingrese la cantidad total que debe
+                    quedar registrada.
+
+                    No ingrese únicamente la diferencia.
+
+                    El sistema calculará automáticamente
+                    las unidades agregadas o descontadas.
+
+                </div>
+
+            </div>
+
+
+            <!-- =============================================
+                 MOTIVO DEL AJUSTE
+                 ============================================= -->
+
+            <div class="mb-4">
+
+                <label for="motivo"
+                       class="form-label">
+
+                    Motivo del ajuste
+
+                    <span class="campo-obligatorio">
+                        *
+                    </span>
+
+                </label>
+
+
+                <textarea id="motivo"
+                          th:field="*{motivo}"
+                          class="form-control"
+                          th:classappend="${#fields.hasErrors('motivo')}
+                              ? 'is-invalid'
+                              : ''"
+                          rows="4"
+                          maxlength="500"
+                          placeholder="Explique por qué se ajustan las existencias..."
+                          required
+                          th:disabled="${activo != true}"></textarea>
+
+
+                <div class="invalid-feedback"
+                     th:if="${#fields.hasErrors('motivo')}"
+                     th:errors="*{motivo}">
+
+                    Debe indicar el motivo del ajuste.
+
+                </div>
+
+
+                <div class="texto-ayuda mt-2">
+
+                    El motivo es obligatorio y quedará
+                    registrado en el historial de movimientos.
+
+                    Máximo 500 caracteres.
+
+                </div>
+
+            </div>
+
+
+            <!-- =============================================
+                 INFORMACIÓN DE LOS AJUSTES
+                 ============================================= -->
+
+            <div class="alert alert-info">
+
+                <strong>
+                    ¿Cómo funcionan los ajustes?
+                </strong>
+
+                <p class="mt-2 mb-2">
+
+                    El sistema comparará las nuevas
+                    existencias con las actuales.
+
+                </p>
+
+                <ul class="mb-0">
+
+                    <li>
+                        Si la cantidad aumenta,
+                        registra un ajuste positivo.
+                    </li>
+
+                    <li>
+                        Si la cantidad disminuye,
+                        registra un ajuste negativo.
+                    </li>
+
+                    <li>
+                        Si la cantidad no cambia,
+                        rechaza la operación.
+                    </li>
+
+                    <li>
+                        No se permiten existencias negativas.
+                    </li>
+
+                </ul>
+
+            </div>
+
+
+            <!-- =============================================
+                 AUDITORÍA Y SEGURIDAD
+                 ============================================= -->
+
+            <div class="alert alert-light border">
+
+                <strong>
+                    Seguridad y trazabilidad
+                </strong>
+
+                <p class="mb-0 mt-2">
+
+                    Cada ajuste será validado en el backend,
+                    protegido mediante bloqueo de inventario
+                    y registrado en la bitácora de movimientos
+                    y auditoría.
+
+                    Los despachos históricos no se modificarán.
+
+                </p>
+
+            </div>
+
+
+            <!-- =============================================
+                 BOTONES
+                 ============================================= -->
+
+            <hr class="my-4">
+
+            <div class="botones">
+
+                <!-- CANCELAR -->
+
+                <a th:href="@{/admin/inventario-farmacia}"
+                   class="btn btn-outline-secondary px-4">
+
+                    Cancelar
+
+                </a>
+
+
+                <!-- REGISTRAR AJUSTE -->
+
+                <button type="submit"
+                        class="btn btn-warning px-4"
+                        th:disabled="${activo != true}">
+
+                    Registrar Ajuste
+
+                </button>
+
+            </div>
+
+        </form>
+
+    </div>
+
+</div>
+
+
+<!-- =====================================================
+     BOOTSTRAP JAVASCRIPT
+     ===================================================== -->
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js">
+</script>
+
+</body>
+</html>

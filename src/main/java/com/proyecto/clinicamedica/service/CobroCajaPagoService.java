@@ -973,6 +973,70 @@ public class CobroCajaPagoService {
             Cita cita
     ) {
 
+
+        // =====================================================
+        // CU-14 - CATÁLOGO 9
+        // PROTEGER MONTO ACORDADO EN EL COBRO DE CAJA
+        // =====================================================
+        //
+        // Las citas nuevas utilizan el precio guardado
+        // durante la confirmación del agendamiento.
+        //
+        // No se acepta un precio desde el navegador.
+        //
+        // Las citas históricas con precio NULL
+        // mantienen la lógica anterior del CU-06.
+        //
+        // =====================================================
+
+        if (cita == null) {
+
+            return null;
+        }
+
+        // =====================================================
+        // 1. OBTENER PRECIO ACORDADO
+        // =====================================================
+
+        BigDecimal precioAcordado =
+                cita.getPrecioConsultaAcordado();
+
+        // =====================================================
+        // 2. VALIDAR Y UTILIZAR PRECIO ACORDADO
+        // =====================================================
+
+        if (precioAcordado != null) {
+
+            if (precioAcordado.compareTo(BigDecimal.ZERO) <= 0
+                    || precioAcordado.scale() > 2
+                    || precioAcordado.compareTo(
+                    new BigDecimal("99999999.99")
+            ) > 0) {
+
+                return null;
+            }
+
+            // =============================================
+            // CONSERVAR EL PRECIO ORIGINAL DE LA CITA
+            // =============================================
+
+            return precioAcordado.setScale(
+                    2,
+                    RoundingMode.HALF_UP
+            );
+        }
+
+        // =====================================================
+        // 3. COMPATIBILIDAD CON CITAS ANTERIORES
+        // =====================================================
+        //
+        // Cuando precioConsultaAcordado es NULL,
+        // continúa ejecutándose el código original
+        // que consulta la tarifa del catálogo.
+        //
+        // =====================================================
+
+
         SucursalEspecialidad configuracion =
                 sucursalEspecialidadRepository
                         .findBySucursal_IdAndEspecialidad_IdAndActivoTrue(

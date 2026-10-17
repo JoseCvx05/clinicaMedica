@@ -776,4 +776,242 @@ public class SucursalEspecialidadService {
     ) {
     }
 
+
+    // =====================================================
+    // CU-14 - CATÁLOGO 9
+    // ACTUALIZAR PRECIO DE CONSULTA
+    // =====================================================
+    //
+    // SEGURIDAD:
+    //
+    // - Solo Administrador activo.
+    // - Precio obligatorio y mayor que cero.
+    // - Máximo dos decimales.
+    // - Bloqueo pesimista en PostgreSQL.
+    // - Protege citas antiguas pendientes de pago.
+    // - Conserva los precios acordados de citas nuevas.
+    // - Registra auditoría del cambio.
+    //
+    // No modifica citas ni pagos históricos.
+    //
+    // =====================================================
+
+    @Transactional
+    public void actualizarPrecioConsulta(
+            Integer id,
+            BigDecimal nuevoPrecio
+    ) {
+
+        // =================================================
+        // 1. VALIDAR ADMINISTRADOR
+        // =================================================
+
+        Usuario administrador =
+                usuarioActualService.obtenerUsuarioActual();
+
+        if (administrador == null
+                || !Boolean.TRUE.equals(administrador.getActivo())
+                || administrador.getRol() == null
+                || administrador.getRol().getNombre() == null
+                || !"Administrador".equalsIgnoreCase(
+                administrador.getRol().getNombre().trim()
+        )) {
+
+            throw new IllegalStateException(
+                    "No tiene permisos para modificar tarifas."
+            );
+        }
+
+        // =================================================
+        // 2. VALIDAR IDENTIFICADOR
+        // =================================================
+
+        if (id == null || id <= 0) {
+
+            throw new IllegalArgumentException(
+                    "Debe seleccionar una asignación válida."
+            );
+        }
+
+        // =================================================
+        // 3. VALIDAR NUEVO PRECIO
+        // =================================================
+
+        if (nuevoPrecio == null
+                || nuevoPrecio.compareTo(BigDecimal.ZERO) <= 0
+                || nuevoPrecio.scale() > 2
+                || nuevoPrecio.compareTo(
+                new BigDecimal("99999999.99")
+        ) > 0) {
+
+            throw new IllegalArgumentException(
+                    "El precio debe ser mayor que cero, "
+                            + "con máximo dos decimales."
+            );
+        }
+
+        // =================================================
+        // 4. BLOQUEAR ASIGNACIÓN
+        // =================================================
+
+        SucursalEspecialidad asignacion =
+                sucursalEspecialidadRepository
+                        .buscarParaDesactivarConBloqueo(id)
+                        .orElseThrow(
+                                () -> new IllegalArgumentException(
+                                        "La asignación no existe."
+                                )
+                        );
+
+        // =================================================
+        // 5. VALIDAR ESTADO
+        // =================================================
+
+        if (!Boolean.TRUE.equals(asignacion.getActivo())) {
+
+            throw new IllegalStateException(
+                    "No puede modificar el precio "
+                            + "de una asignación inactiva."
+            );
+        }
+
+        Integer idSucursal =
+                asignacion.getSucursal().getId();
+
+        Integer idEspecialidad =
+                asignacion.getEspecialidad().getId();
+
+        // =================================================
+        // 6. VALIDAR SUCURSAL Y ESPECIALIDAD ACTIVAS
+        // =================================================
+
+        if (sucursalService.buscarActivaPorId(idSucursal)
+                .isEmpty()
+                || especialidadService
+                .buscarActivaPorId(idEspecialidad)
+                .isEmpty()) {
+
+            throw new IllegalStateException(
+                    "La sucursal o especialidad "
+                            + "ya no se encuentra activa."
+            );
+        }
+
+        // =================================================
+        // 7. VALIDAR SI EL PRECIO CAMBIÓ
+        // =================================================
+
+        BigDecimal precioAnterior =
+                asignacion.getPrecioConsulta();
+
+        if (precioAnterior != null
+                && precioAnterior.compareTo(nuevoPrecio) == 0) {
+
+            throw new IllegalArgumentException(
+                    "El nuevo precio es igual al actual."
+            );
+        }
+
+        // =================================================
+        // 8. PROTEGER CITAS ANTIGUAS
+        // =================================================
+        //
+        // Si existe una cita pendiente de pago sin
+        // precio acordado, no permitimos cambiar
+        // la tarifa de esa sucursal y especialidad.
+        //
+        // Ejemplo: cita antigua #13.
+        //
+        // =================================================
+
+        boolean existenCitasSinPrecio =
+                citaRepository
+                        .existsBySucursal_IdAndEspecialidad_IdAndPrecioConsultaAcordadoIsNullAndEstadoCita_NombreIgnoreCase(
+                                idSucursal,
+                                idEspecialidad,
+                                "Pendiente de pago"
+                        );
+
+        if (existenCitasSinPrecio) {
+
+            throw new IllegalStateException(
+                    "No es posible modificar esta tarifa "
+                            + "porque existen citas antiguas "
+                            + "pendientes de pago sin precio "
+                            + "acordado registrado."
+            );
+        }
+
+        // =================================================
+        // 9. PREPARAR AUDITORÍA ANTERIOR
+        // =================================================
+
+        Map<String, Object> valoresAnteriores =
+                new LinkedHashMap<>();
+
+        valoresAnteriores.put(
+                "idSucursal",
+                idSucursal
+        );
+
+        valoresAnteriores.put(
+                "idEspecialidad",
+                idEspecialidad
+        );
+
+        valoresAnteriores.put(
+                "precioConsulta",
+                precioAnterior
+        );
+
+        // =================================================
+        // 10. ACTUALIZAR PRECIO
+        // =================================================
+
+        asignacion.setPrecioConsulta(nuevoPrecio);
+
+        sucursalEspecialidadRepository
+                .saveAndFlush(asignacion);
+
+        // =================================================
+        // 11. PREPARAR AUDITORÍA NUEVA
+        // =================================================
+
+        Map<String, Object> valoresNuevos =
+                new LinkedHashMap<>();
+
+        valoresNuevos.put(
+                "idSucursal",
+                idSucursal
+        );
+
+        valoresNuevos.put(
+                "idEspecialidad",
+                idEspecialidad
+        );
+
+        valoresNuevos.put(
+                "precioConsulta",
+                nuevoPrecio
+        );
+
+        // =================================================
+        // 12. REGISTRAR AUDITORÍA
+        // =================================================
+
+        auditoriaService.registrar(
+                new RegistroAuditoria(
+                        "sucursal_especialidad",
+                        String.valueOf(asignacion.getId()),
+                        AccionAuditoria.ACTUALIZAR,
+                        administrador.getId(),
+                        administrador.getNombreUsuario(),
+                        valoresAnteriores,
+                        valoresNuevos,
+                        null
+                )
+        );
+    }
+
+
 }

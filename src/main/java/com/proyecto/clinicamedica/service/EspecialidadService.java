@@ -1,10 +1,7 @@
 package com.proyecto.clinicamedica.service;
-
-import com.proyecto.clinicamedica.config.CacheConfig;
 import com.proyecto.clinicamedica.entity.Especialidad;
 import com.proyecto.clinicamedica.repository.EspecialidadRepository;
 
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -65,7 +62,6 @@ public class EspecialidadService {
      * Las llamadas posteriores utilizan la caché
      * mientras esta continúe vigente.
      */
-    @Cacheable(CacheConfig.ESPECIALIDADES)
     public List<Especialidad> listarActivas() {
 
         return especialidadRepository

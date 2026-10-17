@@ -652,4 +652,162 @@ public class SucursalEspecialidadController {
         }
     }
 
+
+    // =====================================================
+    // CU-14 - CATÁLOGO 9
+    // MOSTRAR FORMULARIO DE EDICIÓN DE PRECIO
+    // =====================================================
+    //
+    // GET /branch-specialty/edit/{id}
+    //
+    // Permite consultar la asignación seleccionada
+    // y mostrar su precio de consulta actual.
+    //
+    // No modifica información en PostgreSQL.
+    //
+    // =====================================================
+
+    @GetMapping("/edit/{id}")
+    public String mostrarEdicionPrecio(
+
+            @PathVariable("id") Integer id,
+
+            Model model,
+
+            RedirectAttributes redirectAttributes
+    ) {
+
+        // -------------------------------------------------
+        // 1. BUSCAR ASIGNACIÓN
+        // -------------------------------------------------
+
+        SucursalEspecialidadService.ResumenAsignacion asignacion =
+                sucursalEspecialidadService
+                        .buscarPorId(id)
+                        .orElse(null);
+
+        // -------------------------------------------------
+        // 2. VERIFICAR EXISTENCIA
+        // -------------------------------------------------
+
+        if (asignacion == null) {
+
+            redirectAttributes.addFlashAttribute(
+                    "mensajeError",
+                    "La asignación seleccionada no existe."
+            );
+
+            return "redirect:/branch-specialty";
+        }
+
+        // -------------------------------------------------
+        // 3. VERIFICAR ESTADO
+        // -------------------------------------------------
+
+        if (!Boolean.TRUE.equals(asignacion.activo())) {
+
+            redirectAttributes.addFlashAttribute(
+                    "mensajeError",
+                    "No puede modificar el precio de una "
+                            + "asignación inactiva."
+            );
+
+            return "redirect:/branch-specialty";
+        }
+
+        // -------------------------------------------------
+        // 4. PREPARAR FORMULARIO
+        // -------------------------------------------------
+
+        model.addAttribute(
+                "asignacion",
+                asignacion
+        );
+
+        model.addAttribute(
+                "nuevoPrecio",
+                asignacion.precioConsulta()
+        );
+
+        // -------------------------------------------------
+        // 5. MOSTRAR VISTA
+        // -------------------------------------------------
+
+        return "branch-specialty/editar-precio";
+    }
+
+
+    // =====================================================
+    // CU-14 - CATÁLOGO 9
+    // GUARDAR NUEVO PRECIO DE CONSULTA
+    // =====================================================
+    //
+    // POST /branch-specialty/edit/{id}
+    //
+    // SEGURIDAD:
+    //
+    // - El servicio valida al Administrador activo.
+    // - No permite precios inválidos.
+    // - Protege citas antiguas pendientes de pago.
+    // - Utiliza bloqueo en PostgreSQL.
+    // - Registra auditoría.
+    //
+    // =====================================================
+
+    @PostMapping("/edit/{id}")
+    public String guardarEdicionPrecio(
+
+            @PathVariable("id") Integer id,
+
+            @RequestParam(
+                    name = "nuevoPrecio",
+                    required = false
+            )
+            BigDecimal nuevoPrecio,
+
+            RedirectAttributes redirectAttributes
+    ) {
+
+        // -------------------------------------------------
+        // 1. INTENTAR ACTUALIZAR PRECIO
+        // -------------------------------------------------
+
+        try {
+
+            sucursalEspecialidadService
+                    .actualizarPrecioConsulta(
+                            id,
+                            nuevoPrecio
+                    );
+
+            // ---------------------------------------------
+            // 2. MENSAJE DE ÉXITO
+            // ---------------------------------------------
+
+            redirectAttributes.addFlashAttribute(
+                    "mensajeExito",
+                    "El precio de consulta se actualizó "
+                            + "correctamente."
+            );
+
+            return "redirect:/branch-specialty";
+
+        } catch (
+                IllegalArgumentException
+                | IllegalStateException ex
+        ) {
+
+            // ---------------------------------------------
+            // 3. MENSAJE DE ERROR
+            // ---------------------------------------------
+
+            redirectAttributes.addFlashAttribute(
+                    "mensajeError",
+                    ex.getMessage()
+            );
+
+            return "redirect:/branch-specialty/edit/" + id;
+        }
+    }
+
 }

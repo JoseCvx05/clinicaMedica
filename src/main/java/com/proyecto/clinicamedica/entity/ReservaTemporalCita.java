@@ -1,7 +1,7 @@
 package com.proyecto.clinicamedica.entity;
 
 import jakarta.persistence.*;
-
+import java.math.BigDecimal;
 import java.time.OffsetDateTime;
 
 
@@ -118,6 +118,30 @@ public class ReservaTemporalCita {
             nullable = false
     )
     private OffsetDateTime fechaHoraFin;
+
+
+
+    // =====================================================
+    // CU-14 - CATÁLOGO 9
+    // PRECIO DE CONSULTA RESERVADO
+    // =====================================================
+    //
+    // Conserva la tarifa correspondiente a la reserva.
+    //
+    // SEGURIDAD:
+    // - No se obtiene desde el navegador.
+    // - Se asignará desde PostgreSQL.
+    // - Evita cambios inesperados en el precio.
+    // - NULL permite conservar reservas anteriores.
+    //
+    // =====================================================
+
+    @Column(
+            name = "precio_consulta_reservado",
+            precision = 10,
+            scale = 2
+    )
+    private BigDecimal precioConsultaReservado;
 
 
     // =====================================================
@@ -338,4 +362,23 @@ public class ReservaTemporalCita {
     public OffsetDateTime getFechaCreacion() {
         return fechaCreacion;
     }
+
+
+    // =====================================================
+    // CU-14 - PRECIO DE CONSULTA RESERVADO
+    // =====================================================
+
+    public BigDecimal getPrecioConsultaReservado() {
+        return precioConsultaReservado;
+    }
+
+    public void setPrecioConsultaReservado(
+            BigDecimal precioConsultaReservado
+    ) {
+        this.precioConsultaReservado =
+                precioConsultaReservado;
+    }
+
+
+
 }

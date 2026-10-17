@@ -282,6 +282,44 @@ public class AutenticacionService {
 
 
         // =================================================
+        // CU-14 - PROTEGER LOGIN CON ROLES INACTIVOS
+        // =================================================
+        //
+        // El usuario puede estar activo, pero su rol
+        // también debe encontrarse activo.
+        //
+        // Esta validación aplica a:
+        // - Personal interno.
+        // - Pacientes.
+        //
+        // No modifica usuarios, contraseñas ni roles.
+        // =================================================
+
+        if (usuario.getRol() == null
+                || !Boolean.TRUE.equals(
+                usuario.getRol().getActivo()
+        )) {
+
+            LoginResponse respuesta =
+                    new LoginResponse(
+                            EstadoLogin.ROL_NO_AUTORIZADO,
+
+                            "El rol asignado no se encuentra activo. "
+                                    + "Contacte al administrador.",
+
+                            null,
+                            null,
+                            null
+                    );
+
+            return new ResultadoAutenticacion(
+                    respuesta,
+                    null
+            );
+        }
+
+
+        // =================================================
         // 10. VALIDAR rol para ingreso al portal
         // =================================================
 

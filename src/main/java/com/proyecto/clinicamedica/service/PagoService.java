@@ -1436,6 +1436,54 @@ public class PagoService {
             Cita cita
     ) {
 
+
+        // =====================================================
+        // CU-14 - CATÁLOGO 9
+        // PROTEGER PRECIO ACORDADO DE LA CITA
+        // =====================================================
+        //
+        // Las citas nuevas conservan el precio establecido
+        // durante su reserva y confirmación.
+        //
+        // Este precio tiene prioridad sobre la tarifa
+        // actual del catálogo Sucursal-Especialidad.
+        //
+        // Las citas históricas con NULL continuarán
+        // utilizando la lógica anterior del CU-04.
+        //
+        // =====================================================
+
+        if (cita == null) {
+
+            throw new IllegalArgumentException(
+                    "La cita no puede ser nula."
+            );
+        }
+
+        BigDecimal precioAcordado =
+                cita.getPrecioConsultaAcordado();
+
+        if (precioAcordado != null) {
+
+            // Validar el importe guardado.
+
+            if (precioAcordado.compareTo(BigDecimal.ZERO) <= 0
+                    || precioAcordado.scale() > 2
+                    || precioAcordado.compareTo(
+                    new BigDecimal("99999999.99")
+            ) > 0) {
+
+                throw new IllegalStateException(
+                        "El precio acordado de la cita no es válido."
+                );
+            }
+
+            // Utilizar el precio original de la cita.
+
+            return precioAcordado;
+        }
+
+
         SucursalEspecialidad configuracion =
                 sucursalEspecialidadRepository
                         .findBySucursal_IdAndEspecialidad_IdAndActivoTrue(  //busca la tarifa activa para esa sucursal y especialidad.

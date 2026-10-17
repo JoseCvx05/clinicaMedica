@@ -1,0 +1,739 @@
+
+<!DOCTYPE html>
+<html lang="es"
+      xmlns:th="http://www.thymeleaf.org">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title th:text="${tituloFormulario}
+        + ' | Clínica Médica SANTOS'">
+        Examen de Laboratorio
+    </title>
+
+    <!-- =====================================================
+         BOOTSTRAP 5
+         ===================================================== -->
+
+    <link
+            href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+            rel="stylesheet">
+
+    <!-- =====================================================
+         ESTILOS DEL FORMULARIO
+         ===================================================== -->
+
+    <style>
+
+        body {
+            background: #f1f5f9;
+            font-family: Arial, sans-serif;
+            color: #1e293b;
+        }
+
+        .contenedor-principal {
+            max-width: 1050px;
+            margin: auto;
+            padding: 30px 15px;
+        }
+
+        .encabezado {
+            background: linear-gradient(
+                    135deg,
+                    #0f172a,
+                    #1e40af
+            );
+            color: white;
+            padding: 28px;
+            border-radius: 14px;
+            margin-bottom: 25px;
+        }
+
+        .encabezado h2 {
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .encabezado p {
+            margin: 0;
+            opacity: 0.85;
+        }
+
+        .tarjeta {
+            background: white;
+            border: 1px solid #e2e8f0;
+            border-radius: 14px;
+            padding: 30px;
+            margin-bottom: 24px;
+            box-shadow: 0 3px 12px rgba(0, 0, 0, 0.05);
+        }
+
+        .titulo-seccion {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: #0f172a;
+            margin-bottom: 20px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .form-label {
+            font-weight: 600;
+            color: #334155;
+        }
+
+        .form-control,
+        .form-select {
+            border-radius: 8px;
+            min-height: 42px;
+        }
+
+        textarea.form-control {
+            min-height: 110px;
+        }
+
+        .form-control:focus,
+        .form-select:focus {
+            border-color: #2563eb;
+            box-shadow: 0 0 0 0.2rem
+            rgba(37, 99, 235, 0.12);
+        }
+
+        .campo-obligatorio {
+            color: #dc2626;
+            font-weight: 700;
+        }
+
+        .texto-ayuda {
+            font-size: 0.83rem;
+            color: #64748b;
+            margin-top: 5px;
+        }
+
+        .seccion-botones {
+            display: flex;
+            justify-content: flex-end;
+            gap: 12px;
+            flex-wrap: wrap;
+            border-top: 1px solid #e2e8f0;
+            padding-top: 24px;
+            margin-top: 25px;
+        }
+
+        .btn {
+            border-radius: 8px;
+            padding: 10px 20px;
+            font-weight: 600;
+        }
+
+        .nota-informativa {
+            border-left: 4px solid #2563eb;
+            background: #eff6ff;
+            padding: 16px 20px;
+            border-radius: 8px;
+        }
+
+        @media (max-width: 768px) {
+
+            .encabezado {
+                padding: 20px;
+            }
+
+            .encabezado h2 {
+                font-size: 1.4rem;
+            }
+
+            .tarjeta {
+                padding: 18px;
+            }
+
+            .seccion-botones {
+                flex-direction: column-reverse;
+            }
+
+            .seccion-botones .btn {
+                width: 100%;
+            }
+        }
+
+    </style>
+
+</head>
+
+<body>
+
+<div class="contenedor-principal">
+
+    <!-- =====================================================
+         ENCABEZADO
+         ===================================================== -->
+
+    <div class="encabezado">
+
+        <div class="d-flex flex-column flex-md-row
+                    justify-content-between
+                    align-items-md-center gap-3">
+
+            <div>
+
+                <h2 th:text="${tituloFormulario}">
+                    Crear Examen de Laboratorio
+                </h2>
+
+                <p>
+                    CU-14 | Mantenimiento de Catálogos
+                </p>
+
+                <p class="mt-2">
+                    Clínica Médica SANTOS
+                </p>
+
+            </div>
+
+            <a th:href="@{/admin/examenes-laboratorio}"
+               class="btn btn-outline-light">
+
+                Volver al listado
+
+            </a>
+
+        </div>
+
+    </div>
+
+    <!-- =====================================================
+         MENSAJE DE ERROR DEL SERVICE
+         ===================================================== -->
+
+    <div th:if="${mensajeError != null}"
+         class="alert alert-danger"
+         role="alert">
+
+        <strong>
+            No se pudo completar la operación.
+        </strong>
+
+        <div class="mt-1"
+             th:text="${mensajeError}">
+        </div>
+
+    </div>
+
+    <!-- =====================================================
+         ERRORES GENERALES DEL FORMULARIO
+         ===================================================== -->
+
+    <div th:if="${errores != null
+                  and !#lists.isEmpty(errores)}"
+         class="alert alert-danger"
+         role="alert">
+
+        <strong>
+            Corrige los siguientes campos:
+        </strong>
+
+        <ul class="mb-0 mt-2">
+
+            <li th:each="error : ${errores}"
+                th:text="${error}">
+                Error de validación
+            </li>
+
+        </ul>
+
+    </div>
+
+    <!-- =====================================================
+         FORMULARIO PRINCIPAL
+         ===================================================== -->
+
+    <div class="tarjeta">
+
+        <form th:action="@{${accionFormulario}}"
+              th:object="${formulario}"
+              method="post"
+              onsubmit="return confirmarGuardado();">
+
+            <!-- =============================================
+                 TOKEN CSRF
+                 ============================================= -->
+
+            <input
+                    th:if="${_csrf != null}"
+                    type="hidden"
+                    th:name="${_csrf.parameterName}"
+                    th:value="${_csrf.token}">
+
+            <!-- =============================================
+                 INFORMACIÓN GENERAL
+                 ============================================= -->
+
+            <h5 class="titulo-seccion">
+                Información general del examen
+            </h5>
+
+            <div class="row g-4">
+
+                <!-- =========================================
+                     NOMBRE
+                     ========================================= -->
+
+                <div class="col-md-8">
+
+                    <label for="nombre"
+                           class="form-label">
+
+                        Nombre del examen
+
+                        <span class="campo-obligatorio">
+                            *
+                        </span>
+
+                    </label>
+
+                    <input
+                            type="text"
+                            id="nombre"
+                            th:field="*{nombre}"
+                            class="form-control"
+                            th:classappend="${#fields.hasErrors('nombre')}
+                            ? 'is-invalid' : ''"
+                            maxlength="200"
+                            required
+                            placeholder="Ej. Hemograma completo">
+
+                    <div class="invalid-feedback"
+                         th:if="${#fields.hasErrors('nombre')}"
+                         th:errors="*{nombre}">
+
+                        Nombre no válido.
+
+                    </div>
+
+                    <div class="texto-ayuda">
+                        Máximo 200 caracteres.
+                        No se permiten nombres activos duplicados.
+                    </div>
+
+                </div>
+
+                <!-- =========================================
+                     LABORATORIO
+                     ========================================= -->
+
+                <div class="col-md-4">
+
+                    <label for="idLaboratorio"
+                           class="form-label">
+
+                        Laboratorio
+
+                        <span class="campo-obligatorio">
+                            *
+                        </span>
+
+                    </label>
+
+                    <select
+                            id="idLaboratorio"
+                            th:field="*{idLaboratorio}"
+                            class="form-select"
+                            th:classappend="${#fields.hasErrors('idLaboratorio')}
+                            ? 'is-invalid' : ''"
+                            required>
+
+                        <option value="">
+                            Seleccione un laboratorio
+                        </option>
+
+                        <option
+                                th:each="laboratorio : ${laboratoriosActivos}"
+                                th:value="${laboratorio.id}"
+                                th:text="${laboratorio.nombre}">
+
+                            Laboratorio
+
+                        </option>
+
+                    </select>
+
+                    <div class="invalid-feedback"
+                         th:if="${#fields.hasErrors('idLaboratorio')}"
+                         th:errors="*{idLaboratorio}">
+
+                        Seleccione un laboratorio válido.
+
+                    </div>
+
+                    <div class="texto-ayuda">
+                        Solo se muestran laboratorios activos.
+                    </div>
+
+                </div>
+
+                <!-- =========================================
+                     DESCRIPCIÓN
+                     ========================================= -->
+
+                <div class="col-12">
+
+                    <label for="descripcion"
+                           class="form-label">
+
+                        Descripción del examen
+
+                    </label>
+
+                    <textarea
+                            id="descripcion"
+                            th:field="*{descripcion}"
+                            class="form-control"
+                            th:classappend="${#fields.hasErrors('descripcion')}
+                            ? 'is-invalid' : ''"
+                            maxlength="500"
+                            rows="4"
+                            placeholder="Ingrese una descripción del examen..."></textarea>
+
+                    <div class="invalid-feedback"
+                         th:if="${#fields.hasErrors('descripcion')}"
+                         th:errors="*{descripcion}">
+
+                        Descripción no válida.
+
+                    </div>
+
+                    <div class="texto-ayuda">
+                        Campo opcional. Máximo 500 caracteres.
+                    </div>
+
+                </div>
+
+            </div>
+
+            <!-- =============================================
+                 PRECIO DEL EXAMEN
+                 ============================================= -->
+
+            <h5 class="titulo-seccion mt-5">
+                Información económica
+            </h5>
+
+            <div class="row g-4">
+
+                <!-- =========================================
+                     PRECIO
+                     ========================================= -->
+
+                <div class="col-md-6">
+
+                    <label for="precio"
+                           class="form-label">
+
+                        Precio base del examen
+
+                        <span class="campo-obligatorio">
+                            *
+                        </span>
+
+                    </label>
+
+                    <div class="input-group">
+
+                        <span class="input-group-text">
+                            Q
+                        </span>
+
+                        <input
+                                type="number"
+                                id="precio"
+                                th:field="*{precio}"
+                                class="form-control"
+                                th:classappend="${#fields.hasErrors('precio')}
+                                ? 'is-invalid' : ''"
+                                min="0.01"
+                                max="99999999.99"
+                                step="0.01"
+                                required
+                                placeholder="0.00">
+
+                        <div class="invalid-feedback"
+                             th:if="${#fields.hasErrors('precio')}"
+                             th:errors="*{precio}">
+
+                            Precio no válido.
+
+                        </div>
+
+                    </div>
+
+                    <div class="texto-ayuda">
+
+                        El precio debe ser mayor que Q0.00.
+
+                        Se permiten como máximo 2 decimales.
+
+                    </div>
+
+                </div>
+
+                <!-- =========================================
+                     INFORMACIÓN DEL PRECIO
+                     ========================================= -->
+
+                <div class="col-md-6">
+
+                    <div class="nota-informativa h-100">
+
+                        <strong>
+                            Protección de precios históricos
+                        </strong>
+
+                        <p class="mb-0 mt-2 small">
+
+                            Si modifica el precio, el nuevo
+                            importe será utilizado por las
+                            futuras órdenes de laboratorio.
+
+                            Las órdenes ya registradas
+                            conservarán sus importes históricos.
+
+                        </p>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+            <!-- =============================================
+                 INFORMACIÓN CLÍNICA
+                 ============================================= -->
+
+            <h5 class="titulo-seccion mt-5">
+                Información clínica de referencia
+            </h5>
+
+            <div class="row g-4">
+
+                <!-- =========================================
+                     RANGO DE REFERENCIA
+                     ========================================= -->
+
+                <div class="col-md-7">
+
+                    <label for="rangoReferencia"
+                           class="form-label">
+
+                        Rango de referencia
+
+                    </label>
+
+                    <input
+                            type="text"
+                            id="rangoReferencia"
+                            th:field="*{rangoReferencia}"
+                            class="form-control"
+                            th:classappend="${#fields.hasErrors('rangoReferencia')}
+                            ? 'is-invalid' : ''"
+                            maxlength="255"
+                            placeholder="Ej. 70 - 100">
+
+                    <div class="invalid-feedback"
+                         th:if="${#fields.hasErrors('rangoReferencia')}"
+                         th:errors="*{rangoReferencia}">
+
+                        Rango de referencia no válido.
+
+                    </div>
+
+                    <div class="texto-ayuda">
+                        Opcional. Máximo 255 caracteres.
+                    </div>
+
+                </div>
+
+                <!-- =========================================
+                     UNIDAD
+                     ========================================= -->
+
+                <div class="col-md-5">
+
+                    <label for="unidad"
+                           class="form-label">
+
+                        Unidad de medida
+
+                    </label>
+
+                    <input
+                            type="text"
+                            id="unidad"
+                            th:field="*{unidad}"
+                            class="form-control"
+                            th:classappend="${#fields.hasErrors('unidad')}
+                            ? 'is-invalid' : ''"
+                            maxlength="100"
+                            placeholder="Ej. mg/dL">
+
+                    <div class="invalid-feedback"
+                         th:if="${#fields.hasErrors('unidad')}"
+                         th:errors="*{unidad}">
+
+                        Unidad no válida.
+
+                    </div>
+
+                    <div class="texto-ayuda">
+                        Opcional. Máximo 100 caracteres.
+                    </div>
+
+                </div>
+
+            </div>
+
+            <!-- =============================================
+                 MENSAJE DE EDICIÓN
+                 ============================================= -->
+
+            <div th:if="${modoEdicion}"
+                 class="alert alert-warning mt-4 mb-0">
+
+                <strong>
+                    Edición de examen existente
+                </strong>
+
+                <p class="mb-0 mt-2">
+
+                    Puede actualizar el nombre, descripción,
+                    precio y valores clínicos.
+
+                    Si el examen ya aparece en órdenes médicas,
+                    no se permitirá trasladarlo a otro laboratorio.
+
+                    Los datos históricos no se modificarán.
+
+                </p>
+
+            </div>
+
+            <!-- =============================================
+                 ADVERTENCIA SIN LABORATORIOS
+                 ============================================= -->
+
+            <div th:if="${#lists.isEmpty(laboratoriosActivos)}"
+                 class="alert alert-danger mt-4 mb-0">
+
+                No existen laboratorios activos disponibles.
+
+                Debe registrar o habilitar un laboratorio
+                antes de guardar el examen.
+
+            </div>
+
+            <!-- =============================================
+                 CAMPOS OBLIGATORIOS
+                 ============================================= -->
+
+            <p class="text-muted small mt-4 mb-0">
+
+                <span class="campo-obligatorio">*</span>
+
+                Los campos marcados son obligatorios.
+
+            </p>
+
+            <!-- =============================================
+                 BOTONES
+                 ============================================= -->
+
+            <div class="seccion-botones">
+
+                <!-- CANCELAR -->
+
+                <a th:href="@{/admin/examenes-laboratorio}"
+                   class="btn btn-outline-secondary">
+
+                    Cancelar
+
+                </a>
+
+                <!-- GUARDAR -->
+
+                <button
+                        type="submit"
+                        class="btn btn-primary"
+                        th:disabled="${#lists.isEmpty(laboratoriosActivos)}">
+
+                    <span th:if="${!modoEdicion}">
+                        Crear Examen
+                    </span>
+
+                    <span th:if="${modoEdicion}">
+                        Guardar Cambios
+                    </span>
+
+                </button>
+
+            </div>
+
+        </form>
+
+    </div>
+
+    <!-- =====================================================
+         INFORMACIÓN DEL SISTEMA
+         ===================================================== -->
+
+    <div class="text-center text-muted small">
+
+        CU-14 — Catálogo de Exámenes de Laboratorio
+
+        <p class="mt-1">
+            Clínica Médica SANTOS
+        </p>
+
+    </div>
+
+</div>
+
+<!-- =========================================================
+     BOOTSTRAP JAVASCRIPT
+     ========================================================= -->
+
+<script
+        src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js">
+</script>
+
+<!-- =========================================================
+     CONFIRMACIÓN DE GUARDADO
+     ========================================================= -->
+
+<script th:inline="javascript">
+
+    function confirmarGuardado() {
+
+        const modoEdicion =
+            /*[[${modoEdicion}]]*/ false;
+
+        if (modoEdicion) {
+
+            return window.confirm(
+                "¿Desea guardar los cambios " +
+                "del examen de laboratorio?"
+            );
+        }
+
+        return window.confirm(
+            "¿Desea registrar este nuevo " +
+            "examen de laboratorio?"
+        );
+    }
+
+</script>
+
+</body>
+</html>

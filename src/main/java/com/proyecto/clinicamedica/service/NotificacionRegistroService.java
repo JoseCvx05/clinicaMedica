@@ -5,9 +5,12 @@ import com.proyecto.clinicamedica.repository.NotificacionCorreoRepository;
 import com.proyecto.clinicamedica.service.correo.PlantillaCorreoRegistroExterno;
 
 import org.springframework.beans.factory.annotation.Value;
+import jakarta.mail.MessagingException;
+import jakarta.mail.internet.MimeMessage;
 
+import org.springframework.mail.MailPreparationException;
+import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.mail.MailException;
-import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 
 import org.springframework.stereotype.Service;
@@ -236,8 +239,9 @@ public class NotificacionRegistroService {
     }
 
 
+
     // =====================================================
-    // ENVIAR CORREO
+    // ENVIAR CORREO HTML - SANTOS CLÍNICA MÉDICA
     // =====================================================
 
     private void enviarCorreo(
@@ -246,38 +250,64 @@ public class NotificacionRegistroService {
             String asunto
     ) {
 
-        SimpleMailMessage mensaje =
-                new SimpleMailMessage();
+        try {
 
+            // =============================================
+            // CREAR MENSAJE HTML
+            // =============================================
 
-        mensaje.setFrom(
-                correoRemitente
-        );
+            MimeMessage mensaje =
+                    mailSender.createMimeMessage();
 
+            MimeMessageHelper helper =
+                    new MimeMessageHelper(
+                            mensaje,
+                            true,
+                            "UTF-8"
+                    );
 
-        mensaje.setTo(
-                correoElectronico
-        );
+            // =============================================
+            // DATOS DEL CORREO
+            // =============================================
 
+            helper.setFrom(correoRemitente);
 
-        mensaje.setSubject(
-                asunto
-        );
+            helper.setTo(correoElectronico);
 
+            helper.setSubject(asunto);
 
-        mensaje.setText(
-                plantillaCorreo
-                        .construirCuerpo(
-                                nombreCompleto
-                        )
-        );
+            // =============================================
+            // CU-02 - TEXTO Y HTML
+            // =============================================
 
+            helper.setText(
+                    plantillaCorreo.construirCuerpo(
+                            nombreCompleto
+                    ),
+                    plantillaCorreo.construirCuerpoHtml(
+                            nombreCompleto
+                    )
+            );
 
-        mailSender.send(
-                mensaje
-        );
+            // =============================================
+            // ENVIAR
+            // =============================================
+
+            mailSender.send(mensaje);
+
+        } catch (MessagingException ex) {
+
+            // =============================================
+            // CONSERVAR MANEJO DE ERRORES EXISTENTE
+            // =============================================
+
+            throw new MailPreparationException(
+                    "No se pudo preparar el correo HTML.",
+                    ex
+            );
+
+        }
     }
-
 
     // =====================================================
     // MARCAR COMO ENVIADO

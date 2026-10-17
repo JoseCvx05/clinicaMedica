@@ -1,0 +1,619 @@
+
+<!DOCTYPE html>
+<html lang="es"
+      xmlns:th="http://www.thymeleaf.org">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>
+        Resumen Mensual de Inventario | Clínica Médica SANTOS
+    </title>
+
+    <!-- =====================================================
+         BOOTSTRAP 5
+         ===================================================== -->
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+          rel="stylesheet">
+
+    <style>
+
+        body {
+            background-color: #f1f5f9;
+            font-family: Arial, sans-serif;
+        }
+
+        .encabezado {
+            background: linear-gradient(
+                    135deg,
+                    #0f172a,
+                    #1e3a8a
+            );
+            color: white;
+            padding: 25px;
+            border-radius: 12px;
+            margin-bottom: 25px;
+        }
+
+        .tarjeta {
+            background: white;
+            border-radius: 12px;
+            padding: 25px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.06);
+        }
+
+        .resumen-card {
+            background-color: #eff6ff;
+            border: 1px solid #bfdbfe;
+            border-radius: 10px;
+            padding: 20px;
+            height: 100%;
+        }
+
+        .resumen-card h3 {
+            font-weight: bold;
+            margin-bottom: 0;
+        }
+
+        .table thead th {
+            background-color: #1e3a8a;
+            color: white;
+            vertical-align: middle;
+        }
+
+        .table td {
+            vertical-align: middle;
+        }
+
+        .fila-final {
+            background-color: #dcfce7;
+            font-weight: bold;
+        }
+
+        .positivo {
+            color: #15803d;
+            font-weight: bold;
+        }
+
+        .negativo {
+            color: #dc2626;
+            font-weight: bold;
+        }
+
+    </style>
+
+</head>
+
+<body>
+
+<div class="container py-4">
+
+    <!-- =====================================================
+         CU-14 - ENCABEZADO
+         ===================================================== -->
+
+    <div class="encabezado">
+
+        <h2 class="mb-2">
+            Resumen Mensual de Inventario
+        </h2>
+
+        <p class="mb-0">
+            CU-14 - Catálogo 8 de 9
+        </p>
+
+        <p class="small mt-2 mb-0">
+            Clínica Médica SANTOS
+        </p>
+
+    </div>
+
+
+    <!-- =====================================================
+         INFORMACIÓN DEL INVENTARIO
+         ===================================================== -->
+
+    <div class="tarjeta mb-4">
+
+        <h5 class="mb-3">
+            Información del inventario
+        </h5>
+
+        <div class="row g-3">
+
+            <div class="col-md-4">
+
+                <div class="resumen-card">
+
+                    <p class="text-muted mb-2">
+                        ID Inventario
+                    </p>
+
+                    <h3>
+                        #<span th:text="${idInventario}">
+                            1
+                        </span>
+                    </h3>
+
+                </div>
+
+            </div>
+
+
+            <div class="col-md-4">
+
+                <div class="resumen-card">
+
+                    <p class="text-muted mb-2">
+                        Existencias actuales
+                    </p>
+
+                    <h3 class="text-primary"
+                        th:text="${stockActual}">
+                        0
+                    </h3>
+
+                </div>
+
+            </div>
+
+
+            <div class="col-md-4">
+
+                <div class="resumen-card">
+
+                    <p class="text-muted mb-2">
+                        Estado del inventario
+                    </p>
+
+                    <span th:if="${activo == true}"
+                          class="badge bg-success">
+                        Activo
+                    </span>
+
+                    <span th:unless="${activo == true}"
+                          class="badge bg-secondary">
+                        Inactivo
+                    </span>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- =====================================================
+         CU-14 - SELECCIÓN DE MES
+         ===================================================== -->
+
+    <div class="tarjeta mb-4">
+
+        <h5 class="mb-3">
+            Seleccionar período
+        </h5>
+
+        <form method="get"
+              th:action="@{/admin/inventario-farmacia/{id}/resumen-mensual(id=${idInventario})}">
+
+            <div class="row g-3 align-items-end">
+
+                <div class="col-md-6">
+
+                    <label for="mes"
+                           class="form-label fw-bold">
+
+                        Mes y año
+
+                    </label>
+
+                    <input type="month"
+                           id="mes"
+                           name="mes"
+                           class="form-control"
+                           th:value="${mesSeleccionado}"
+                           required>
+
+                </div>
+
+
+                <div class="col-md-3">
+
+                    <button type="submit"
+                            class="btn btn-primary w-100">
+
+                        Consultar Resumen
+
+                    </button>
+
+                </div>
+
+
+                <div class="col-md-3">
+
+                    <a th:href="@{/admin/inventario-farmacia}"
+                       class="btn btn-outline-secondary w-100">
+
+                        Volver al Inventario
+
+                    </a>
+
+                </div>
+
+            </div>
+
+        </form>
+
+    </div>
+
+
+    <!-- =====================================================
+         CU-14 - ERRORES DEL RESUMEN
+         ===================================================== -->
+
+    <div th:if="${errorResumen != null}"
+         class="alert alert-warning">
+
+        <strong>
+            No fue posible generar el resumen.
+        </strong>
+
+        <p class="mb-0 mt-2"
+           th:text="${errorResumen}">
+            Error de consulta.
+        </p>
+
+    </div>
+
+
+    <!-- =====================================================
+         CU-14 - REPORTE MENSUAL
+         ===================================================== -->
+
+    <div th:if="${resumen != null}"
+         class="tarjeta">
+
+        <div class="mb-4">
+
+            <h4 class="mb-2">
+                Reporte de existencias
+            </h4>
+
+            <p class="mb-1">
+
+                <strong>Medicamento:</strong>
+
+                <span th:text="${resumen.medicamento}">
+                    Medicamento
+                </span>
+
+            </p>
+
+            <p class="mb-1">
+
+                <strong>Sucursal:</strong>
+
+                <span th:text="${resumen.sucursal}">
+                    Sucursal
+                </span>
+
+            </p>
+
+            <p class="mb-0">
+
+                <strong>Período:</strong>
+
+                <span th:text="${resumen.periodo}">
+                    2026-10
+                </span>
+
+            </p>
+
+        </div>
+
+
+        <!-- =================================================
+             RESUMEN DE EXISTENCIAS
+             ================================================= -->
+
+        <div class="row g-3 mb-4">
+
+            <div class="col-md-4">
+
+                <div class="resumen-card">
+
+                    <p class="text-muted mb-2">
+                        Stock inicial del mes
+                    </p>
+
+                    <h3 th:text="${resumen.stockInicial}">
+                        0
+                    </h3>
+
+                </div>
+
+            </div>
+
+
+            <div class="col-md-4">
+
+                <div class="resumen-card">
+
+                    <p class="text-muted mb-2">
+                        Stock final del mes
+                    </p>
+
+                    <h3 class="text-success"
+                        th:text="${resumen.stockFinal}">
+                        0
+                    </h3>
+
+                </div>
+
+            </div>
+
+
+            <div class="col-md-4">
+
+                <div class="resumen-card">
+
+                    <p class="text-muted mb-2">
+                        Total de movimientos
+                    </p>
+
+                    <h3 th:text="${resumen.totalMovimientos}">
+                        0
+                    </h3>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- =================================================
+             DESGLOSE DE MOVIMIENTOS
+             ================================================= -->
+
+        <h5 class="mb-3">
+            Desglose mensual
+        </h5>
+
+        <div class="table-responsive">
+
+            <table class="table table-bordered
+                          table-hover align-middle">
+
+                <thead>
+
+                <tr>
+                    <th>Concepto</th>
+                    <th class="text-end">Cantidad</th>
+                </tr>
+
+                </thead>
+
+                <tbody>
+
+                <!-- STOCK INICIAL -->
+
+                <tr>
+
+                    <td>
+                        Stock inicial del período
+                    </td>
+
+                    <td class="text-end"
+                        th:text="${resumen.stockInicial}">
+                        0
+                    </td>
+
+                </tr>
+
+
+                <!-- ALTAS INICIALES -->
+
+                <tr>
+
+                    <td>
+                        Altas iniciales de inventario
+                    </td>
+
+                    <td class="text-end positivo">
+
+                        +<span th:text="${resumen.altasIniciales}">
+                            0
+                        </span>
+
+                    </td>
+
+                </tr>
+
+
+                <!-- ENTRADAS -->
+
+                <tr>
+
+                    <td>
+                        Entradas de medicamentos
+                    </td>
+
+                    <td class="text-end positivo">
+
+                        +<span th:text="${resumen.entradas}">
+                            0
+                        </span>
+
+                    </td>
+
+                </tr>
+
+
+                <!-- AJUSTES POSITIVOS -->
+
+                <tr>
+
+                    <td>
+                        Ajustes positivos
+                    </td>
+
+                    <td class="text-end positivo">
+
+                        +<span th:text="${resumen.ajustesPositivos}">
+                            0
+                        </span>
+
+                    </td>
+
+                </tr>
+
+
+                <!-- SALIDAS -->
+
+                <tr>
+
+                    <td>
+                        Salidas por despachos
+                    </td>
+
+                    <td class="text-end negativo">
+
+                        −<span th:text="${resumen.salidas}">
+                            0
+                        </span>
+
+                    </td>
+
+                </tr>
+
+
+                <!-- AJUSTES NEGATIVOS -->
+
+                <tr>
+
+                    <td>
+                        Ajustes negativos
+                    </td>
+
+                    <td class="text-end negativo">
+
+                        −<span th:text="${resumen.ajustesNegativos}">
+                            0
+                        </span>
+
+                    </td>
+
+                </tr>
+
+
+                <!-- VARIACIÓN NETA -->
+
+                <tr>
+
+                    <td>
+                        <strong>
+                            Variación neta del período
+                        </strong>
+                    </td>
+
+                    <td class="text-end fw-bold"
+                        th:text="${resumen.variacionNeta}">
+                        0
+                    </td>
+
+                </tr>
+
+
+                <!-- STOCK FINAL -->
+
+                <tr class="fila-final">
+
+                    <td>
+                        <strong>
+                            EXISTENCIAS FINALES
+                        </strong>
+                    </td>
+
+                    <td class="text-end">
+
+                        <strong th:text="${resumen.stockFinal}">
+                            0
+                        </strong>
+
+                    </td>
+
+                </tr>
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+
+        <!-- =================================================
+             NOTA SOBRE EL HISTORIAL
+             ================================================= -->
+
+        <div class="alert alert-info mt-4 mb-0">
+
+            <strong>
+                Información del reporte
+            </strong>
+
+            <p class="mb-0 mt-2">
+
+                El resumen se calcula a partir de los
+                movimientos históricos registrados para
+                el medicamento y la sucursal seleccionados.
+
+                El stock final corresponde al cierre de los
+                movimientos disponibles del período y puede
+                ser diferente del stock actual si consulta
+                un mes anterior.
+
+                Este reporte es de solo lectura y no
+                modifica las existencias del inventario.
+
+            </p>
+
+        </div>
+
+    </div>
+
+
+    <!-- =====================================================
+         ENLACE AL HISTORIAL
+         ===================================================== -->
+
+    <div class="mt-4 text-center">
+
+        <a th:href="@{/admin/inventario-farmacia/{id}/historial(id=${idInventario})}"
+           class="btn btn-outline-primary">
+
+            Ver Historial de Movimientos
+
+        </a>
+
+    </div>
+
+</div>
+
+
+<!-- =====================================================
+     BOOTSTRAP JAVASCRIPT
+     ===================================================== -->
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js">
+</script>
+
+</body>
+</html>

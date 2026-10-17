@@ -14,7 +14,9 @@ import com.proyecto.clinicamedica.repository.EspecialidadRepository;
 import com.proyecto.clinicamedica.repository.ReservaTemporalCitaRepository;
 import com.proyecto.clinicamedica.repository.SucursalRepository;
 import com.proyecto.clinicamedica.repository.UsuarioRepository;
-
+import com.proyecto.clinicamedica.entity.SucursalEspecialidad;
+import com.proyecto.clinicamedica.repository.SucursalEspecialidadRepository;
+import java.math.BigDecimal;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
@@ -89,6 +91,14 @@ public class ReservaTemporalCitaService {
 
 
     // =====================================================
+    // CU-14 - PRECIO RESERVADO POR SUCURSAL Y ESPECIALIDAD
+    // =====================================================
+
+    private final SucursalEspecialidadRepository
+            sucursalEspecialidadRepository;
+
+
+    // =====================================================
     // CONSTRUCTOR
     // =====================================================
 
@@ -99,6 +109,7 @@ public class ReservaTemporalCitaService {
             EspecialidadRepository especialidadRepository,
             DisponibilidadCitaService disponibilidadCitaService,
             CatalogoCitaService catalogoCitaService,
+            SucursalEspecialidadRepository sucursalEspecialidadRepository,
 
             @Value("${cita.reserva.duracion-minutos:5}")
             int duracionReservaMinutos,
@@ -124,6 +135,9 @@ public class ReservaTemporalCitaService {
 
         this.catalogoCitaService =
                 catalogoCitaService;
+
+        this.sucursalEspecialidadRepository =
+                sucursalEspecialidadRepository;
 
         this.duracionReservaMinutos =
                 duracionReservaMinutos;
@@ -335,6 +349,50 @@ public class ReservaTemporalCitaService {
                         );
 
 
+        // =====================================================
+        // CU-14 - CATÁLOGO 9
+        // OBTENER PRECIO REAL DE LA CONSULTA
+        // =====================================================
+        //
+        // Precio obtenido directamente de PostgreSQL.
+        // No se acepta un precio enviado por el navegador.
+        //
+        // =====================================================
+
+        SucursalEspecialidad configuracion =
+                sucursalEspecialidadRepository
+                        .buscarActivaParaConfirmarConBloqueo(
+                                idSucursal,
+                                idEspecialidad
+                        )
+                        .orElseThrow(
+                                () -> new ReservaCitaInvalidaException(
+                                        "La especialidad ya no está "
+                                                + "disponible en esta sucursal."
+                                )
+                        );
+
+        // =====================================================
+        // VALIDAR PRECIO CONFIGURADO
+        // =====================================================
+
+        BigDecimal precioReservado =
+                configuracion.getPrecioConsulta();
+
+        if (precioReservado == null
+                || precioReservado.compareTo(BigDecimal.ZERO) <= 0) {
+
+            throw new ReservaCitaInvalidaException(
+                    "La tarifa de consulta no está "
+                            + "configurada correctamente."
+            );
+        }
+
+        // =====================================================
+        // CREAR RESERVA TEMPORAL
+        // =====================================================
+
+
         // =================================================
         // CREAR RESERVA
         // =================================================
@@ -361,6 +419,23 @@ public class ReservaTemporalCitaService {
         reserva.setEspecialidad(
                 especialidad
         );
+
+
+        // =====================================================
+        // CU-14 - CONSERVAR PRECIO ACORDADO
+        // =====================================================
+        //
+        // Este precio procede de la configuración
+        // validada y bloqueada en PostgreSQL.
+        //
+        // Se guardará junto con la reserva temporal.
+        //
+        // =====================================================
+
+        reserva.setPrecioConsultaReservado(
+                precioReservado
+        );
+
 
 
         reserva.setFechaHoraInicio(

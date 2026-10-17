@@ -390,36 +390,75 @@ public class CobroCajaService {
             Cita cita
     ) {
 
-        // =================================================
-        // PRECIO REAL DESDE BD
-        // =================================================
 
-        SucursalEspecialidad configuracion =
-                sucursalEspecialidadRepository
-                        .findBySucursal_IdAndEspecialidad_IdAndActivoTrue(
+        // =====================================================
+        // CU-14 - CATÁLOGO 9
+        // PROTEGER PRECIO ACORDADO EN CAJA
+        // =====================================================
+        //
+        // Las citas nuevas utilizan el precio conservado
+        // durante su agendamiento.
+        //
+        // Las citas anteriores con precio NULL mantienen
+        // el comportamiento original del CU-06.
+        //
+        // =====================================================
 
-                                cita.getSucursal()
-                                        .getId(),
+        BigDecimal montoConsulta =
+                cita.getPrecioConsultaAcordado();
 
-                                cita.getEspecialidad()
-                                        .getId()
-                        )
-                        .orElse(
-                                null
-                        );
+        if (montoConsulta != null) {
 
+            // =============================================
+            // VALIDAR PRECIO HISTÓRICO
+            // =============================================
 
-        if (configuracion == null
-                || configuracion.getPrecioConsulta() == null
-                || configuracion.getPrecioConsulta()
-                .compareTo(
-                        BigDecimal.ZERO
-                ) <= 0) {
+            if (montoConsulta.compareTo(BigDecimal.ZERO) <= 0
+                    || montoConsulta.scale() > 2
+                    || montoConsulta.compareTo(
+                    new BigDecimal("99999999.99")
+            ) > 0) {
 
-            return ResultadoBusquedaCaja.error(
-                    "No fue posible determinar el monto de la consulta."
-            );
+                return ResultadoBusquedaCaja.error(
+                        "El precio acordado de la cita no es válido."
+                );
+            }
+
+        } else {
+
+            // =============================================
+            // COMPATIBILIDAD CON CITAS ANTERIORES
+            // =============================================
+            //
+            // Se conserva la consulta original
+            // del CU-06 para registros sin precio.
+            //
+            // =============================================
+
+            SucursalEspecialidad configuracion =
+                    sucursalEspecialidadRepository
+                            .findBySucursal_IdAndEspecialidad_IdAndActivoTrue(
+
+                                    cita.getSucursal().getId(),
+
+                                    cita.getEspecialidad().getId()
+                            )
+                            .orElse(null);
+
+            if (configuracion == null
+                    || configuracion.getPrecioConsulta() == null
+                    || configuracion.getPrecioConsulta()
+                    .compareTo(BigDecimal.ZERO) <= 0) {
+
+                return ResultadoBusquedaCaja.error(
+                        "No fue posible determinar el monto de la consulta."
+                );
+            }
+            montoConsulta =
+                    configuracion.getPrecioConsulta();
         }
+
+
 
 
         DetalleCobroCaja detalle =
@@ -446,8 +485,7 @@ public class CobroCajaService {
                                 cita.getFechaHoraCita()
                         ),
 
-                        configuracion
-                                .getPrecioConsulta(),
+                        montoConsulta,
 
                         cita.getEstadoCita()
                                 .getNombre()

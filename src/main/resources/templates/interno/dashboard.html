@@ -264,6 +264,78 @@
             </div>
 
 
+
+            <!-- =================================================
+                 CU-14 - ADMINISTRADOR
+                 CONTROL DE CATÁLOGOS DEL SISTEMA
+                 ================================================= -->
+            <!--
+                 Módulo administrativo para acceder
+                 al mantenimiento de los 9 catálogos.
+
+                 SEGURIDAD:
+                 - Visible únicamente al Administrador.
+                 - La ruta /admin/catalogos está protegida
+                   mediante Spring Security.
+                 - No modifica los módulos existentes.
+                 ================================================= -->
+
+            <div sec:authorize="hasRole('ADMINISTRADOR')">
+
+                <div class="card santos-modulo h-100">
+
+                    <div class="card-body p-4 d-flex flex-column">
+
+                        <!-- ICONO DEL MÓDULO -->
+
+                        <div class="santos-modulo-icono
+                        bg-info-subtle
+                        text-info-emphasis">
+
+                            <i class="bi bi-collection-fill"
+                               aria-hidden="true"></i>
+
+                        </div>
+
+                        <!-- TÍTULO -->
+
+                        <h3 class="h5 fw-bold">
+
+                            Control de Catálogos
+
+                        </h3>
+
+                        <!-- DESCRIPCIÓN -->
+
+                        <p class="text-secondary">
+
+                            Administre los catálogos generales
+                            del sistema clínico, incluyendo
+                            sucursales, especialidades,
+                            medicamentos, laboratorios
+                            y las demás configuraciones
+                            administrativas disponibles.
+
+                        </p>
+
+                        <!-- ACCESO AL PANEL -->
+
+                        <a th:href="@{/admin/catalogos}"
+                           class="btn btn-primary mt-auto">
+
+                            <i class="bi bi-gear-fill me-2"
+                               aria-hidden="true"></i>
+
+                            Administrar Catálogos
+
+                        </a>
+
+                    </div>
+
+                </div>
+
+            </div>
+
             <!-- =================================================
                  CU-05
                  RECEPCIONISTA
