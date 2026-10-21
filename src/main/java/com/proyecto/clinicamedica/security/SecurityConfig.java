@@ -430,6 +430,32 @@ public class SecurityConfig {
 
 
 
+                                // =====================================================
+// CU-15 - BITÁCORA DE MOVIMIENTOS DE INVENTARIO
+// =====================================================
+//
+// Acceso autorizado:
+// - FARMACEUTICO
+// - ADMINISTRADOR
+//
+// Los ajustes de inventario requieren validación
+// adicional del rol ADMINISTRADOR en el backend.
+//
+// Esta regla debe permanecer ANTES de /interno/**.
+//
+// No modifica la seguridad del CU-11.
+// =====================================================
+
+                                .requestMatchers(
+                                        "/interno/bitacora-inventario",
+                                        "/interno/bitacora-inventario/**"
+                                )
+
+                                .hasAnyRole(
+                                        "FARMACEUTICO",
+                                        "ADMINISTRADOR"
+                                )
+
                                 // =========================
                                 // PORTAL INTERNO GENERAL
                                 // =========================

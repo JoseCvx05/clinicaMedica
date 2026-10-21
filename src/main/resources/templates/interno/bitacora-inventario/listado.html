@@ -1,0 +1,821 @@
+
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>Bitácora de Inventario | SANTOS</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+          rel="stylesheet">
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"
+          rel="stylesheet">
+
+    <style>
+
+        body {
+            background: #f1f5f9;
+            font-family: Arial, sans-serif;
+            color: #1e293b;
+        }
+
+        .encabezado {
+            background: #123659;
+            color: white;
+            padding: 25px;
+            border-radius: 12px;
+        }
+
+        .tarjeta {
+            background: white;
+            border-radius: 12px;
+            padding: 22px;
+            box-shadow: 0 3px 12px rgba(0,0,0,0.06);
+        }
+
+        .table thead th {
+            background: #123659;
+            color: white;
+            font-size: 13px;
+            white-space: nowrap;
+            vertical-align: middle;
+        }
+
+        .table tbody td {
+            vertical-align: middle;
+            font-size: 13px;
+        }
+
+        .table-responsive {
+            border-radius: 8px;
+        }
+
+        .form-label {
+            font-weight: 600;
+            font-size: 13px;
+        }
+
+        .badge {
+            font-size: 12px;
+        }
+
+        .acciones {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 6px;
+            min-width: 190px;
+        }
+
+        .acciones form {
+            margin: 0;
+        }
+
+        .acciones .btn {
+            white-space: nowrap;
+        }
+
+        .fila-inactiva {
+            background: #f8fafc;
+        }
+
+        .fila-inactiva td {
+            color: #64748b;
+        }
+
+        .encabezado-acciones {
+            min-width: 190px;
+        }
+
+    </style>
+
+</head>
+
+<body>
+
+<div class="container-fluid py-4 px-4">
+
+    <!-- ============================================= -->
+    <!-- ENCABEZADO -->
+    <!-- ============================================= -->
+
+    <div class="encabezado mb-4">
+
+        <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+
+            <div>
+
+                <h3 class="mb-1">
+
+                    <i class="bi bi-journal-text"></i>
+
+                    Bitácora de Movimientos de Inventario
+
+                </h3>
+
+                <p class="mb-0">
+                    SANTOS — Clínica Médica
+                </p>
+
+            </div>
+
+            <a th:href="@{/interno/dashboard}"
+               class="btn btn-light">
+
+                <i class="bi bi-arrow-left"></i>
+
+                Volver al Dashboard
+
+            </a>
+
+        </div>
+
+    </div>
+
+    <!-- ============================================= -->
+    <!-- MENSAJES -->
+    <!-- ============================================= -->
+
+    <div th:if="${errorBusqueda != null}"
+         class="alert alert-danger"
+         role="alert"
+         th:text="${errorBusqueda}">
+    </div>
+
+    <div th:if="${mensajeError != null}"
+         class="alert alert-danger"
+         role="alert"
+         th:text="${mensajeError}">
+    </div>
+
+    <div th:if="${mensajeExito != null}"
+         class="alert alert-success"
+         role="status">
+
+        <i class="bi bi-check-circle-fill"></i>
+
+        <span th:text="${mensajeExito}"></span>
+
+    </div>
+
+    <!-- ============================================= -->
+    <!-- FA05 - ALERTA DESPUÉS DEL REGISTRO -->
+    <!-- ============================================= -->
+
+    <div th:if="${alertaStockMinimo != null}"
+         class="alert alert-warning"
+         role="alert">
+
+        <i class="bi bi-exclamation-triangle-fill"></i>
+
+        <span th:text="${alertaStockMinimo}"></span>
+
+    </div>
+
+    <!-- ============================================= -->
+    <!-- FILTROS DE BÚSQUEDA -->
+    <!-- ============================================= -->
+
+    <div class="tarjeta mb-4">
+
+        <h5 class="mb-3">
+
+            <i class="bi bi-funnel"></i>
+
+            Filtros de búsqueda
+
+        </h5>
+
+        <form th:action="@{/interno/bitacora-inventario}"
+              method="get">
+
+            <div class="row g-3">
+
+                <!-- TIPO -->
+
+                <div class="col-md-3">
+
+                    <label for="codigoTipo"
+                           class="form-label">
+
+                        Tipo de Movimiento
+
+                    </label>
+
+                    <select id="codigoTipo"
+                            name="codigoTipo"
+                            class="form-select">
+
+                        <option value="">
+                            Todos los tipos
+                        </option>
+
+                        <option th:each="tipo : ${tiposMovimiento}"
+                                th:value="${tipo.codigo}"
+                                th:text="${tipo.nombre}"
+                                th:selected="${codigoTipo != null and codigoTipo == tipo.codigo}">
+                        </option>
+
+                    </select>
+
+                </div>
+
+                <!-- MEDICAMENTO -->
+
+                <div class="col-md-3">
+
+                    <label for="idMedicamento"
+                           class="form-label">
+
+                        Medicamento
+
+                    </label>
+
+
+                    <select id="idMedicamento"
+                            name="idMedicamento"
+                            class="form-select">
+
+                        <option value="">
+                            Todos los medicamentos
+                        </option>
+
+                        <option th:each="medicamento : ${medicamentosFiltro}"
+                                th:value="${medicamento.id}"
+                                th:text="${medicamento.nombre}"
+                                th:selected="${idMedicamento != null
+                and idMedicamento == medicamento.id}">
+                        </option>
+
+                    </select>
+
+
+                </div>
+
+                <!-- SUCURSAL -->
+
+                <div class="col-md-3">
+
+                    <label for="idSucursal"
+                           class="form-label">
+
+                        Sucursal
+
+                    </label>
+
+
+                    <select id="idSucursal"
+                            name="idSucursal"
+                            class="form-select">
+
+                        <option value="">
+                            Todas las sucursales
+                        </option>
+
+                        <option th:each="sucursal : ${sucursalesFiltro}"
+                                th:value="${sucursal.id}"
+                                th:text="${sucursal.nombre}"
+                                th:selected="${idSucursal != null
+                and idSucursal == sucursal.id}">
+                        </option>
+
+                    </select>
+
+
+                </div>
+
+                <!-- REFERENCIA -->
+
+                <div class="col-md-3">
+
+                    <label for="referencia"
+                           class="form-label">
+
+                        Número de Referencia
+
+                    </label>
+
+                    <input id="referencia"
+                           type="text"
+                           name="referencia"
+                           maxlength="50"
+                           class="form-control"
+                           placeholder="Factura, venta, reclamo..."
+                           th:value="${referencia}">
+
+                </div>
+
+                <!-- USUARIO -->
+
+                <div class="col-md-4">
+
+                    <label for="idUsuario"
+                           class="form-label">
+
+                        Usuario Responsable
+
+                    </label>
+
+
+                    <select id="idUsuario"
+                            name="idUsuario"
+                            class="form-select">
+
+                        <option value="">
+                            Todos los usuarios
+                        </option>
+
+                        <option th:each="usuario : ${usuariosFiltro}"
+                                th:value="${usuario.id}"
+                                th:text="${usuario.nombreUsuario}"
+                                th:selected="${idUsuario != null
+                and idUsuario == usuario.id}">
+                        </option>
+
+                    </select>
+
+
+                </div>
+
+                <!-- FECHA INICIAL -->
+
+                <div class="col-md-4">
+
+                    <label for="fechaInicio"
+                           class="form-label">
+
+                        Fecha Inicial
+
+                    </label>
+
+                    <input id="fechaInicio"
+                           type="date"
+                           name="fechaInicio"
+                           class="form-control"
+                           th:value="${fechaInicio}">
+
+                </div>
+
+                <!-- FECHA FINAL -->
+
+                <div class="col-md-4">
+
+                    <label for="fechaFin"
+                           class="form-label">
+
+                        Fecha Final
+
+                    </label>
+
+                    <input id="fechaFin"
+                           type="date"
+                           name="fechaFin"
+                           class="form-control"
+                           th:value="${fechaFin}">
+
+                </div>
+
+            </div>
+
+            <!-- ========================================= -->
+            <!-- BOTONES DE BÚSQUEDA -->
+            <!-- ========================================= -->
+
+            <div class="d-flex gap-2 mt-4 flex-wrap">
+
+                <button type="submit"
+                        class="btn btn-primary">
+
+                    <i class="bi bi-search"></i>
+
+                    Buscar
+
+                </button>
+
+                <a th:href="@{/interno/bitacora-inventario}"
+                   class="btn btn-outline-secondary">
+
+                    <i class="bi bi-arrow-clockwise"></i>
+
+                    Limpiar filtros
+
+                </a>
+
+            </div>
+
+        </form>
+
+    </div>
+
+    <!-- ============================================= -->
+    <!-- LISTADO DE MOVIMIENTOS -->
+    <!-- ============================================= -->
+
+    <div class="tarjeta">
+
+        <!-- ========================================= -->
+        <!-- TÍTULO Y NUEVO MOVIMIENTO -->
+        <!-- ========================================= -->
+
+        <div class="d-flex justify-content-between align-items-center flex-wrap gap-3 mb-3">
+
+            <div>
+
+                <h5 class="mb-1">
+
+                    <i class="bi bi-list-check"></i>
+
+                    Historial de Movimientos
+
+                </h5>
+
+                <span class="badge bg-primary"
+                      th:text="|Total: ${totalRegistros}|">
+
+                    Total: 0
+
+                </span>
+
+            </div>
+
+            <!-- NUEVO MOVIMIENTO -->
+
+            <a th:href="@{/interno/bitacora-inventario/nuevo}"
+               class="btn btn-success">
+
+                <i class="bi bi-plus-circle"></i>
+
+                Nuevo Movimiento
+
+            </a>
+
+        </div>
+
+        <!-- ========================================= -->
+        <!-- TABLA -->
+        <!-- ========================================= -->
+
+        <div class="table-responsive">
+
+            <table class="table table-bordered table-hover">
+
+                <thead>
+
+                <tr>
+
+                    <th>Tipo</th>
+
+                    <th>Medicamento</th>
+
+                    <th>Sucursal</th>
+
+                    <th>Cantidad</th>
+
+                    <th>Stock Anterior</th>
+
+                    <th>Stock Nuevo</th>
+
+                    <th>Costo</th>
+
+                    <th>Referencia</th>
+
+                    <th>Usuario</th>
+
+                    <th>Fecha</th>
+
+                    <th>Estado</th>
+
+                    <th class="encabezado-acciones">
+                        Acciones
+                    </th>
+
+                </tr>
+
+                </thead>
+
+                <tbody>
+
+                <!-- ===================================== -->
+                <!-- FLUJO NORMAL - MOVIMIENTOS -->
+                <!-- ===================================== -->
+
+                <tr th:each="movimiento : ${movimientos}"
+                    th:classappend="${movimiento.activo == false} ? 'fila-inactiva' : ''">
+
+                    <!-- TIPO -->
+
+                    <td>
+
+                        <span class="badge bg-primary"
+                              th:text="${movimiento.tipo}">
+                        </span>
+
+                    </td>
+
+                    <!-- MEDICAMENTO -->
+
+                    <td th:text="${movimiento.medicamento}">
+                    </td>
+
+                    <!-- SUCURSAL -->
+
+                    <td th:text="${movimiento.sucursal}">
+                    </td>
+
+                    <!-- CANTIDAD -->
+
+                    <td th:text="${movimiento.cantidad}">
+                    </td>
+
+                    <!-- STOCK ANTERIOR -->
+
+                    <td th:text="${movimiento.stockAnterior}">
+                    </td>
+
+                    <!-- STOCK NUEVO -->
+
+                    <td th:text="${movimiento.stockNuevo}">
+                    </td>
+
+                    <!-- COSTO -->
+
+                    <td th:text="${movimiento.costoUnitario != null
+                        ? 'Q ' + movimiento.costoUnitario
+                        : '—'}">
+                    </td>
+
+                    <!-- REFERENCIA -->
+
+                    <td th:text="${movimiento.referencia != null
+                        ? movimiento.referencia
+                        : '—'}">
+                    </td>
+
+                    <!-- USUARIO -->
+
+                    <td th:text="${movimiento.usuarioResponsable}">
+                    </td>
+
+
+                    <!-- FECHA - HORA OFICIAL DE GUATEMALA -->
+
+                    <td th:text="${movimiento.fechaHora != null
+    ? #temporals.format(
+        movimiento.fechaHora,
+        'dd/MM/yyyy HH:mm',
+        'America/Guatemala'
+      )
+    : '—'}">
+                    </td>
+
+
+                    <!-- ================================= -->
+                    <!-- ESTADO DEL MOVIMIENTO -->
+                    <!-- ================================= -->
+
+                    <td>
+
+                        <span th:if="${movimiento.activo == true}"
+                              class="badge bg-success">
+
+                            <i class="bi bi-check-circle"></i>
+
+                            Activo
+
+                        </span>
+
+                        <span th:if="${movimiento.activo == false}"
+                              class="badge bg-secondary">
+
+                            <i class="bi bi-x-circle"></i>
+
+                            Inactivo
+
+                        </span>
+
+                    </td>
+
+                    <!-- ================================= -->
+                    <!-- ACCIONES -->
+                    <!-- ================================= -->
+
+                    <td>
+
+                        <div class="acciones">
+
+                            <!-- ========================= -->
+                            <!-- VER DETALLE -->
+                            <!-- ========================= -->
+
+                            <a th:href="@{/interno/bitacora-inventario/detalle/{id}
+                                (id=${movimiento.idMovimiento})}"
+                               class="btn btn-sm btn-outline-primary">
+
+                                <i class="bi bi-eye"></i>
+
+                                Ver
+
+                            </a>
+
+                            <!-- ========================= -->
+                            <!-- DESACTIVAR -->
+                            <!-- ========================= -->
+                            <!--
+                                Solo aparece cuando
+                                el movimiento está activo.
+
+                                No cambia el stock.
+                                No elimina el registro.
+
+                                Se realiza mediante POST.
+                            -->
+
+                            <form th:if="${movimiento.activo == true}"
+                                  th:action="@{/interno/bitacora-inventario/estado/{id}
+                                      (id=${movimiento.idMovimiento})}"
+                                  method="post"
+                                  onsubmit="return confirm('¿Desea desactivar este movimiento? El registro permanecerá en el historial y las existencias no cambiarán.');">
+
+                                <!-- CSRF -->
+
+                                <input th:if="${_csrf != null}"
+                                       type="hidden"
+                                       th:name="${_csrf.parameterName}"
+                                       th:value="${_csrf.token}">
+
+                                <!-- ESTADO SOLICITADO -->
+
+                                <input type="hidden"
+                                       name="activar"
+                                       value="false">
+
+                                <button type="submit"
+                                        class="btn btn-sm btn-outline-warning">
+
+                                    <i class="bi bi-x-circle"></i>
+
+                                    Desactivar
+
+                                </button>
+
+                            </form>
+
+                            <!-- ========================= -->
+                            <!-- ACTIVAR -->
+                            <!-- ========================= -->
+                            <!--
+                                Solo aparece cuando
+                                el movimiento está inactivo.
+
+                                No cambia el stock.
+                                No crea otro movimiento.
+                            -->
+
+                            <form th:if="${movimiento.activo == false}"
+                                  th:action="@{/interno/bitacora-inventario/estado/{id}
+                                      (id=${movimiento.idMovimiento})}"
+                                  method="post"
+                                  onsubmit="return confirm('¿Desea activar nuevamente este movimiento? Las existencias no cambiarán.');">
+
+                                <!-- CSRF -->
+
+                                <input th:if="${_csrf != null}"
+                                       type="hidden"
+                                       th:name="${_csrf.parameterName}"
+                                       th:value="${_csrf.token}">
+
+                                <!-- ESTADO SOLICITADO -->
+
+                                <input type="hidden"
+                                       name="activar"
+                                       value="true">
+
+                                <button type="submit"
+                                        class="btn btn-sm btn-outline-success">
+
+                                    <i class="bi bi-check-circle"></i>
+
+                                    Activar
+
+                                </button>
+
+                            </form>
+
+                        </div>
+
+                    </td>
+
+                </tr>
+
+                <!-- ===================================== -->
+                <!-- FA01 - SIN RESULTADOS -->
+                <!-- ===================================== -->
+
+                <tr th:if="${movimientos.isEmpty()}">
+
+                    <td colspan="12"
+                        class="text-center py-5">
+
+                        <div class="text-danger">
+
+                            <i class="bi bi-search fs-1 d-block mb-3"></i>
+
+                            <p class="fw-semibold mb-0">
+
+                                No se encontraron resultados.
+
+                            </p>
+
+                        </div>
+
+                    </td>
+
+                </tr>
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+        <!-- ========================================= -->
+        <!-- PAGINACIÓN -->
+        <!-- ========================================= -->
+
+        <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mt-3">
+
+            <span class="text-secondary">
+
+                Página
+
+                <strong th:text="${totalPaginas > 0 ? paginaActual + 1 : 0}">
+                    0
+                </strong>
+
+                de
+
+                <strong th:text="${totalPaginas}">
+                    0
+                </strong>
+
+            </span>
+
+            <div class="d-flex gap-2">
+
+                <!-- ANTERIOR -->
+
+                <a th:if="${paginaActual > 0}"
+                   th:href="@{/interno/bitacora-inventario(
+                       pagina=${paginaActual - 1},
+                       idMedicamento=${idMedicamento},
+                       idSucursal=${idSucursal},
+                       codigoTipo=${codigoTipo},
+                       referencia=${referencia},
+                       idUsuario=${idUsuario},
+                       fechaInicio=${fechaInicio},
+                       fechaFin=${fechaFin}
+                   )}"
+                   class="btn btn-outline-primary btn-sm">
+
+                    <i class="bi bi-chevron-left"></i>
+
+                    Anterior
+
+                </a>
+
+                <!-- SIGUIENTE -->
+
+                <a th:if="${paginaActual + 1 < totalPaginas}"
+                   th:href="@{/interno/bitacora-inventario(
+                       pagina=${paginaActual + 1},
+                       idMedicamento=${idMedicamento},
+                       idSucursal=${idSucursal},
+                       codigoTipo=${codigoTipo},
+                       referencia=${referencia},
+                       idUsuario=${idUsuario},
+                       fechaInicio=${fechaInicio},
+                       fechaFin=${fechaFin}
+                   )}"
+                   class="btn btn-outline-primary btn-sm">
+
+                    Siguiente
+
+                    <i class="bi bi-chevron-right"></i>
+
+                </a>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+</body>
+</html>

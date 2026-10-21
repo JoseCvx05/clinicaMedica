@@ -1,0 +1,1606 @@
+
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>Nuevo Movimiento | SANTOS</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+          rel="stylesheet">
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"
+          rel="stylesheet">
+
+    <style>
+        body {
+            background: #f1f5f9;
+            font-family: Arial, sans-serif;
+            color: #1e293b;
+        }
+
+        .encabezado {
+            background: #123659;
+            color: white;
+            padding: 25px;
+            border-radius: 12px;
+        }
+
+        .tarjeta {
+            background: white;
+            border-radius: 12px;
+            padding: 25px;
+            box-shadow: 0 3px 12px rgba(0, 0, 0, 0.06);
+            margin-bottom: 20px;
+        }
+
+        .titulo-seccion {
+            color: #123659;
+            font-weight: bold;
+            border-bottom: 1px solid #e2e8f0;
+            padding-bottom: 12px;
+            margin-bottom: 20px;
+        }
+
+        .form-label {
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .obligatorio,
+        .campo-error {
+            color: #dc3545;
+        }
+
+        .campo-error {
+            font-size: 13px;
+            margin-top: 5px;
+        }
+
+        .ayuda {
+            font-size: 12px;
+            color: #64748b;
+            margin-top: 5px;
+        }
+
+        .tarjeta-info {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 16px;
+        }
+
+        .dato-stock {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 10px;
+            padding: 20px;
+            text-align: center;
+            height: 100%;
+        }
+
+        .titulo-stock {
+            color: #64748b;
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        .valor-stock {
+            color: #123659;
+            font-size: 30px;
+            font-weight: bold;
+            margin-top: 8px;
+            overflow-wrap: anywhere;
+        }
+
+        .btn-guardar {
+            background: #123659;
+            color: white;
+            border: none;
+        }
+
+        .btn-guardar:hover {
+            background: #0b2540;
+            color: white;
+        }
+
+        .btn-guardar:disabled {
+            background: #94a3b8;
+            color: white;
+        }
+
+        .oculto {
+            display: none !important;
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="container py-4">
+
+    <!-- ============================================= -->
+    <!-- ENCABEZADO -->
+    <!-- ============================================= -->
+
+    <div class="encabezado mb-4">
+
+        <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+
+            <div>
+
+                <h3 class="mb-1">
+
+                    <i class="bi bi-plus-circle"></i>
+                    Nuevo Movimiento de Inventario
+
+                </h3>
+
+                <p class="mb-0">
+                    SANTOS — Clínica Médica
+                </p>
+
+            </div>
+
+            <a th:href="@{/interno/bitacora-inventario}"
+               class="btn btn-light">
+
+                <i class="bi bi-arrow-left"></i>
+                Volver a la Bitácora
+
+            </a>
+
+        </div>
+
+    </div>
+
+    <!-- ============================================= -->
+    <!-- ERRORES DEL BACKEND -->
+    <!-- ============================================= -->
+
+    <div th:if="${errorFormulario != null}"
+         class="alert alert-danger"
+         role="alert">
+
+        <i class="bi bi-exclamation-triangle-fill"></i>
+
+        <span th:text="${errorFormulario}"></span>
+
+    </div>
+
+    <!-- ============================================= -->
+    <!-- FORMULARIO -->
+    <!-- ============================================= -->
+
+    <form id="formularioMovimiento"
+          th:action="@{/interno/bitacora-inventario/nuevo}"
+          th:attr="data-url-previsualizar=@{/interno/bitacora-inventario/previsualizar}"
+          th:object="${formulario}"
+          method="post"
+          novalidate>
+
+        <!-- TOKEN CSRF -->
+
+        <input th:if="${_csrf != null}"
+               type="hidden"
+               th:name="${_csrf.parameterName}"
+               th:value="${_csrf.token}">
+
+        <!-- ========================================= -->
+        <!-- DATOS DEL MOVIMIENTO -->
+        <!-- ========================================= -->
+
+        <div class="tarjeta">
+
+            <h5 class="titulo-seccion">
+
+                <i class="bi bi-clipboard-data"></i>
+                Datos del Movimiento
+
+            </h5>
+
+            <div class="row g-3">
+
+                <!-- MEDICAMENTO -->
+
+                <div class="col-md-6">
+
+                    <label for="idMedicamento"
+                           class="form-label">
+
+                        Medicamento
+                        <span class="obligatorio">*</span>
+
+                    </label>
+
+                    <select id="idMedicamento"
+                            th:field="*{idMedicamento}"
+                            class="form-select">
+
+                        <option value="">
+                            Seleccione un medicamento
+                        </option>
+
+                        <option th:each="medicamento : ${medicamentos}"
+                                th:value="${medicamento.id}"
+                                th:text="${medicamento.nombre}">
+                        </option>
+
+                    </select>
+
+                    <div id="errorMedicamento"
+                         class="campo-error"></div>
+
+                </div>
+
+                <!-- SUCURSAL -->
+
+                <div class="col-md-6">
+
+                    <label for="idSucursal"
+                           class="form-label">
+
+                        Sucursal
+                        <span class="obligatorio">*</span>
+
+                    </label>
+
+                    <select id="idSucursal"
+                            th:field="*{idSucursal}"
+                            class="form-select">
+
+                        <option value="">
+                            Seleccione una sucursal
+                        </option>
+
+                        <option th:each="sucursal : ${sucursales}"
+                                th:value="${sucursal.id}"
+                                th:text="${sucursal.nombre}">
+                        </option>
+
+                    </select>
+
+                    <div id="errorSucursal"
+                         class="campo-error"></div>
+
+                    <div th:if="${sucursalRestringida != null}"
+                         class="ayuda">
+
+                        <i class="bi bi-shield-lock"></i>
+                        Solo puede registrar movimientos
+                        en su sucursal asignada.
+
+                    </div>
+
+                </div>
+
+                <!-- TIPO DE MOVIMIENTO -->
+
+                <div class="col-md-6">
+
+                    <label for="tipoMovimiento"
+                           class="form-label">
+
+                        Tipo de Movimiento
+                        <span class="obligatorio">*</span>
+
+                    </label>
+
+                    <select id="tipoMovimiento"
+                            th:field="*{tipoMovimiento}"
+                            class="form-select">
+
+                        <option value="">
+                            Seleccione un tipo
+                        </option>
+
+                        <option th:each="tipo : ${tiposPermitidos}"
+                                th:value="${tipo.codigo}"
+                                th:text="${tipo.nombre}">
+                        </option>
+
+                    </select>
+
+                    <div id="errorTipo"
+                         class="campo-error"></div>
+
+                    <div class="ayuda">
+                        El despacho de farmacia
+                        se registra automáticamente.
+                    </div>
+
+                </div>
+
+                <!-- CANTIDAD -->
+
+                <div class="col-md-6">
+
+                    <label for="cantidad"
+                           class="form-label">
+
+                        Cantidad
+                        <span class="obligatorio">*</span>
+
+                    </label>
+
+                    <input id="cantidad"
+                           type="number"
+                           th:field="*{cantidad}"
+                           class="form-control"
+                           min="1"
+                           max="2147483647"
+                           step="1"
+                           placeholder="Ingrese la cantidad">
+
+                    <div id="errorCantidad"
+                         class="campo-error"></div>
+
+                    <div class="ayuda">
+                        Solo se permiten números enteros positivos.
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <!-- ========================================= -->
+        <!-- INFORMACIÓN COMPLEMENTARIA -->
+        <!-- ========================================= -->
+
+        <div class="tarjeta">
+
+            <h5 class="titulo-seccion">
+
+                <i class="bi bi-receipt"></i>
+                Información Complementaria
+
+            </h5>
+
+            <div class="row g-3">
+
+                <!-- COSTO UNITARIO -->
+
+                <div id="contenedorCosto"
+                     class="col-md-6 oculto">
+
+                    <label for="costoUnitario"
+                           class="form-label">
+
+                        Costo Unitario (Q)
+                        <span class="obligatorio">*</span>
+
+                    </label>
+
+                    <div class="input-group">
+
+                        <span class="input-group-text">Q</span>
+
+                        <input id="costoUnitario"
+                               type="number"
+                               th:field="*{costoUnitario}"
+                               class="form-control"
+                               min="0.01"
+                               step="0.01"
+                               placeholder="0.00">
+
+                    </div>
+
+                    <div id="errorCosto"
+                         class="campo-error"></div>
+
+                    <div class="ayuda">
+                        Obligatorio para compras.
+                        Máximo dos decimales.
+                    </div>
+
+                </div>
+
+                <!-- NÚMERO DE REFERENCIA -->
+
+                <div class="col-md-6">
+
+                    <label for="numeroReferencia"
+                           id="etiquetaReferencia"
+                           class="form-label">
+
+                        Número de Referencia
+
+                    </label>
+
+                    <input id="numeroReferencia"
+                           type="text"
+                           th:field="*{numeroReferencia}"
+                           class="form-control"
+                           maxlength="50"
+                           placeholder="Ingrese la referencia, si aplica">
+
+                    <div id="errorReferencia"
+                         class="campo-error"></div>
+
+                    <div class="ayuda">
+                        Campo opcional. Máximo 50 caracteres.
+                    </div>
+
+                </div>
+
+                <!-- MOTIVO / NOTAS -->
+
+                <div id="contenedorMotivo"
+                     class="col-12">
+
+                    <label for="motivoNotas"
+                           class="form-label">
+
+                        Motivo / Notas
+
+                        <span id="asteriscoMotivo"
+                              class="obligatorio oculto">*</span>
+
+                    </label>
+
+                    <textarea id="motivoNotas"
+                              th:field="*{motivoNotas}"
+                              class="form-control"
+                              rows="4"
+                              maxlength="500"
+                              placeholder="Describa el motivo del movimiento"></textarea>
+
+                    <div id="errorMotivo"
+                         class="campo-error"></div>
+
+                    <div id="ayudaMotivo"
+                         class="ayuda">
+                        Ingrese observaciones si corresponde.
+                    </div>
+
+                    <div class="text-end ayuda">
+
+                        <span id="contadorMotivo">0</span>
+                        / 500 caracteres
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <!-- ========================================= -->
+        <!-- FA05 - CONSULTA DE EXISTENCIAS -->
+        <!-- ========================================= -->
+
+        <div class="tarjeta">
+
+            <h5 class="titulo-seccion">
+
+                <i class="bi bi-box-seam"></i>
+                Existencias del Medicamento
+
+            </h5>
+
+            <div class="row g-3">
+
+                <!-- STOCK ACTUAL -->
+
+                <div class="col-md-4">
+
+                    <div class="dato-stock">
+
+                        <div class="titulo-stock">
+                            Stock Actual
+                        </div>
+
+                        <div id="stockActual"
+                             class="valor-stock">
+                            —
+                        </div>
+
+                    </div>
+
+                </div>
+
+                <!-- STOCK MÍNIMO -->
+
+                <div class="col-md-4">
+
+                    <div class="dato-stock">
+
+                        <div class="titulo-stock">
+                            Stock Mínimo
+                        </div>
+
+                        <div id="stockMinimo"
+                             class="valor-stock">
+                            —
+                        </div>
+
+                    </div>
+
+                </div>
+
+                <!-- STOCK PROYECTADO -->
+
+                <div class="col-md-4">
+
+                    <div class="dato-stock">
+
+                        <div class="titulo-stock">
+                            Stock Proyectado
+                        </div>
+
+                        <div id="stockProyectado"
+                             class="valor-stock">
+                            —
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+            <!-- ESTADO DE CONSULTA -->
+
+            <div id="estadoConsultaStock"
+                 class="alert alert-info mt-3 mb-0"
+                 role="status"
+                 aria-live="polite">
+
+                <i class="bi bi-info-circle"></i>
+
+                Seleccione el medicamento y la sucursal
+                para consultar las existencias.
+
+            </div>
+
+            <!-- FA02 - STOCK INSUFICIENTE -->
+
+            <div id="alertaStockInsuficiente"
+                 class="alert alert-danger mt-3 mb-0 oculto"
+                 role="alert">
+
+                <i class="bi bi-exclamation-triangle-fill"></i>
+
+                <span id="mensajeStockInsuficiente"></span>
+
+            </div>
+
+            <!-- FA05 - STOCK BAJO -->
+
+            <div id="alertaStockBajo"
+                 class="alert alert-warning mt-3 mb-0 oculto"
+                 role="alert">
+
+                <i class="bi bi-exclamation-triangle-fill"></i>
+
+                <span id="mensajeStockBajo"></span>
+
+            </div>
+
+            <!-- ERROR AL CONSULTAR -->
+
+            <div id="alertaErrorConsulta"
+                 class="alert alert-danger mt-3 mb-0 oculto"
+                 role="alert">
+
+                <i class="bi bi-exclamation-circle"></i>
+
+                <span id="mensajeErrorConsulta"></span>
+
+            </div>
+
+        </div>
+
+        <!-- ========================================= -->
+        <!-- RESUMEN DEL MOVIMIENTO -->
+        <!-- ========================================= -->
+
+        <div class="tarjeta">
+
+            <h5 class="titulo-seccion">
+
+                <i class="bi bi-info-circle"></i>
+                Resumen del Movimiento
+
+            </h5>
+
+            <div class="tarjeta-info">
+
+                <div class="row g-3">
+
+                    <div class="col-md-4">
+
+                        <div class="form-label">
+                            Operación
+                        </div>
+
+                        <span id="resumenOperacion"
+                              class="badge bg-secondary">
+                            Sin seleccionar
+                        </span>
+
+                    </div>
+
+                    <div class="col-md-4">
+
+                        <div class="form-label">
+                            Tipo
+                        </div>
+
+                        <div id="resumenTipo">—</div>
+
+                    </div>
+
+                    <div class="col-md-4">
+
+                        <div class="form-label">
+                            Cantidad solicitada
+                        </div>
+
+                        <div id="resumenCantidad">—</div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+            <div class="alert alert-info mt-3 mb-0">
+
+                <i class="bi bi-shield-check"></i>
+
+                La información del stock es preventiva.
+                Al guardar, el sistema volverá a validar
+                las existencias y los permisos.
+
+            </div>
+
+        </div>
+
+        <!-- ========================================= -->
+        <!-- BOTONES -->
+        <!-- ========================================= -->
+
+        <div class="d-flex justify-content-end gap-2 mb-4">
+
+            <a th:href="@{/interno/bitacora-inventario}"
+               class="btn btn-outline-secondary">
+
+                <i class="bi bi-x-circle"></i>
+                Cancelar
+
+            </a>
+
+            <button id="botonGuardar"
+                    type="submit"
+                    class="btn btn-guardar">
+
+                <i class="bi bi-check-circle"></i>
+                Guardar Movimiento
+
+            </button>
+
+        </div>
+
+    </form>
+
+</div>
+
+<!-- ============================================= -->
+<!-- VALIDACIONES Y PREVISUALIZACIÓN -->
+<!-- ============================================= -->
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+
+        // =================================================
+        // ELEMENTOS DEL FORMULARIO
+        // =================================================
+
+        const formulario =
+            document.getElementById("formularioMovimiento");
+
+        const medicamento =
+            document.getElementById("idMedicamento");
+
+        const sucursal =
+            document.getElementById("idSucursal");
+
+        const tipo =
+            document.getElementById("tipoMovimiento");
+
+        const cantidad =
+            document.getElementById("cantidad");
+
+        const costo =
+            document.getElementById("costoUnitario");
+
+        const referencia =
+            document.getElementById("numeroReferencia");
+
+        const motivo =
+            document.getElementById("motivoNotas");
+
+        const botonGuardar =
+            document.getElementById("botonGuardar");
+
+        const urlPrevisualizar =
+            formulario.dataset.urlPrevisualizar;
+
+        // =================================================
+        // ELEMENTOS DINÁMICOS
+        // =================================================
+
+        const contenedorCosto =
+            document.getElementById("contenedorCosto");
+
+        const contenedorMotivo =
+            document.getElementById("contenedorMotivo");
+
+        const etiquetaReferencia =
+            document.getElementById("etiquetaReferencia");
+
+        const asteriscoMotivo =
+            document.getElementById("asteriscoMotivo");
+
+        const ayudaMotivo =
+            document.getElementById("ayudaMotivo");
+
+        const contadorMotivo =
+            document.getElementById("contadorMotivo");
+
+        const resumenOperacion =
+            document.getElementById("resumenOperacion");
+
+        const resumenTipo =
+            document.getElementById("resumenTipo");
+
+        const resumenCantidad =
+            document.getElementById("resumenCantidad");
+
+        // =================================================
+        // ELEMENTOS DE STOCK
+        // =================================================
+
+        const stockActual =
+            document.getElementById("stockActual");
+
+        const stockMinimo =
+            document.getElementById("stockMinimo");
+
+        const stockProyectado =
+            document.getElementById("stockProyectado");
+
+        const estadoConsulta =
+            document.getElementById("estadoConsultaStock");
+
+        const alertaInsuficiente =
+            document.getElementById("alertaStockInsuficiente");
+
+        const mensajeInsuficiente =
+            document.getElementById("mensajeStockInsuficiente");
+
+        const alertaBajo =
+            document.getElementById("alertaStockBajo");
+
+        const mensajeBajo =
+            document.getElementById("mensajeStockBajo");
+
+        const alertaError =
+            document.getElementById("alertaErrorConsulta");
+
+        const mensajeError =
+            document.getElementById("mensajeErrorConsulta");
+
+        // =================================================
+        // ESTADO DE CONSULTAS
+        // =================================================
+
+        let numeroConsulta = 0;
+
+        let temporizadorConsulta = null;
+
+        let previsualizacion = null;
+
+        let clavePrevisualizacion = null;
+
+        let consultando = false;
+
+        // =================================================
+        // TIPOS DE MOVIMIENTO
+        // =================================================
+
+        function esSalida() {
+            return ["2", "3", "5"].includes(tipo.value);
+        }
+
+        function requiereMotivo() {
+            return ["1", "3", "4", "5"].includes(tipo.value);
+        }
+
+        // =================================================
+        // ERRORES DE VALIDACIÓN
+        // =================================================
+
+        function mostrarError(campo, idError, mensaje) {
+
+            document.getElementById(idError).textContent =
+                mensaje;
+
+            campo.classList.toggle(
+                "is-invalid",
+                mensaje !== ""
+            );
+        }
+
+        // =================================================
+        // LIMPIAR ALERTAS DE STOCK
+        // =================================================
+
+        function limpiarAlertasStock() {
+
+            alertaInsuficiente.classList.add("oculto");
+
+            alertaBajo.classList.add("oculto");
+
+            alertaError.classList.add("oculto");
+
+            mensajeInsuficiente.textContent = "";
+
+            mensajeBajo.textContent = "";
+
+            mensajeError.textContent = "";
+        }
+
+        // =================================================
+        // MOSTRAR ESTADO DE CONSULTA
+        // =================================================
+
+        function mostrarEstado(texto) {
+
+            estadoConsulta.textContent = texto;
+        }
+
+        // =================================================
+        // LIMPIAR VALORES DE STOCK
+        // =================================================
+
+        function limpiarStock() {
+
+            stockActual.textContent = "—";
+
+            stockMinimo.textContent = "—";
+
+            stockProyectado.textContent = "—";
+
+            stockProyectado.classList.remove(
+                "text-danger",
+                "text-warning"
+            );
+
+            limpiarAlertasStock();
+        }
+
+        // =================================================
+        // FIRMA DE LOS DATOS ACTUALES
+        // =================================================
+        //
+        // Evita aceptar respuestas de consultas antiguas
+        // si el usuario cambia rápidamente los campos.
+        //
+        // =================================================
+
+        function obtenerClave() {
+
+            return [
+                medicamento.value,
+                sucursal.value,
+                tipo.value,
+                cantidad.value.trim()
+            ].join("|");
+        }
+
+        // =================================================
+        // VALIDAR CANTIDAD PARA LA CONSULTA
+        // =================================================
+
+        function cantidadValida() {
+
+            const texto = cantidad.value.trim();
+
+            const numero = Number(texto);
+
+            return /^[1-9]\d*$/.test(texto)
+                && Number.isInteger(numero)
+                && numero <= 2147483647;
+        }
+
+        // =================================================
+        // ACTUALIZAR RESUMEN
+        // =================================================
+
+        function actualizarCantidad() {
+
+            resumenCantidad.textContent =
+                cantidad.value.trim() !== ""
+                    ? cantidad.value
+                    : "—";
+        }
+
+        function actualizarContador() {
+
+            contadorMotivo.textContent =
+                motivo.value.length;
+        }
+
+        // =================================================
+        // CAMPOS DINÁMICOS
+        // =================================================
+
+        function actualizarFormulario() {
+
+            const codigo = tipo.value;
+
+            // COSTO: SOLO COMPRA
+
+            const esCompra = codigo === "0";
+
+            contenedorCosto.classList.toggle(
+                "oculto",
+                !esCompra
+            );
+
+            costo.disabled = !esCompra;
+
+            costo.required = esCompra;
+
+            if (!esCompra) {
+
+                costo.value = "";
+
+                mostrarError(
+                    costo,
+                    "errorCosto",
+                    ""
+                );
+            }
+
+            // MOTIVO: OCULTAR PARA VENTA
+
+            const esVenta = codigo === "2";
+
+            contenedorMotivo.classList.toggle(
+                "oculto",
+                esVenta
+            );
+
+            motivo.disabled = esVenta;
+
+            motivo.required = requiereMotivo();
+
+            asteriscoMotivo.classList.toggle(
+                "oculto",
+                !requiereMotivo()
+            );
+
+            if (esVenta) {
+
+                motivo.value = "";
+
+                mostrarError(
+                    motivo,
+                    "errorMotivo",
+                    ""
+                );
+            }
+
+            ayudaMotivo.textContent =
+                requiereMotivo()
+                    ? "Obligatorio: entre 10 y 500 caracteres."
+                    : "Ingrese observaciones si corresponde.";
+
+            // REFERENCIA DINÁMICA
+
+            switch (codigo) {
+
+                case "0":
+                    etiquetaReferencia.textContent =
+                        "Número de Factura";
+                    break;
+
+                case "1":
+                    etiquetaReferencia.textContent =
+                        "Número de Devolución";
+                    break;
+
+                case "2":
+                    etiquetaReferencia.textContent =
+                        "Número de Venta";
+                    break;
+
+                case "3":
+                    etiquetaReferencia.textContent =
+                        "Número de Reclamo";
+                    break;
+
+                default:
+                    etiquetaReferencia.textContent =
+                        "Número de Referencia";
+            }
+
+            // RESUMEN
+
+            if (codigo === "") {
+
+                resumenOperacion.textContent =
+                    "Sin seleccionar";
+
+                resumenOperacion.className =
+                    "badge bg-secondary";
+
+                resumenTipo.textContent = "—";
+
+            } else {
+
+                resumenOperacion.textContent =
+                    esSalida() ? "Salida" : "Entrada";
+
+                resumenOperacion.className =
+                    esSalida()
+                        ? "badge bg-warning text-dark"
+                        : "badge bg-success";
+
+                resumenTipo.textContent =
+                    tipo.options[tipo.selectedIndex].text;
+            }
+
+            actualizarCantidad();
+
+            actualizarContador();
+
+            programarConsultaStock();
+        }
+
+        // =================================================
+        // CONSULTAR STOCK REAL DEL BACKEND
+        // =================================================
+
+        async function consultarStock(
+            identificador,
+            claveEsperada
+        ) {
+
+            const parametros = new URLSearchParams();
+
+            parametros.set(
+                "idMedicamento",
+                medicamento.value
+            );
+
+            parametros.set(
+                "idSucursal",
+                sucursal.value
+            );
+
+            if (tipo.value !== "") {
+
+                parametros.set(
+                    "codigoTipo",
+                    tipo.value
+                );
+            }
+
+            if (tipo.value !== "" && cantidadValida()) {
+
+                parametros.set(
+                    "cantidad",
+                    cantidad.value.trim()
+                );
+            }
+
+            try {
+
+                const respuesta = await fetch(
+                    urlPrevisualizar + "?" + parametros.toString(),
+                    {
+                        method: "GET",
+                        credentials: "same-origin",
+                        cache: "no-store",
+                        headers: {
+                            "Accept": "application/json"
+                        }
+                    }
+                );
+
+                const contenido = respuesta.headers.get(
+                    "content-type"
+                ) || "";
+
+                if (!contenido.includes("application/json")) {
+
+                    throw new Error(
+                        "No se recibió una respuesta válida del servidor."
+                    );
+                }
+
+                const datos = await respuesta.json();
+
+                // IGNORAR RESPUESTAS OBSOLETAS
+
+                if (
+                    identificador !== numeroConsulta
+                    || claveEsperada !== obtenerClave()
+                ) {
+                    return;
+                }
+
+                consultando = false;
+
+                // ERROR DEL SERVICE
+
+                if (!respuesta.ok) {
+
+                    previsualizacion = null;
+
+                    clavePrevisualizacion = null;
+
+                    mostrarEstado(
+                        "No fue posible consultar las existencias."
+                    );
+
+                    alertaError.classList.remove("oculto");
+
+                    mensajeError.textContent =
+                        datos.mensaje ||
+                        "No fue posible consultar el inventario.";
+
+                    return;
+                }
+
+                // DATOS VÁLIDOS
+
+                previsualizacion = datos;
+
+                clavePrevisualizacion = claveEsperada;
+
+                stockActual.textContent =
+                    datos.stockActual ?? "—";
+
+                stockMinimo.textContent =
+                    datos.stockMinimo ?? "—";
+
+                stockProyectado.textContent =
+                    datos.stockProyectado ?? "—";
+
+                limpiarAlertasStock();
+
+                // =========================================
+                // FA02 - STOCK INSUFICIENTE
+                // =========================================
+
+                if (datos.stockInsuficiente) {
+
+                    stockProyectado.classList.add(
+                        "text-danger"
+                    );
+
+                    alertaInsuficiente.classList.remove(
+                        "oculto"
+                    );
+
+                    mensajeInsuficiente.textContent =
+                        datos.mensajeStockInsuficiente || "";
+
+                } else {
+
+                    stockProyectado.classList.remove(
+                        "text-danger"
+                    );
+                }
+
+                // =========================================
+                // FA05 - STOCK BAJO
+                // =========================================
+
+                if (datos.alertaStockMinimo) {
+
+                    stockProyectado.classList.add(
+                        "text-warning"
+                    );
+
+                    alertaBajo.classList.remove(
+                        "oculto"
+                    );
+
+                    mensajeBajo.textContent =
+                        datos.alertaStockMinimo;
+
+                } else {
+
+                    stockProyectado.classList.remove(
+                        "text-warning"
+                    );
+                }
+
+                // =========================================
+                // ESTADO DE LA CONSULTA
+                // =========================================
+
+                if (datos.stockProyectado === null) {
+
+                    mostrarEstado(
+                        "Existencias consultadas. Seleccione el tipo " +
+                        "e ingrese una cantidad válida para ver la proyección."
+                    );
+
+                } else {
+
+                    mostrarEstado(
+                        "Existencias consultadas. " +
+                        "El stock se validará nuevamente al guardar."
+                    );
+                }
+
+            } catch (error) {
+
+                if (
+                    identificador !== numeroConsulta
+                    || claveEsperada !== obtenerClave()
+                ) {
+                    return;
+                }
+
+                consultando = false;
+
+                previsualizacion = null;
+
+                clavePrevisualizacion = null;
+
+                mostrarEstado(
+                    "No fue posible consultar las existencias."
+                );
+
+                alertaError.classList.remove("oculto");
+
+                mensajeError.textContent =
+                    "Ocurrió un problema al consultar el stock. " +
+                    "Compruebe la conexión e intente nuevamente.";
+            }
+        }
+
+        // =================================================
+        // PROGRAMAR CONSULTA AUTOMÁTICA
+        // =================================================
+
+        function programarConsultaStock() {
+
+            numeroConsulta++;
+
+            const identificador = numeroConsulta;
+
+            clearTimeout(temporizadorConsulta);
+
+            consultando = false;
+
+            previsualizacion = null;
+
+            clavePrevisualizacion = null;
+
+            limpiarStock();
+
+            // SIN MEDICAMENTO O SUCURSAL
+
+            if (
+                medicamento.value === ""
+                || sucursal.value === ""
+            ) {
+
+                mostrarEstado(
+                    "Seleccione el medicamento y la sucursal " +
+                    "para consultar las existencias."
+                );
+
+                return;
+            }
+
+            const clave = obtenerClave();
+
+            consultando = true;
+
+            mostrarEstado(
+                "Consultando existencias en PostgreSQL..."
+            );
+
+            // PEQUEÑA ESPERA PARA EVITAR CONSULTAR
+            // EN CADA TECLA PRESIONADA
+
+            temporizadorConsulta = setTimeout(
+                function () {
+
+                    consultarStock(
+                        identificador,
+                        clave
+                    );
+
+                },
+                250
+            );
+        }
+
+        // =================================================
+        // VALIDACIÓN COMPLETA DEL FORMULARIO
+        // =================================================
+
+        function validarFormulario() {
+
+            let valido = true;
+
+            // LIMPIAR ERRORES
+
+            [
+                [medicamento, "errorMedicamento"],
+                [sucursal, "errorSucursal"],
+                [tipo, "errorTipo"],
+                [cantidad, "errorCantidad"],
+                [costo, "errorCosto"],
+                [referencia, "errorReferencia"],
+                [motivo, "errorMotivo"]
+            ].forEach(function (item) {
+
+                mostrarError(item[0], item[1], "");
+            });
+
+            // MEDICAMENTO
+
+            if (medicamento.value === "") {
+
+                mostrarError(
+                    medicamento,
+                    "errorMedicamento",
+                    "Debe seleccionar un medicamento."
+                );
+
+                valido = false;
+            }
+
+            // SUCURSAL
+
+            if (sucursal.value === "") {
+
+                mostrarError(
+                    sucursal,
+                    "errorSucursal",
+                    "Debe seleccionar una sucursal."
+                );
+
+                valido = false;
+            }
+
+            // TIPO
+
+            if (tipo.value === "") {
+
+                mostrarError(
+                    tipo,
+                    "errorTipo",
+                    "Debe seleccionar el tipo de movimiento."
+                );
+
+                valido = false;
+            }
+
+            // CANTIDAD
+
+            if (!cantidadValida()) {
+
+                mostrarError(
+                    cantidad,
+                    "errorCantidad",
+                    "La cantidad debe ser un número entero positivo."
+                );
+
+                valido = false;
+            }
+
+            // COSTO UNITARIO
+
+            if (tipo.value === "0") {
+
+                const texto = costo.value.trim();
+
+                if (texto === "") {
+
+                    mostrarError(
+                        costo,
+                        "errorCosto",
+                        "El costo unitario es obligatorio para compras"
+                    );
+
+                    valido = false;
+
+                } else if (
+                    !Number.isFinite(Number(texto))
+                    || Number(texto) <= 0
+                ) {
+
+                    mostrarError(
+                        costo,
+                        "errorCosto",
+                        "El costo unitario debe ser mayor a 0"
+                    );
+
+                    valido = false;
+
+                } else if (
+                    !/^\d{1,10}(\.\d{1,2})?$/.test(texto)
+                ) {
+
+                    mostrarError(
+                        costo,
+                        "errorCosto",
+                        "El costo unitario debe tener máximo 2 decimales"
+                    );
+
+                    valido = false;
+                }
+            }
+
+            // MOTIVO / NOTAS
+
+            if (
+                requiereMotivo()
+                && (
+                    motivo.value.trim().length < 10
+                    || motivo.value.trim().length > 500
+                )
+            ) {
+
+                mostrarError(
+                    motivo,
+                    "errorMotivo",
+                    "El motivo debe contener entre 10 y 500 caracteres."
+                );
+
+                valido = false;
+            }
+
+            // REFERENCIA
+
+            if (referencia.value.trim().length > 50) {
+
+                mostrarError(
+                    referencia,
+                    "errorReferencia",
+                    "La referencia no puede superar los 50 caracteres."
+                );
+
+                valido = false;
+            }
+
+            // =========================================
+            // VALIDACIÓN DE STOCK ANTES DE GUARDAR
+            // =========================================
+
+            if (valido) {
+
+                if (
+                    consultando
+                    || previsualizacion === null
+                    || clavePrevisualizacion !== obtenerClave()
+                    || previsualizacion.stockProyectado === null
+                ) {
+
+                    alertaError.classList.remove("oculto");
+
+                    mensajeError.textContent =
+                        "Debe esperar a que se consulten correctamente " +
+                        "las existencias antes de guardar.";
+
+                    valido = false;
+
+                } else if (
+                    previsualizacion.stockInsuficiente
+                ) {
+
+                    alertaInsuficiente.classList.remove(
+                        "oculto"
+                    );
+
+                    mensajeInsuficiente.textContent =
+                        previsualizacion.mensajeStockInsuficiente;
+
+                    valido = false;
+                }
+            }
+
+            return valido;
+        }
+
+        // =================================================
+        // EVENTOS
+        // =================================================
+
+        medicamento.addEventListener(
+            "change",
+            programarConsultaStock
+        );
+
+        sucursal.addEventListener(
+            "change",
+            programarConsultaStock
+        );
+
+        tipo.addEventListener(
+            "change",
+            actualizarFormulario
+        );
+
+        cantidad.addEventListener(
+            "input",
+            function () {
+
+                actualizarCantidad();
+
+                programarConsultaStock();
+            }
+        );
+
+        motivo.addEventListener(
+            "input",
+            actualizarContador
+        );
+
+        formulario.addEventListener(
+            "submit",
+            function (event) {
+
+                if (!validarFormulario()) {
+
+                    event.preventDefault();
+
+                    const primerError =
+                        formulario.querySelector(".is-invalid");
+
+                    if (primerError) {
+
+                        primerError.focus();
+
+                    } else {
+
+                        document.getElementById(
+                            "estadoConsultaStock"
+                        ).scrollIntoView({
+                            behavior: "smooth",
+                            block: "center"
+                        });
+                    }
+
+                    return;
+                }
+
+                // EVITAR DOBLE ENVÍO
+
+                botonGuardar.disabled = true;
+
+                botonGuardar.textContent =
+                    "Guardando movimiento...";
+            }
+        );
+
+        // =================================================
+        // CARGA INICIAL
+        // =================================================
+
+        actualizarFormulario();
+
+    });
+</script>
+
+</body>
+</html>

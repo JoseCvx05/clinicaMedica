@@ -4,10 +4,12 @@ package com.proyecto.clinicamedica.exception;
 import com.proyecto.clinicamedica.dto.ErrorResponse;
 
 import jakarta.servlet.http.HttpServletRequest;
-
+import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
+
+import org.springframework.security.access.AccessDeniedException;
 
 import org.springframework.web.HttpRequestMethodNotSupportedException;
 
@@ -28,18 +30,21 @@ import java.time.OffsetDateTime;
  *
  * Evita colocar try/catch repetidos en cada Controller.
  *
- * Actualmente maneja:
+ * Maneja:
  *
  * - Errores de Bean Validation.
  * - JSON inválido.
  * - Argumentos inválidos.
  * - Recursos no encontrados.
  * - Métodos HTTP no permitidos.
+ * - Accesos denegados por seguridad.
  * - Errores inesperados.
  *
- * Posteriormente podremos agregar excepciones específicas
- * de autenticación, autorización, recursos inexistentes,
- * duplicados, etc.
+ * CU-15:
+ *
+ * - AccessDeniedException devuelve HTTP 403.
+ * - No convierte accesos denegados en errores 500.
+ * - No expone información sensible.
  *
  * Aplica:
  *
@@ -62,6 +67,8 @@ public class GlobalExceptionHandler {
      *
      * En CU-00 captura específicamente los mensajes
      * generados por @DpiValido.
+     *
+     * =====================================================
      */
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ErrorResponse> manejarValidacion(
@@ -80,6 +87,7 @@ public class GlobalExceptionHandler {
          * Para el CU-00 tendremos únicamente el campo DPI,
          * pero este código será reutilizable en otros DTO.
          */
+
         if (!exception.getBindingResult()
                 .getFieldErrors()
                 .isEmpty()) {
@@ -118,12 +126,10 @@ public class GlobalExceptionHandler {
      * JSON INVÁLIDO
      * =====================================================
      *
-     * Ejemplo:
+     * Se ejecuta cuando el cliente envía información
+     * JSON incompleta o con formato incorrecto.
      *
-     * {
-     *    "dpi":
-     *
-     * JSON incompleto o mal formado.
+     * =====================================================
      */
     @ExceptionHandler(HttpMessageNotReadableException.class)
     public ResponseEntity<ErrorResponse> manejarJsonInvalido(
@@ -153,6 +159,8 @@ public class GlobalExceptionHandler {
      *
      * Protege contra llamadas incorrectas a los Services
      * desde otras partes de la aplicación.
+     *
+     * =====================================================
      */
     @ExceptionHandler(IllegalArgumentException.class)
     public ResponseEntity<ErrorResponse> manejarArgumentoInvalido(
@@ -177,6 +185,56 @@ public class GlobalExceptionHandler {
 
     /**
      * =====================================================
+     * ACCESO DENEGADO - HTTP 403
+     * =====================================================
+     *
+     * CU-15 - SEGURIDAD POR ROL Y SUCURSAL.
+     *
+     * Se ejecuta cuando un usuario autenticado
+     * intenta realizar una operación no autorizada.
+     *
+     * Ejemplos:
+     *
+     * - Farmacéutico intenta registrar Ajuste+.
+     * - Farmacéutico intenta registrar Ajuste-.
+     * - Farmacéutico intenta operar en otra sucursal.
+     * - Usuario intenta consultar información
+     *   para la cual no posee permisos.
+     *
+     * IMPORTANTE:
+     *
+     * - Devuelve HTTP 403 Forbidden.
+     * - No cambia los permisos.
+     * - No permite continuar con la operación.
+     * - No modifica PostgreSQL.
+     * - No revela información interna de seguridad.
+     * - No sustituye a Spring Security.
+     *
+     * =====================================================
+     */
+    @ExceptionHandler(AccessDeniedException.class)
+    public ResponseEntity<ErrorResponse> manejarAccesoDenegado(
+            AccessDeniedException exception,
+            HttpServletRequest request
+    ) {
+
+        ErrorResponse response =
+                new ErrorResponse(
+                        OffsetDateTime.now(),
+                        HttpStatus.FORBIDDEN.value(),
+                        "Acceso denegado",
+                        "No tiene permisos para realizar esta operación.",
+                        null,
+                        request.getRequestURI()
+                );
+
+        return ResponseEntity
+                .status(HttpStatus.FORBIDDEN)
+                .body(response);
+    }
+
+    /**
+     * =====================================================
      * RECURSO / RUTA NO ENCONTRADA
      * =====================================================
      *
@@ -188,6 +246,8 @@ public class GlobalExceptionHandler {
      * /registro
      *
      * mientras CU-02 todavía no se haya implementado.
+     *
+     * =====================================================
      */
     @ExceptionHandler(NoResourceFoundException.class)
     public ResponseEntity<ErrorResponse> manejarRecursoNoEncontrado(
@@ -215,7 +275,7 @@ public class GlobalExceptionHandler {
      * MÉTODO HTTP NO PERMITIDO
      * =====================================================
      *
-     * CU-14 - SEGURIDAD DE OPERACIONES
+     * CU-14 - SEGURIDAD DE OPERACIONES.
      *
      * Se ejecuta cuando una ruta existe, pero el método
      * HTTP utilizado no está permitido.
@@ -260,6 +320,46 @@ public class GlobalExceptionHandler {
                 .body(response);
     }
 
+
+    /**
+     * =====================================================
+     * CU-15 - CONFLICTO DE CONCURRENCIA
+     * =====================================================
+     *
+     * Maneja modificaciones simultáneas detectadas
+     * mediante @Version de JPA / Hibernate.
+     *
+     * - Devuelve HTTP 409 Conflict.
+     * - No modifica inventarios.
+     * - No intenta repetir la operación.
+     * - Evita presentar el conflicto como error 500.
+     *
+     * =====================================================
+     */
+    @ExceptionHandler(
+            ObjectOptimisticLockingFailureException.class
+    )
+    public ResponseEntity<ErrorResponse> manejarConflictoConcurrencia(
+            ObjectOptimisticLockingFailureException exception,
+            HttpServletRequest request
+    ) {
+
+        ErrorResponse response =
+                new ErrorResponse(
+                        OffsetDateTime.now(),
+                        HttpStatus.CONFLICT.value(),
+                        "Conflicto de concurrencia",
+                        "El registro fue modificado por otra operación. " +
+                                "Actualice la página e inténtelo nuevamente.",
+                        null,
+                        request.getRequestURI()
+                );
+
+        return ResponseEntity
+                .status(HttpStatus.CONFLICT)
+                .body(response);
+    }
+
     /**
      * =====================================================
      * ERROR INESPERADO
@@ -275,6 +375,11 @@ public class GlobalExceptionHandler {
      *
      * Este manejador se utiliza cuando ninguna excepción
      * específica anterior puede resolver el error.
+     *
+     * Los accesos denegados ya se manejan mediante
+     * AccessDeniedException y devuelven HTTP 403.
+     *
+     * =====================================================
      */
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResponse> manejarErrorGeneral(

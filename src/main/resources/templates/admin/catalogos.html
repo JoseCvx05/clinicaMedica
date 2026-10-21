@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="es"
       xmlns:th="http://www.thymeleaf.org"
@@ -7,49 +6,28 @@
 <head>
 
     <meta charset="UTF-8">
-
-    <meta name="viewport"
-          content="width=device-width, initial-scale=1.0">
-
-    <meta name="theme-color"
-          content="#1B5FA6">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#ffffff">
 
     <title>
         Control de Catálogos | SANTOS
     </title>
 
-    <!-- =====================================================
-         BOOTSTRAP 5
-         ===================================================== -->
-
+    <!-- BOOTSTRAP 5 -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
           rel="stylesheet">
 
-    <!-- =====================================================
-         ICONOS
-         ===================================================== -->
-
+    <!-- ICONOS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"
           rel="stylesheet">
 
-    <!-- =====================================================
-         FUENTE SANTOS
-         ===================================================== -->
-
-    <link rel="preconnect"
-          href="https://fonts.googleapis.com">
-
-    <link rel="preconnect"
-          href="https://fonts.gstatic.com"
-          crossorigin>
-
+    <!-- FUENTE SANTOS -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
           rel="stylesheet">
 
-    <!-- =====================================================
-         ESTILOS GENERALES DEL SISTEMA
-         ===================================================== -->
-
+    <!-- ESTILOS GENERALES DEL SISTEMA -->
     <link rel="stylesheet"
           th:href="@{/css/santos-interno.css}"
           href="/css/santos-interno.css">
@@ -58,13 +36,62 @@
 
         /* =====================================================
            CU-14 - PANEL DE CONTROL DE CATÁLOGOS
+           Tokens SANTOS y ajuste de la paleta de Bootstrap
            ===================================================== */
 
+        :root {
+            --ink: #0f172a;
+            --ink-2: #334155;
+            --ink-3: #475569;
+            --azul: #1b5fa6;
+            --azul-h: #164e8a;
+            --azul-tenue: #e6f0fa;
+            --azul-borde: #b9d3ec;
+            --linea: #e2e8f0;
+            --linea-2: #cbd5e1;
+            --campo: #8392a6;
+            --lienzo: #f6f8fa;
+            --ease: cubic-bezier(.16, 1, .3, 1);
+
+            /* Bootstrap con los colores de la marca (iconos, badge y textos) */
+            --bs-body-color: #334155;
+            --bs-primary: #1b5fa6;
+            --bs-primary-rgb: 27, 95, 166;
+            --bs-primary-bg-subtle: #e6f0fa;
+            --bs-primary-text-emphasis: #164e8a;
+            --bs-success-rgb: 22, 101, 52;
+            --bs-success-bg-subtle: #e3f4ec;
+            --bs-info-rgb: 14, 124, 134;
+            --bs-info-bg-subtle: #e1f4f3;
+            --bs-info-text-emphasis: #0b5f67;
+            --bs-warning-bg-subtle: #fef3d7;
+            --bs-warning-text-emphasis: #8a5300;
+            --bs-danger-rgb: 180, 35, 24;
+            --bs-danger-bg-subtle: #fdebec;
+            --bs-secondary-rgb: 71, 85, 105;
+        }
+
+        html {
+            scroll-behavior: smooth;
+            -webkit-tap-highlight-color: transparent;
+            -webkit-text-size-adjust: 100%;
+        }
+
         body {
-            background-color: #f3f6fb;
-            font-family: 'Plus Jakarta Sans', Arial, sans-serif;
-            color: #243247;
+            background-color: var(--lienzo);
+            font-family: 'Plus Jakarta Sans', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+            color: var(--ink-2);
             min-height: 100vh;
+            min-height: 100dvh;
+            font-variant-numeric: tabular-nums;
+            padding-inline: env(safe-area-inset-left, 0px) env(safe-area-inset-right, 0px);
+        }
+
+        a, button { touch-action: manipulation; }
+
+        :focus-visible {
+            outline: 3px solid var(--azul);
+            outline-offset: 2px;
         }
 
         /* =====================================================
@@ -72,37 +99,39 @@
            ===================================================== */
 
         .catalogos-encabezado {
-            background: linear-gradient(
-                    135deg,
-                    #123c72,
-                    #1b5fa6
-            );
-
-            color: white;
-            padding: 42px 0;
-            margin-bottom: 32px;
+            background: #fff;
+            border-bottom: 1px solid var(--linea);
+            padding: 2rem 0;
+            margin-bottom: 1.5rem;
         }
 
         .catalogos-etiqueta {
-            display: inline-block;
-            background: rgba(255,255,255,0.15);
-            border: 1px solid rgba(255,255,255,0.25);
-            border-radius: 20px;
-            padding: 6px 14px;
-            font-size: 12px;
+            display: inline-flex;
+            align-items: center;
+            background: var(--azul-tenue);
+            color: var(--azul-h);
+            border: 1px solid var(--azul-borde);
+            border-radius: 999px;
+            padding: .25rem .8rem;
+            font-size: .75rem;
             font-weight: 700;
-            margin-bottom: 14px;
+            letter-spacing: .02em;
+            margin-bottom: .8rem;
         }
 
         .catalogos-encabezado h1 {
-            font-size: 30px;
+            color: var(--ink);
+            font-size: clamp(1.45rem, 3.6vw, 2.1rem);
             font-weight: 800;
-            margin-bottom: 10px;
+            letter-spacing: -.02em;
+            margin-bottom: .5rem;
         }
 
+        .catalogos-encabezado h1 i { color: var(--azul); }
+
         .catalogos-encabezado p {
-            opacity: 0.92;
-            max-width: 750px;
+            color: var(--ink-2);
+            max-width: 70ch;
             margin-bottom: 0;
         }
 
@@ -111,73 +140,95 @@
            ===================================================== */
 
         .catalogo-tarjeta {
-            background-color: white;
-            border: 1px solid #e2e8f0;
-            border-radius: 16px;
-            box-shadow: 0 4px 18px rgba(15, 23, 42, 0.05);
-            transition: transform 0.2s ease,
-            box-shadow 0.2s ease;
             height: 100%;
+            background: #fff;
+            border: 1px solid var(--linea-2);
+            border-radius: 12px;
+            box-shadow: 0 1px 2px rgba(15, 23, 42, .04);
             overflow: hidden;
+            transition: border-color .2s var(--ease), box-shadow .2s var(--ease);
         }
 
-        .catalogo-tarjeta:hover {
-            transform: translateY(-4px);
-            box-shadow: 0 10px 25px rgba(15, 23, 42, 0.10);
-        }
-
-        .catalogo-tarjeta .card-body {
-            padding: 25px;
-        }
+        .catalogo-tarjeta .card-body { padding: 1.25rem; }
 
         .catalogo-icono {
             display: flex;
             justify-content: center;
             align-items: center;
-            width: 58px;
-            height: 58px;
-            border-radius: 14px;
-            font-size: 27px;
-            margin-bottom: 19px;
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            font-size: 1.4rem;
+            margin-bottom: .9rem;
         }
 
         .catalogo-titulo {
-            color: #123c72;
-            font-size: 19px;
+            color: var(--ink);
+            font-size: 1.1rem;
             font-weight: 800;
-            margin-bottom: 11px;
+            margin-bottom: .4rem;
+            overflow-wrap: break-word;
         }
 
         .catalogo-descripcion {
-            color: #64748b;
-            font-size: 14px;
-            line-height: 1.7;
-            margin-bottom: 24px;
+            color: var(--ink-3);
+            font-size: .92rem;
+            line-height: 1.6;
+            margin-bottom: 1.1rem;
         }
 
         /* =====================================================
            BOTONES
            ===================================================== */
 
-        .btn-catalogo {
-            background-color: #1b5fa6;
-            border-color: #1b5fa6;
-            color: white;
-            border-radius: 9px;
-            padding: 11px 16px;
-            font-size: 14px;
+        .btn-catalogo,
+        .btn-regresar {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 44px;
+            border-radius: 8px;
             font-weight: 700;
+            user-select: none;
+            -webkit-user-select: none;
+            transition: background-color .2s var(--ease), border-color .2s var(--ease),
+            color .2s var(--ease), transform .12s var(--ease);
         }
 
-        .btn-catalogo:hover {
-            background-color: #12477d;
-            border-color: #12477d;
-            color: white;
+        .btn-catalogo:active,
+        .btn-regresar:active { transform: scale(.97); }
+
+        .btn-catalogo {
+            --bs-btn-color: #fff;
+            --bs-btn-bg: var(--azul);
+            --bs-btn-border-color: var(--azul);
+            --bs-btn-hover-color: #fff;
+            --bs-btn-hover-bg: var(--azul-h);
+            --bs-btn-hover-border-color: var(--azul-h);
+            --bs-btn-active-color: #fff;
+            --bs-btn-active-bg: var(--azul-h);
+            --bs-btn-active-border-color: var(--azul-h);
+            padding: .55rem 1rem;
+            font-size: .9rem;
         }
 
         .btn-regresar {
-            border-radius: 9px;
-            font-weight: 700;
+            --bs-btn-color: var(--ink);
+            --bs-btn-bg: #fff;
+            --bs-btn-border-color: var(--campo);
+            --bs-btn-hover-color: var(--azul-h);
+            --bs-btn-hover-bg: var(--azul-tenue);
+            --bs-btn-hover-border-color: var(--azul);
+            --bs-btn-active-color: var(--azul-h);
+            --bs-btn-active-bg: var(--azul-tenue);
+            --bs-btn-active-border-color: var(--azul);
+        }
+
+        @media (hover: hover) and (pointer: fine) {
+            .catalogo-tarjeta:hover {
+                border-color: var(--azul);
+                box-shadow: 0 8px 24px -12px rgba(27, 95, 166, .3);
+            }
         }
 
         /* =====================================================
@@ -185,40 +236,121 @@
            ===================================================== */
 
         .catalogos-informacion {
-            background: #eff6ff;
-            border: 1px solid #bfdbfe;
+            background: var(--azul-tenue);
+            border: 1px solid var(--azul-borde);
             border-radius: 12px;
-            padding: 19px;
-            margin-bottom: 30px;
+            padding: 1rem 1.15rem;
+            margin-bottom: 1.5rem;
+            color: var(--ink);
         }
 
         .catalogos-informacion p {
             margin-bottom: 0;
-            font-size: 14px;
+            font-size: .92rem;
         }
+
+        .catalogos-informacion i { color: var(--azul); }
+
+        main h2.h4 { color: var(--ink); }
 
         /* =====================================================
            PIE DE PÁGINA
            ===================================================== */
 
         .catalogos-footer {
-            margin-top: 48px;
-            padding: 25px;
-            color: #64748b;
+            margin-top: 2.5rem;
+            padding: 1.25rem 1rem calc(1.25rem + env(safe-area-inset-bottom, 0px));
+            color: var(--ink-3);
             text-align: center;
-            font-size: 13px;
+            font-size: .8rem;
         }
 
-        @media (max-width: 768px) {
+        .catalogos-footer strong { color: var(--ink); letter-spacing: .06em; }
 
-            .catalogos-encabezado h1 {
-                font-size: 24px;
+        /* =====================================================
+           RESPONSIVE
+           Celular pequeño (<520) · celular grande (520-767)
+           · tableta (768+) · PC (1200+ con 3 columnas)
+           ===================================================== */
+
+        /* Celular y tableta chica: encabezado compacto y barra estática */
+        @media (max-width: 767.98px) {
+
+            .santos-navbar.sticky-top { position: static; }
+
+            .santos-navbar .btn-regresar {
+                min-height: 38px;
+                padding: .3rem .75rem;
+                font-size: .85rem;
             }
 
-            .catalogos-encabezado {
-                padding: 30px 0;
+            .catalogos-encabezado { padding: 1.1rem 0 1.2rem; margin-bottom: 1rem; }
+            .catalogos-etiqueta { margin-bottom: .6rem; padding: .2rem .7rem; font-size: .7rem; }
+            .catalogos-encabezado h1 { margin-bottom: .35rem; }
+            .catalogos-encabezado p { font-size: .9rem; line-height: 1.5; }
+
+            .catalogos-informacion { padding: .8rem .9rem; margin-bottom: 1rem; }
+            .catalogos-informacion p { font-size: .86rem; line-height: 1.5; }
+
+            main .row { --bs-gutter-x: .6rem; --bs-gutter-y: .6rem; }
+            main .row.mb-4 { margin-bottom: 1rem !important; }
+            main > .d-flex.mb-4 { margin-bottom: .75rem !important; }
+
+            main > .text-center { margin-top: 1.25rem !important; }
+            main > .text-center .btn { width: 100%; }
+
+            .catalogos-footer { margin-top: 1.5rem; padding-top: 1rem; }
+        }
+
+        /* Celular grande (horizontal): dos columnas */
+        @media (min-width: 520px) and (max-width: 767.98px) {
+            main .row > [class*="col-"] { width: 50%; }
+        }
+
+        /* Celular: tarjeta compacta, icono a la izquierda y texto a la derecha */
+        @media (max-width: 519.98px) {
+
+            .catalogo-tarjeta { border-radius: 10px; }
+
+            .catalogo-tarjeta .card-body {
+                display: grid !important;
+                grid-template-columns: 44px minmax(0, 1fr);
+                column-gap: .8rem;
+                row-gap: .1rem;
+                align-items: start;
+                padding: .9rem 1rem;
             }
 
+            .catalogo-icono {
+                grid-row: span 2;
+                width: 44px;
+                height: 44px;
+                font-size: 1.25rem;
+                margin: 0;
+            }
+
+            .catalogo-titulo { grid-column: 2; font-size: 1.02rem; margin: 0; }
+
+            .catalogo-descripcion {
+                grid-column: 2;
+                font-size: .88rem;
+                line-height: 1.45;
+                margin: .1rem 0;
+            }
+
+            .catalogo-tarjeta .btn-catalogo {
+                grid-column: 1 / -1;
+                width: 100%;
+                min-height: 42px;
+                margin-top: .6rem !important;
+            }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after {
+                transition-duration: .01ms !important;
+                scroll-behavior: auto !important;
+            }
         }
 
     </style>
@@ -227,10 +359,7 @@
 
 <body>
 
-<!-- =====================================================
-     BARRA SUPERIOR
-     ===================================================== -->
-
+<!-- BARRA SUPERIOR -->
 <nav class="navbar santos-navbar sticky-top">
 
     <div class="container">
@@ -238,11 +367,8 @@
         <a class="navbar-brand santos-marca"
            th:href="@{/interno/dashboard}">
 
-            <span class="santos-simbolo"
-                  aria-hidden="true">
-
+            <span class="santos-simbolo" aria-hidden="true">
                 <i class="bi bi-plus-lg"></i>
-
             </span>
 
             <span>SANTOS</span>
@@ -252,8 +378,7 @@
         <a th:href="@{/interno/dashboard}"
            class="btn btn-outline-secondary btn-regresar">
 
-            <i class="bi bi-arrow-left me-1"
-               aria-hidden="true"></i>
+            <i class="bi bi-arrow-left me-1" aria-hidden="true"></i>
 
             Volver al Dashboard
 
@@ -264,18 +389,14 @@
 </nav>
 
 
-<!-- =====================================================
-     CU-14 - ENCABEZADO
-     ===================================================== -->
-
+<!-- CU-14 - ENCABEZADO -->
 <header class="catalogos-encabezado">
 
     <div class="container">
 
         <span class="catalogos-etiqueta">
 
-            <i class="bi bi-shield-lock me-1"
-               aria-hidden="true"></i>
+            <i class="bi bi-shield-lock me-1" aria-hidden="true"></i>
 
             ADMINISTRACIÓN DEL SISTEMA
 
@@ -283,8 +404,7 @@
 
         <h1>
 
-            <i class="bi bi-collection-fill me-2"
-               aria-hidden="true"></i>
+            <i class="bi bi-collection-fill me-2" aria-hidden="true"></i>
 
             Control de Catálogos
 
@@ -307,23 +427,16 @@
 </header>
 
 
-<!-- =====================================================
-     CU-14 - CONTENIDO PRINCIPAL
-     ===================================================== -->
-
+<!-- CU-14 - CONTENIDO PRINCIPAL -->
 <main class="container"
       sec:authorize="hasRole('ADMINISTRADOR')">
 
-    <!-- =================================================
-         INFORMACIÓN
-         ================================================= -->
-
+    <!-- INFORMACIÓN -->
     <div class="catalogos-informacion">
 
         <p>
 
-            <i class="bi bi-info-circle-fill me-2"
-               aria-hidden="true"></i>
+            <i class="bi bi-info-circle-fill me-2" aria-hidden="true"></i>
 
             <strong>
                 Acceso administrativo:
@@ -340,10 +453,7 @@
     </div>
 
 
-    <!-- =================================================
-         TÍTULO DE LA SECCIÓN
-         ================================================= -->
-
+    <!-- TÍTULO DE LA SECCIÓN -->
     <div class="d-flex flex-wrap justify-content-between
                 align-items-center gap-2 mb-4">
 
@@ -372,18 +482,11 @@
     </div>
 
 
-    <!-- =====================================================
-         CATÁLOGOS DEL SISTEMA
-         ===================================================== -->
-
+    <!-- CATÁLOGOS DEL SISTEMA -->
     <div class="row g-4">
 
 
-        <!-- =================================================
-             CATÁLOGO 1
-             ESPECIALIDADES MÉDICAS
-             ================================================= -->
-
+        <!-- CATÁLOGO 1 - ESPECIALIDADES MÉDICAS -->
         <div class="col-12 col-md-6 col-xl-4">
 
             <div class="card catalogo-tarjeta">
@@ -394,8 +497,7 @@
                                 bg-primary-subtle
                                 text-primary">
 
-                        <i class="bi bi-heart-pulse"
-                           aria-hidden="true"></i>
+                        <i class="bi bi-heart-pulse" aria-hidden="true"></i>
 
                     </div>
 
@@ -417,8 +519,7 @@
                     <a th:href="@{/admin/especialidades}"
                        class="btn btn-catalogo mt-auto">
 
-                        <i class="bi bi-arrow-right-circle me-2"
-                           aria-hidden="true"></i>
+                        <i class="bi bi-arrow-right-circle me-2" aria-hidden="true"></i>
 
                         Administrar Especialidades
 
@@ -431,11 +532,7 @@
         </div>
 
 
-        <!-- =================================================
-             CATÁLOGO 2
-             SUCURSALES
-             ================================================= -->
-
+        <!-- CATÁLOGO 2 - SUCURSALES -->
         <div class="col-12 col-md-6 col-xl-4">
 
             <div class="card catalogo-tarjeta">
@@ -446,8 +543,7 @@
                                 bg-success-subtle
                                 text-success">
 
-                        <i class="bi bi-hospital"
-                           aria-hidden="true"></i>
+                        <i class="bi bi-hospital" aria-hidden="true"></i>
 
                     </div>
 
@@ -469,8 +565,7 @@
                     <a th:href="@{/admin/sucursales}"
                        class="btn btn-catalogo mt-auto">
 
-                        <i class="bi bi-arrow-right-circle me-2"
-                           aria-hidden="true"></i>
+                        <i class="bi bi-arrow-right-circle me-2" aria-hidden="true"></i>
 
                         Administrar Sucursales
 
@@ -483,11 +578,7 @@
         </div>
 
 
-        <!-- =================================================
-             CATÁLOGO 3
-             ESTADOS DE CITA
-             ================================================= -->
-
+        <!-- CATÁLOGO 3 - ESTADOS DE CITA -->
         <div class="col-12 col-md-6 col-xl-4">
 
             <div class="card catalogo-tarjeta">
@@ -498,8 +589,7 @@
                                 bg-warning-subtle
                                 text-warning-emphasis">
 
-                        <i class="bi bi-calendar-check"
-                           aria-hidden="true"></i>
+                        <i class="bi bi-calendar-check" aria-hidden="true"></i>
 
                     </div>
 
@@ -521,8 +611,7 @@
                     <a th:href="@{/admin/estados-cita}"
                        class="btn btn-catalogo mt-auto">
 
-                        <i class="bi bi-arrow-right-circle me-2"
-                           aria-hidden="true"></i>
+                        <i class="bi bi-arrow-right-circle me-2" aria-hidden="true"></i>
 
                         Administrar Estados
 
@@ -535,11 +624,7 @@
         </div>
 
 
-        <!-- =================================================
-             CATÁLOGO 4
-             LABORATORIOS
-             ================================================= -->
-
+        <!-- CATÁLOGO 4 - LABORATORIOS -->
         <div class="col-12 col-md-6 col-xl-4">
 
             <div class="card catalogo-tarjeta">
@@ -550,8 +635,7 @@
                                 bg-info-subtle
                                 text-info-emphasis">
 
-                        <i class="bi bi-building"
-                           aria-hidden="true"></i>
+                        <i class="bi bi-building" aria-hidden="true"></i>
 
                     </div>
 
@@ -573,8 +657,7 @@
                     <a th:href="@{/admin/laboratorios}"
                        class="btn btn-catalogo mt-auto">
 
-                        <i class="bi bi-arrow-right-circle me-2"
-                           aria-hidden="true"></i>
+                        <i class="bi bi-arrow-right-circle me-2" aria-hidden="true"></i>
 
                         Administrar Laboratorios
 
@@ -587,11 +670,7 @@
         </div>
 
 
-        <!-- =================================================
-             CATÁLOGO 5
-             EXÁMENES DE LABORATORIO
-             ================================================= -->
-
+        <!-- CATÁLOGO 5 - EXÁMENES DE LABORATORIO -->
         <div class="col-12 col-md-6 col-xl-4">
 
             <div class="card catalogo-tarjeta">
@@ -602,8 +681,7 @@
                                 bg-danger-subtle
                                 text-danger">
 
-                        <i class="bi bi-clipboard2-pulse"
-                           aria-hidden="true"></i>
+                        <i class="bi bi-clipboard2-pulse" aria-hidden="true"></i>
 
                     </div>
 
@@ -625,8 +703,7 @@
                     <a th:href="@{/admin/examenes-laboratorio}"
                        class="btn btn-catalogo mt-auto">
 
-                        <i class="bi bi-arrow-right-circle me-2"
-                           aria-hidden="true"></i>
+                        <i class="bi bi-arrow-right-circle me-2" aria-hidden="true"></i>
 
                         Administrar Exámenes
 
@@ -639,11 +716,7 @@
         </div>
 
 
-        <!-- =================================================
-             CATÁLOGO 6
-             MEDICAMENTOS
-             ================================================= -->
-
+        <!-- CATÁLOGO 6 - MEDICAMENTOS -->
         <div class="col-12 col-md-6 col-xl-4">
 
             <div class="card catalogo-tarjeta">
@@ -654,8 +727,7 @@
                                 bg-success-subtle
                                 text-success">
 
-                        <i class="bi bi-capsule"
-                           aria-hidden="true"></i>
+                        <i class="bi bi-capsule" aria-hidden="true"></i>
 
                     </div>
 
@@ -677,8 +749,7 @@
                     <a th:href="@{/admin/medicamentos}"
                        class="btn btn-catalogo mt-auto">
 
-                        <i class="bi bi-arrow-right-circle me-2"
-                           aria-hidden="true"></i>
+                        <i class="bi bi-arrow-right-circle me-2" aria-hidden="true"></i>
 
                         Administrar Medicamentos
 
@@ -691,11 +762,7 @@
         </div>
 
 
-        <!-- =================================================
-             CATÁLOGO 7
-             ROLES DEL SISTEMA
-             ================================================= -->
-
+        <!-- CATÁLOGO 7 - ROLES DEL SISTEMA -->
         <div class="col-12 col-md-6 col-xl-4">
 
             <div class="card catalogo-tarjeta">
@@ -706,8 +773,7 @@
                                 bg-primary-subtle
                                 text-primary">
 
-                        <i class="bi bi-person-badge"
-                           aria-hidden="true"></i>
+                        <i class="bi bi-person-badge" aria-hidden="true"></i>
 
                     </div>
 
@@ -729,8 +795,7 @@
                     <a th:href="@{/admin/roles}"
                        class="btn btn-catalogo mt-auto">
 
-                        <i class="bi bi-arrow-right-circle me-2"
-                           aria-hidden="true"></i>
+                        <i class="bi bi-arrow-right-circle me-2" aria-hidden="true"></i>
 
                         Administrar Roles
 
@@ -743,11 +808,7 @@
         </div>
 
 
-        <!-- =================================================
-             CATÁLOGO 8
-             INVENTARIO DE FARMACIA
-             ================================================= -->
-
+        <!-- CATÁLOGO 8 - INVENTARIO DE FARMACIA -->
         <div class="col-12 col-md-6 col-xl-4">
 
             <div class="card catalogo-tarjeta">
@@ -758,8 +819,7 @@
                                 bg-warning-subtle
                                 text-warning-emphasis">
 
-                        <i class="bi bi-box-seam"
-                           aria-hidden="true"></i>
+                        <i class="bi bi-box-seam" aria-hidden="true"></i>
 
                     </div>
 
@@ -781,8 +841,7 @@
                     <a th:href="@{/admin/inventario-farmacia}"
                        class="btn btn-catalogo mt-auto">
 
-                        <i class="bi bi-arrow-right-circle me-2"
-                           aria-hidden="true"></i>
+                        <i class="bi bi-arrow-right-circle me-2" aria-hidden="true"></i>
 
                         Administrar Inventario
 
@@ -795,11 +854,7 @@
         </div>
 
 
-        <!-- =================================================
-             CATÁLOGO 9
-             SUCURSAL - ESPECIALIDAD
-             ================================================= -->
-
+        <!-- CATÁLOGO 9 - SUCURSAL - ESPECIALIDAD -->
         <div class="col-12 col-md-6 col-xl-4">
 
             <div class="card catalogo-tarjeta">
@@ -810,8 +865,7 @@
                                 bg-info-subtle
                                 text-info-emphasis">
 
-                        <i class="bi bi-diagram-3-fill"
-                           aria-hidden="true"></i>
+                        <i class="bi bi-diagram-3-fill" aria-hidden="true"></i>
 
                     </div>
 
@@ -833,8 +887,7 @@
                     <a th:href="@{/branch-specialty}"
                        class="btn btn-catalogo mt-auto">
 
-                        <i class="bi bi-arrow-right-circle me-2"
-                           aria-hidden="true"></i>
+                        <i class="bi bi-arrow-right-circle me-2" aria-hidden="true"></i>
 
                         Administrar Asignaciones
 
@@ -850,17 +903,13 @@
     </div>
 
 
-    <!-- =====================================================
-         ACCIÓN DE REGRESO
-         ===================================================== -->
-
+    <!-- ACCIÓN DE REGRESO -->
     <div class="text-center mt-5">
 
         <a th:href="@{/interno/dashboard}"
            class="btn btn-outline-secondary btn-regresar px-4 py-2">
 
-            <i class="bi bi-arrow-left me-2"
-               aria-hidden="true"></i>
+            <i class="bi bi-arrow-left me-2" aria-hidden="true"></i>
 
             Regresar al Dashboard Interno
 
@@ -871,10 +920,7 @@
 </main>
 
 
-<!-- =====================================================
-     PIE DE PÁGINA
-     ===================================================== -->
-
+<!-- PIE DE PÁGINA -->
 <footer class="catalogos-footer">
 
     <strong>SANTOS</strong>
@@ -889,10 +935,7 @@
 </footer>
 
 
-<!-- =====================================================
-     BOOTSTRAP JAVASCRIPT
-     ===================================================== -->
-
+<!-- BOOTSTRAP JAVASCRIPT -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js">
 </script>
 

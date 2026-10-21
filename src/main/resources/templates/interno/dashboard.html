@@ -707,6 +707,74 @@
 
 
             <!-- =================================================
+                 CU-15 - BITÁCORA DE MOVIMIENTOS DE INVENTARIO
+                 ADMINISTRADOR Y FARMACÉUTICO
+                 ================================================= -->
+
+            <div sec:authorize="hasAnyRole('ADMINISTRADOR','FARMACEUTICO')">
+
+                <div class="card santos-modulo h-100">
+
+                    <div class="card-body p-4 d-flex flex-column">
+
+                        <!-- ICONO DEL MÓDULO -->
+
+                        <div class="santos-modulo-icono
+                        bg-primary-subtle
+                        text-primary">
+
+                            <i class="bi bi-journal-text"
+                               aria-hidden="true"></i>
+
+                        </div>
+
+                        <!-- TÍTULO -->
+
+                        <h3 class="h5 fw-bold">
+                            Bitácora de Movimientos de Inventario
+                        </h3>
+
+                        <!-- DESCRIPCIÓN -->
+
+                        <p class="text-secondary">
+
+                            Consulte el historial de movimientos
+                            de medicamentos, registre compras,
+                            devoluciones, ventas, reclamos y
+                            ajustes autorizados de inventario.
+
+                            Visualice existencias, aplique filtros
+                            de búsqueda y gestione el estado
+                            de los movimientos registrados.
+
+                        </p>
+
+                        <!-- ACCESO AL CU-15 -->
+
+                        <a th:href="@{/interno/bitacora-inventario}"
+                           class="btn btn-primary mt-auto">
+
+                            <i class="bi bi-journal-check me-2"
+                               aria-hidden="true"></i>
+
+                            Ir a Bitácora de Inventario
+
+                        </a>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+            <!-- =================================================
+                 FIN CU-15
+                 ================================================= -->
+
+
+
+
+            <!-- =================================================
                  ROLES SIN MÓDULO IMPLEMENTADO
                  ================================================= -->
             <div class="santos-modulos-aviso"

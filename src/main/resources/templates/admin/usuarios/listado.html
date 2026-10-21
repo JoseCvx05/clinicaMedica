@@ -257,12 +257,16 @@
           </td>
         </tr>
 
-        <!-- Sin resultados -->
+        <!-- FA03 - No se encontró información -->
         <tr th:if="${usuarios.isEmpty()}">
           <td colspan="8" class="text-center py-5">
-            <div class="text-secondary">
+            <div class="text-danger">
               <i class="bi bi-search fs-1 d-block mb-3"></i>
-              <p class="fw-semibold mb-1">No se encontraron usuarios</p>
+
+              <p class="fw-semibold mb-1">
+                No se encontraron datos usuarios.
+              </p>
+
               <p class="mb-0" th:if="${errorBusqueda == null}">
                 No hay resultados para los criterios ingresados.
                 Modifique los filtros e intente nuevamente.

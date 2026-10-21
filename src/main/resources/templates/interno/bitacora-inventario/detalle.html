@@ -1,0 +1,573 @@
+    <!DOCTYPE html>
+    <html lang="es" xmlns:th="http://www.thymeleaf.org">
+
+    <head>
+        <meta charset="UTF-8">
+
+        <meta name="viewport"
+              content="width=device-width, initial-scale=1.0">
+
+        <meta name="theme-color" content="#1B5FA6">
+
+        <title>Detalle de Movimiento | SANTOS</title>
+
+        <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Crect width='24' height='24' rx='6' fill='%231B5FA6'/%3E%3Cpath d='M9 4h6v5h5v6h-5v5H9v-5H4V9h5z' fill='white'/%3E%3C/svg%3E">
+
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+              rel="stylesheet">
+
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"
+              rel="stylesheet">
+
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
+              rel="stylesheet">
+
+        <!-- Tema SANTOS interno (después de Bootstrap) -->
+        <link rel="stylesheet"
+              th:href="@{/css/santos-interno.css}"
+              href="/css/santos-interno.css">
+
+        <style>
+            /* Estilos propios de esta vista */
+
+            .titulo-seccion {
+                margin: 0 0 14px;
+                padding-bottom: 10px;
+                border-bottom: 1px solid var(--sa-line);
+                font-size: 1rem;
+                font-weight: 800;
+                letter-spacing: -0.01em;
+            }
+
+            .titulo-seccion .bi {
+                margin-right: 6px;
+                color: var(--sa-blue);
+            }
+
+            .etiqueta {
+                margin-bottom: 3px;
+                color: var(--sa-muted);
+                font-size: 0.7rem;
+                font-weight: 700;
+                letter-spacing: 0.06em;
+                text-transform: uppercase;
+            }
+
+            .valor {
+                color: var(--sa-ink);
+                font-size: 0.97rem;
+                font-weight: 600;
+                font-variant-numeric: tabular-nums;
+                overflow-wrap: anywhere;
+            }
+
+            .dato {
+                margin-bottom: 14px;
+            }
+
+            .resumen-stock {
+                height: 100%;
+                padding: 12px 10px;
+                border: 1px solid var(--sa-line);
+                border-radius: 14px;
+                background: #f8fafc;
+                text-align: center;
+            }
+
+            .numero-stock {
+                color: var(--sa-blue);
+                font-size: 1.75rem;
+                font-weight: 800;
+                line-height: 1.2;
+                letter-spacing: -0.02em;
+                font-variant-numeric: tabular-nums;
+            }
+
+            .notas {
+                padding: 12px 14px;
+                border: 1px solid var(--sa-line);
+                border-radius: 12px;
+                background: #f8fafc;
+                color: var(--sa-ink);
+                font-size: 0.93rem;
+                white-space: pre-wrap;
+                overflow-wrap: anywhere;
+            }
+
+            /* Estado: las clases bg-success / bg-secondary las pone Thymeleaf */
+            .estado-badge {
+                display: inline-flex;
+                align-items: center;
+                gap: 7px;
+                padding: 6px 12px;
+                border-radius: 999px;
+                font-size: 0.8rem;
+                font-weight: 700;
+            }
+
+            .estado-badge::before {
+                content: "";
+                width: 7px;
+                height: 7px;
+                border-radius: 50%;
+                background: currentColor;
+            }
+
+            .badge.bg-success {
+                border: 1px solid #a7f3d0;
+                background-color: #ecfdf5 !important;
+                color: #065f46 !important;
+            }
+
+            .badge.bg-secondary {
+                border: 1px solid var(--sa-line-strong);
+                background-color: #f1f5f9 !important;
+                color: #334155 !important;
+            }
+
+            .alert-secondary {
+                --bs-alert-bg: #f1f5f9;
+                --bs-alert-border-color: #cbd5e1;
+                --bs-alert-color: #334155;
+            }
+        </style>
+
+    </head>
+
+    <body>
+
+    <a class="skip-link" href="#contenido">Saltar al contenido</a>
+
+    <!-- ============================================= -->
+    <!-- BARRA SUPERIOR -->
+    <!-- ============================================= -->
+
+    <nav class="navbar santos-navbar sticky-top">
+
+        <div class="container-xl px-4">
+
+            <span class="navbar-brand santos-marca">
+
+                <span class="santos-simbolo" aria-hidden="true">
+                    <i class="bi bi-plus-lg"></i>
+                </span>
+
+                <span>SANTOS</span>
+
+            </span>
+
+        </div>
+
+    </nav>
+
+
+    <main id="contenido" class="container-xl px-4 py-3">
+
+        <!-- ============================================= -->
+        <!-- ENCABEZADO -->
+        <!-- ============================================= -->
+
+        <section class="santos-encabezado-pagina mb-3">
+
+            <div>
+
+                <h1 class="h3 fw-bold mb-1">
+
+                    <i class="bi bi-journal-text me-2 text-primary" aria-hidden="true"></i>
+
+                    Detalle de Movimiento
+
+                </h1>
+
+                <p class="text-secondary mb-0">
+
+                    SANTOS — Clínica Médica
+
+                </p>
+
+            </div>
+
+            <a th:href="@{/interno/bitacora-inventario}"
+               class="btn btn-outline-secondary rounded-pill px-3">
+
+                <i class="bi bi-arrow-left me-1" aria-hidden="true"></i>
+
+                Volver a la Bitácora
+
+            </a>
+
+        </section>
+
+        <div class="row g-3 mb-3">
+
+            <!-- ============================================= -->
+            <!-- INFORMACIÓN GENERAL -->
+            <!-- ============================================= -->
+
+            <div class="col-lg-6">
+
+                <section class="card santos-panel h-100">
+
+                    <div class="card-body p-3 p-lg-4">
+
+                        <h2 class="titulo-seccion">
+
+                            <i class="bi bi-info-circle" aria-hidden="true"></i>
+
+                            Información General
+
+                        </h2>
+
+                        <div class="row">
+
+                            <!-- ID -->
+
+                            <div class="col-sm-4 dato">
+
+                                <div class="etiqueta">
+                                    ID del Movimiento
+                                </div>
+
+                                <div class="valor"
+                                     th:text="${detalle.idMovimiento}">
+                                </div>
+
+                            </div>
+
+                            <!-- TIPO -->
+
+                            <div class="col-sm-4 dato">
+
+                                <div class="etiqueta">
+                                    Tipo de Movimiento
+                                </div>
+
+                                <div>
+
+                                    <span class="badge santos-rol"
+                                          th:text="${detalle.tipo}">
+                                    </span>
+
+                                </div>
+
+                            </div>
+
+                            <!-- ESTADO -->
+
+                            <div class="col-sm-4 dato">
+
+                                <div class="etiqueta">
+                                    Estado
+                                </div>
+
+                                <span class="badge estado-badge"
+                                      th:classappend="${detalle.activo == true}
+                                          ? 'bg-success'
+                                          : 'bg-secondary'"
+                                      th:text="${detalle.activo == true}
+                                          ? 'Activo'
+                                          : 'Inactivo'">
+                                </span>
+
+                            </div>
+
+                            <!-- MEDICAMENTO -->
+
+                            <div class="col-sm-6 dato mb-0">
+
+                                <div class="etiqueta">
+                                    Medicamento
+                                </div>
+
+                                <div class="valor"
+                                     th:text="${detalle.medicamento}">
+                                </div>
+
+                            </div>
+
+                            <!-- SUCURSAL -->
+
+                            <div class="col-sm-6 dato mb-0">
+
+                                <div class="etiqueta">
+                                    Sucursal
+                                </div>
+
+                                <div class="valor"
+                                     th:text="${detalle.sucursal}">
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </section>
+
+            </div>
+
+            <!-- ============================================= -->
+            <!-- MOVIMIENTO DE EXISTENCIAS -->
+            <!-- ============================================= -->
+
+            <div class="col-lg-6">
+
+                <section class="card santos-panel h-100">
+
+                    <div class="card-body p-3 p-lg-4">
+
+                        <h2 class="titulo-seccion">
+
+                            <i class="bi bi-box-seam" aria-hidden="true"></i>
+
+                            Movimiento de Existencias
+
+                        </h2>
+
+                        <div class="row g-2">
+
+                            <!-- STOCK ANTERIOR -->
+
+                            <div class="col-4">
+
+                                <div class="resumen-stock">
+
+                                    <div class="etiqueta">
+                                        Stock Anterior
+                                    </div>
+
+                                    <div class="numero-stock"
+                                         th:text="${detalle.stockAnterior}">
+                                    </div>
+
+                                </div>
+
+                            </div>
+
+                            <!-- CANTIDAD -->
+
+                            <div class="col-4">
+
+                                <div class="resumen-stock">
+
+                                    <div class="etiqueta">
+                                        Cantidad del Movimiento
+                                    </div>
+
+                                    <div class="numero-stock"
+                                         th:text="${detalle.cantidad}">
+                                    </div>
+
+                                </div>
+
+                            </div>
+
+                            <!-- STOCK NUEVO -->
+
+                            <div class="col-4">
+
+                                <div class="resumen-stock">
+
+                                    <div class="etiqueta">
+                                        Stock Nuevo
+                                    </div>
+
+                                    <div class="numero-stock"
+                                         th:text="${detalle.stockNuevo}">
+                                    </div>
+
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                        <!-- INDICADOR -->
+
+                        <div class="mt-3">
+
+                            <div class="alert alert-success mb-0"
+                                 th:if="${detalle.stockNuevo > detalle.stockAnterior}">
+
+                                <i class="bi bi-arrow-up-circle me-1" aria-hidden="true"></i>
+
+                                Este movimiento aumentó las existencias.
+
+                            </div>
+
+                            <div class="alert alert-warning mb-0"
+                                 th:if="${detalle.stockNuevo < detalle.stockAnterior}">
+
+                                <i class="bi bi-arrow-down-circle me-1" aria-hidden="true"></i>
+
+                                Este movimiento disminuyó las existencias.
+
+                            </div>
+
+                            <div class="alert alert-secondary mb-0"
+                                 th:if="${detalle.stockNuevo == detalle.stockAnterior}">
+
+                                <i class="bi bi-dash-circle me-1" aria-hidden="true"></i>
+
+                                Este movimiento no modificó la cantidad disponible.
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </section>
+
+            </div>
+
+        </div>
+
+        <!-- ============================================= -->
+        <!-- INFORMACIÓN COMPLEMENTARIA -->
+        <!-- ============================================= -->
+
+        <section class="card santos-panel mb-3">
+
+            <div class="card-body p-3 p-lg-4">
+
+                <h2 class="titulo-seccion">
+
+                    <i class="bi bi-receipt" aria-hidden="true"></i>
+
+                    Información Complementaria
+
+                </h2>
+
+                <div class="row">
+
+                    <!-- COSTO -->
+
+                    <div class="col-sm-6 col-lg-3 dato">
+
+                        <div class="etiqueta">
+                            Costo Unitario
+                        </div>
+
+                        <div class="valor"
+                             th:text="${detalle.costoUnitario != null
+                                 ? 'Q ' + detalle.costoUnitario
+                                 : 'No aplica'}">
+                        </div>
+
+                    </div>
+
+                    <!-- REFERENCIA -->
+
+                    <div class="col-sm-6 col-lg-3 dato">
+
+                        <div class="etiqueta">
+                            Número de Referencia
+                        </div>
+
+                        <div class="valor"
+                             th:text="${detalle.referencia != null
+                                 and !detalle.referencia.isBlank()
+                                 ? detalle.referencia
+                                 : 'Sin referencia'}">
+                        </div>
+
+                    </div>
+
+                    <!-- USUARIO -->
+
+                    <div class="col-sm-6 col-lg-3 dato">
+
+                        <div class="etiqueta">
+                            Usuario Responsable
+                        </div>
+
+                        <div class="valor"
+                             th:text="${detalle.usuarioResponsable}">
+                        </div>
+
+                    </div>
+
+
+                    <!-- FECHA - HORA OFICIAL DE GUATEMALA -->
+
+                    <div class="col-sm-6 col-lg-3 dato">
+
+                        <div class="etiqueta">
+                            Fecha y Hora del Movimiento
+                        </div>
+
+                        <div class="valor"
+                             th:text="${detalle.fechaHora != null
+             ? #temporals.format(
+                 detalle.fechaHora,
+                 'dd/MM/yyyy HH:mm:ss',
+                 'America/Guatemala'
+               )
+             : 'Sin fecha'}">
+                        </div>
+
+                    </div>
+
+
+                    <!-- ORIGEN -->
+
+                    <div class="col-lg-4 dato">
+
+                        <div class="etiqueta">
+                            Origen del Movimiento
+                        </div>
+
+                        <div class="valor"
+                             th:text="${detalle.origen}">
+                        </div>
+
+                    </div>
+
+                    <!-- NOTAS -->
+
+                    <div class="col-lg-8">
+
+                        <div class="etiqueta">
+                            Motivo / Notas
+                        </div>
+
+                        <div class="notas"
+                             th:text="${detalle.motivoNotas != null
+                                 and !detalle.motivoNotas.isBlank()
+                                 ? detalle.motivoNotas
+                                 : 'Sin observaciones registradas.'}">
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </section>
+
+        <!-- ============================================= -->
+        <!-- BOTÓN VOLVER -->
+        <!-- ============================================= -->
+
+        <div class="text-end mb-3">
+
+            <a th:href="@{/interno/bitacora-inventario}"
+               class="btn btn-outline-secondary">
+
+                <i class="bi bi-arrow-left me-1" aria-hidden="true"></i>
+
+                Regresar al Listado
+
+            </a>
+
+        </div>
+
+    </main>
+
+    </body>
+    </html>
