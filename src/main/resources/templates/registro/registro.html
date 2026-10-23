@@ -9,7 +9,17 @@
     <meta name="viewport"
           content="width=device-width, initial-scale=1.0">
 
+    <meta name="theme-color" content="#ffffff">
+
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='9' fill='%231b5fa6'/%3E%3Cpath d='M16 8v16M8 16h16' stroke='white' stroke-width='3' stroke-linecap='round'/%3E%3C/svg%3E">
+
     <title>Registro de Paciente</title>
+
+    <!-- Fuente -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
+          rel="stylesheet">
 
     <!-- Bootstrap -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css"
@@ -19,25 +29,494 @@
     <link rel="stylesheet"
           href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css">
 
+    <style>
+
+        /* =============================================
+           TOKENS SANTOS
+           ============================================= */
+
+        :root {
+            --font: 'Plus Jakarta Sans', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+            --ink: #0f172a; --ink-2: #334155; --muted: #475569;
+            --line: #e2e8f0; --line-strong: #cbd5e1; --bg: #f8fafc; --band: #f1f5f9;
+            --blue: #1b5fa6; --blue-dark: #124a85; --blue-tint: #eaf2fb; --blue-line: #c7dbf0;
+            --teal: #0f766e; --danger: #b91c1c;
+            --ring: rgba(27, 95, 166, .22); --ease: cubic-bezier(.23, 1, .32, 1);
+
+            --bs-body-font-family: var(--font);
+            --bs-body-color: #0f172a;
+            --bs-body-bg: #f8fafc;
+            --bs-border-color: #e2e8f0;
+            --bs-secondary-color: #475569;
+            --bs-primary-rgb: 27, 95, 166;
+            --bs-success-rgb: 15, 118, 110;
+            --bs-danger-rgb: 185, 28, 28;
+            --bs-link-color-rgb: 27, 95, 166;
+            --bs-link-hover-color-rgb: 18, 74, 133;
+            --bs-form-invalid-color: #991b1b;
+            --bs-form-invalid-border-color: #b91c1c;
+        }
+
+        body {
+            font-family: var(--font);
+            color: var(--ink);
+            background: var(--bg);
+            -webkit-font-smoothing: antialiased;
+        }
+
+        .text-secondary {
+            color: var(--muted) !important;
+        }
+
+        :where(a, button, input, select, textarea):focus-visible {
+            outline: 3px solid var(--teal);
+            outline-offset: 2px;
+        }
+
+        .btn:focus-visible,
+        .btn-close:focus-visible {
+            outline: 3px solid var(--teal);
+            outline-offset: 2px;
+            box-shadow: none;
+        }
+
+        .santos-skip {
+            position: absolute;
+            left: 12px;
+            top: -64px;
+            z-index: 50;
+            padding: 10px 16px;
+            border-radius: 10px;
+            background: var(--ink);
+            color: #fff;
+            font-weight: 700;
+            text-decoration: none;
+        }
+
+        .santos-skip:focus {
+            top: 12px;
+            color: #fff;
+        }
+
+        /* =============================================
+           BARRA DE MARCA
+           ============================================= */
+
+        .santos-navbar {
+            position: sticky;
+            top: 0;
+            z-index: 30;
+            min-height: 60px;
+            background: rgba(255, 255, 255, .92);
+            backdrop-filter: saturate(160%) blur(10px);
+            border-bottom: 1px solid var(--line);
+        }
+
+        .santos-navbar .navbar-brand {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin: 0;
+            padding: 0;
+            color: var(--ink);
+        }
+
+        .santos-simbolo {
+            display: grid;
+            place-items: center;
+            width: 38px;
+            height: 38px;
+            border-radius: 12px;
+            background: var(--blue);
+            color: #fff;
+        }
+
+        .santos-marca-nombre {
+            font-weight: 800;
+            letter-spacing: .14em;
+        }
+
+        .santos-marca-sub {
+            padding-left: 10px;
+            border-left: 1px solid var(--line-strong);
+            color: var(--muted);
+            font-size: .85rem;
+            font-weight: 600;
+        }
+
+        /* =============================================
+           ENCABEZADO DE LA PÁGINA
+           ============================================= */
+
+        .santos-main {
+            max-width: 1080px;
+            padding-top: 28px;
+            padding-bottom: 12px;
+        }
+
+        .santos-cab {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            margin-bottom: 18px;
+        }
+
+        .santos-cab-icono {
+            flex: none;
+            display: grid;
+            place-items: center;
+            width: 52px;
+            height: 52px;
+            border: 1px solid var(--blue-line);
+            border-radius: 16px;
+            background: var(--blue-tint);
+            color: var(--blue);
+            font-size: 1.5rem;
+        }
+
+        .santos-cab h1 {
+            margin: 0 0 4px;
+            font-size: clamp(1.4rem, 1.1rem + 1vw, 1.75rem);
+            font-weight: 800;
+            letter-spacing: -.025em;
+            text-wrap: balance;
+        }
+
+        .santos-cab p {
+            margin: 0;
+            color: var(--muted);
+            font-size: .95rem;
+        }
+
+        /* =============================================
+           ALERTA
+           ============================================= */
+
+        .alert {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            margin-bottom: 16px;
+            padding: 11px 16px;
+            border-radius: 12px;
+            font-size: .92rem;
+            font-weight: 600;
+        }
+
+        .alert .bi {
+            margin: 2px 0 0 !important;
+        }
+
+        .alert-danger {
+            background: #fef2f2;
+            border-color: #fecaca;
+            color: #991b1b;
+        }
+
+        /* =============================================
+           PANELES Y REJILLA DEL FORMULARIO
+           ============================================= */
+
+        .santos-rejilla {
+            display: grid;
+            gap: 16px;
+            align-items: start;
+        }
+
+        .santos-panel {
+            border: 1px solid var(--line);
+            border-radius: 18px;
+            background: #fff;
+            box-shadow: 0 1px 2px rgba(15, 23, 42, .03);
+            padding: 22px;
+        }
+
+        .santos-datos {
+            display: grid;
+            gap: 18px 16px;
+        }
+
+        .santos-cuenta {
+            display: grid;
+            gap: 18px;
+        }
+
+        .santos-campo {
+            min-width: 0;
+        }
+
+        @media (min-width: 576px) {
+            .santos-datos { grid-template-columns: 1fr 1fr; }
+            .santos-span2 { grid-column: 1 / -1; }
+        }
+
+        @media (min-width: 992px) {
+            .santos-rejilla { grid-template-columns: 7fr 5fr; }
+        }
+
+        /* =============================================
+           CAMPOS
+           ============================================= */
+
+        .form-label {
+            margin-bottom: 6px;
+            color: var(--ink-2);
+            font-size: .82rem;
+            font-weight: 700;
+        }
+
+        .form-control {
+            min-height: 46px;
+            border: 1.5px solid var(--line-strong);
+            border-radius: 12px;
+            background: #fff;
+            color: var(--ink);
+            font-size: 1rem;
+        }
+
+        .form-control::placeholder {
+            color: #64748b;
+            opacity: 1;
+        }
+
+        .form-control:focus {
+            border-color: var(--blue);
+            box-shadow: 0 0 0 4px var(--ring);
+            outline: 0;
+        }
+
+        .form-control.is-invalid {
+            padding-right: .75rem;
+            border-color: #b91c1c;
+            background-image: none;
+        }
+
+        .form-control.is-invalid:focus {
+            box-shadow: 0 0 0 4px rgba(185, 28, 28, .18);
+        }
+
+        .invalid-feedback {
+            margin-top: 6px;
+            color: #991b1b;
+            font-size: .82rem;
+            font-weight: 600;
+        }
+
+        .form-text {
+            margin-top: 6px;
+            color: var(--muted);
+            font-size: .8rem;
+        }
+
+        .santos-form .input-group > .form-control {
+            border-top-right-radius: 0;
+            border-bottom-right-radius: 0;
+        }
+
+        .santos-form .input-group > .btn {
+            min-width: 50px;
+            border-top-left-radius: 0;
+            border-bottom-left-radius: 0;
+            border-top-right-radius: 12px;
+            border-bottom-right-radius: 12px;
+            font-size: 1.05rem;
+        }
+
+        /* =============================================
+           BOTONES
+           ============================================= */
+
+        .btn {
+            --bs-btn-border-radius: 12px;
+            --bs-btn-font-weight: 700;
+            --bs-btn-padding-x: 1.1rem;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            min-height: 46px;
+            border-width: 1.5px;
+            font-family: inherit;
+            transition: transform 160ms var(--ease);
+        }
+
+        .btn .bi {
+            margin: 0 !important;
+        }
+
+        .btn:active {
+            transform: scale(.97);
+        }
+
+        .btn:disabled,
+        .btn.disabled {
+            background: var(--line);
+            border-color: var(--line-strong);
+            color: var(--ink-2);
+            opacity: 1;
+        }
+
+        .btn:not(.show):hover {
+            color: var(--bs-btn-color);
+            background-color: var(--bs-btn-bg);
+            border-color: var(--bs-btn-border-color);
+        }
+
+        .btn-primary {
+            --bs-btn-color: #fff;
+            --bs-btn-bg: #1b5fa6;
+            --bs-btn-border-color: #1b5fa6;
+            --bs-btn-active-color: #fff;
+            --bs-btn-active-bg: #0d3a6b;
+            --bs-btn-active-border-color: #0d3a6b;
+        }
+
+        .btn-outline-secondary,
+        .btn-secondary {
+            --bs-btn-color: #334155;
+            --bs-btn-bg: #fff;
+            --bs-btn-border-color: #cbd5e1;
+            --bs-btn-active-color: #0f172a;
+            --bs-btn-active-bg: #e2e8f0;
+            --bs-btn-active-border-color: #94a3b8;
+        }
+
+        .btn-danger {
+            --bs-btn-color: #b91c1c;
+            --bs-btn-bg: #fff;
+            --bs-btn-border-color: #dc2626;
+            --bs-btn-active-color: #991b1b;
+            --bs-btn-active-bg: #fee2e2;
+            --bs-btn-active-border-color: #dc2626;
+        }
+
+        @media (hover: hover) and (pointer: fine) {
+            .btn-primary:not(.show):hover { background-color: #124a85; border-color: #124a85; color: #fff; }
+            .btn-outline-secondary:not(.show):hover,
+            .btn-secondary:not(.show):hover { background-color: var(--band); border-color: #94a3b8; color: var(--ink); }
+            .btn-danger:not(.show):hover { background-color: #fef2f2; border-color: #dc2626; color: #991b1b; }
+            .santos-enlace:hover { text-decoration: underline !important; }
+        }
+
+        /* =============================================
+           BARRA DE ACCIONES (STICKY)
+           ============================================= */
+
+        .santos-barra {
+            position: sticky;
+            bottom: 0;
+            z-index: 10;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+            margin-top: 16px;
+            padding: 18px 0 14px;
+            background: linear-gradient(to top, var(--bg) 70%, rgba(248, 250, 252, 0));
+        }
+
+        .santos-barra .btn {
+            min-width: 210px;
+        }
+
+        .santos-login {
+            padding: 4px 0 20px;
+            font-size: .95rem;
+        }
+
+        /* =============================================
+           MODAL
+           ============================================= */
+
+        .modal {
+            --bs-modal-border-color: #e2e8f0;
+            --bs-modal-border-radius: 18px;
+            --bs-modal-box-shadow: 0 16px 48px rgba(15, 23, 42, .14);
+            --bs-modal-header-border-color: transparent;
+            --bs-modal-footer-border-color: transparent;
+            --bs-backdrop-bg: #0f172a;
+            --bs-backdrop-opacity: .45;
+        }
+
+        .modal-title {
+            font-weight: 800;
+            letter-spacing: -.01em;
+        }
+
+        .modal-body {
+            color: var(--ink-2);
+            padding-top: 0;
+        }
+
+        /* =============================================
+           ENTRADA SUTIL
+           ============================================= */
+
+        @keyframes santos-entra {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: none; }
+        }
+
+        .santos-ap { animation: santos-entra 260ms var(--ease) backwards; }
+        .santos-ap-2 { animation-delay: 60ms; }
+
+        @media (max-width: 575.98px) {
+            .santos-marca-sub { display: none; }
+            .santos-panel { padding: 18px; }
+            .santos-barra > div,
+            .santos-barra .btn { width: 100%; }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after {
+                animation: none !important;
+                transition: none !important;
+            }
+
+            .btn:active {
+                transform: none;
+            }
+        }
+
+    </style>
+
 </head>
 
-<body class="bg-light">
+<body>
+
+<a class="santos-skip" href="#contenido">Saltar al contenido</a>
 
 
 <!-- ===================================================== -->
 <!-- ENCABEZADO                                            -->
 <!-- ===================================================== -->
 
-<nav class="navbar navbar-expand-lg bg-white border-bottom shadow-sm">
+<nav class="navbar santos-navbar">
 
     <div class="container">
 
         <a class="navbar-brand fw-bold"
            th:href="@{/}">
 
-            <i class="bi bi-hospital me-2"></i>
+            <span class="santos-simbolo">
 
-            Sistema Hospitalario
+                <svg viewBox="0 0 24 24"
+                     width="20"
+                     height="20"
+                     fill="none"
+                     stroke="currentColor"
+                     stroke-width="2.5"
+                     stroke-linecap="round"
+                     aria-hidden="true">
+                    <path d="M12 5v14M5 12h14"/>
+                </svg>
+
+            </span>
+
+            <span class="santos-marca-nombre">SANTOS</span>
+
+            <span class="santos-marca-sub">Sistema Hospitalario</span>
 
         </a>
 
@@ -50,460 +529,472 @@
 <!-- CONTENIDO                                             -->
 <!-- ===================================================== -->
 
-<main class="container py-5">
+<main class="container santos-main" id="contenido">
 
 
-    <div class="row justify-content-center">
+    <!-- ================================= -->
+    <!-- TÍTULO                            -->
+    <!-- ================================= -->
 
-        <div class="col-12 col-lg-9 col-xl-8">
+    <div class="santos-cab santos-ap">
 
+        <span class="santos-cab-icono">
 
-            <div class="card border-0 shadow-sm">
+            <i class="bi bi-person-plus-fill" aria-hidden="true"></i>
 
-                <div class="card-body p-4 p-md-5">
+        </span>
 
+        <div>
 
-                    <!-- ================================= -->
-                    <!-- TÍTULO                            -->
-                    <!-- ================================= -->
-
-                    <div class="text-center mb-4">
-
-                        <div class="mb-3">
-
-                            <i class="bi bi-person-plus-fill fs-1 text-primary"></i>
-
-                        </div>
-
-                        <h1 class="h3 fw-bold mb-2"
-                            th:text="${origen == 'recepcion'}
+            <h1 th:text="${origen == 'recepcion'}
         ? 'Registrar paciente'
         : 'Crear cuenta de paciente'">
 
-                            Crear cuenta de paciente
+                Crear cuenta de paciente
 
-                        </h1>
+            </h1>
 
 
-                        <p class="text-secondary mb-0"
-                           th:text="${origen == 'recepcion'}
+            <p th:text="${origen == 'recepcion'}
         ? 'Complete los datos del paciente para continuar con el proceso de recepción.'
         : 'Complete sus datos para registrarse en el Sistema Informático Hospitalario.'">
 
-                            Complete sus datos para registrarse
-                            en el Sistema Informático Hospitalario.
+                Complete sus datos para registrarse
+                en el Sistema Informático Hospitalario.
 
-                        </p>
-
-                    </div>
-
-
-                    <!-- ================================= -->
-                    <!-- ERROR GENERAL                     -->
-                    <!-- ================================= -->
-
-                    <div class="alert alert-danger"
-                         role="alert"
-                         th:if="${resultadoValidacion.tieneError('registro')}">
-
-                        <i class="bi bi-exclamation-triangle-fill me-2"></i>
-
-                        <span th:text="${resultadoValidacion.obtenerMensaje('registro')}">
-                            No fue posible completar el registro.
-                        </span>
-
-                    </div>
-
-
-                    <!-- ================================= -->
-                    <!-- FORMULARIO                        -->
-                    <!-- ================================= -->
-
-                    <form th:action="@{/registro}"
-                          th:object="${registro}"
-                          method="post"
-                          novalidate>
-
-
-                        <!-- ================================================= -->
-                        <!-- CU-05 FA03 - CONSERVAR ORIGEN RECEPCIÓN          -->
-                        <!-- ================================================= -->
-
-                        <input type="hidden"
-                               name="origen"
-                               th:value="${origen}">
-
-
-                        <!-- CSRF -->
-
-                        <input type="hidden"
-                               th:if="${_csrf != null}"
-                               th:name="${_csrf.parameterName}"
-                               th:value="${_csrf.token}">
-
-
-                        <!-- ================================= -->
-                        <!-- NOMBRE COMPLETO                   -->
-                        <!-- ================================= -->
-
-                        <div class="mb-4">
-
-                            <label for="nombreCompleto"
-                                   class="form-label fw-semibold">
-
-                                Nombre completo
-                                <span class="text-danger">*</span>
-
-                            </label>
-
-                            <input type="text"
-                                   id="nombreCompleto"
-                                   class="form-control"
-                                   th:classappend="${resultadoValidacion.tieneError('nombreCompleto')} ? ' is-invalid'"
-                                   th:field="*{nombreCompleto}"
-                                   autocomplete="name">
-
-                            <div class="invalid-feedback"
-                                 th:if="${resultadoValidacion.tieneError('nombreCompleto')}"
-                                 th:text="${resultadoValidacion.obtenerMensaje('nombreCompleto')}">
-                            </div>
-
-                        </div>
-
-
-                        <!-- ================================= -->
-                        <!-- DPI                               -->
-                        <!-- ================================= -->
-
-                        <div class="mb-4">
-
-                            <label for="dpi"
-                                   class="form-label fw-semibold">
-
-                                DPI
-                                <span class="text-danger">*</span>
-
-                            </label>
-
-                            <input type="text"
-                                   id="dpi"
-                                   class="form-control"
-                                   th:classappend="${resultadoValidacion.tieneError('dpi')} ? ' is-invalid'"
-                                   th:field="*{dpi}"
-                                   inputmode="numeric"
-                                   autocomplete="off">
-
-                            <div class="invalid-feedback"
-                                 th:if="${resultadoValidacion.tieneError('dpi')}"
-                                 th:text="${resultadoValidacion.obtenerMensaje('dpi')}">
-                            </div>
-
-                            <div class="form-text">
-                                Ingrese los 13 dígitos de su DPI.
-                            </div>
-
-                        </div>
-
-
-                        <!-- ================================= -->
-                        <!-- NIT                               -->
-                        <!-- ================================= -->
-
-                        <div class="mb-4">
-
-                            <label for="nit"
-                                   class="form-label fw-semibold">
-
-                                NIT
-                                <span class="text-danger">*</span>
-
-                            </label>
-
-                            <input type="text"
-                                   id="nit"
-                                   class="form-control"
-                                   th:classappend="${resultadoValidacion.tieneError('nit')} ? ' is-invalid'"
-                                   th:field="*{nit}"
-                                   autocomplete="off">
-
-                            <div class="invalid-feedback"
-                                 th:if="${resultadoValidacion.tieneError('nit')}"
-                                 th:text="${resultadoValidacion.obtenerMensaje('nit')}">
-                            </div>
-
-                            <div class="form-text">
-                                Debe contener entre 8 y 9 caracteres alfanuméricos.
-                            </div>
-
-                        </div>
-
-
-                        <!-- ================================= -->
-                        <!-- TELÉFONO                          -->
-                        <!-- ================================= -->
-
-                        <div class="mb-4">
-
-                            <label for="telefono"
-                                   class="form-label fw-semibold">
-
-                                Número de teléfono
-                                <span class="text-danger">*</span>
-
-                            </label>
-
-                            <input type="text"
-                                   id="telefono"
-                                   class="form-control"
-                                   th:classappend="${resultadoValidacion.tieneError('telefono')} ? ' is-invalid'"
-                                   th:field="*{telefono}"
-                                   inputmode="numeric"
-                                   autocomplete="tel">
-
-                            <div class="invalid-feedback"
-                                 th:if="${resultadoValidacion.tieneError('telefono')}"
-                                 th:text="${resultadoValidacion.obtenerMensaje('telefono')}">
-                            </div>
-
-                        </div>
-
-
-                        <!-- ================================= -->
-                        <!-- SEGURO MÉDICO                     -->
-                        <!-- ================================= -->
-
-                        <div class="mb-4">
-
-                            <label for="numeroSeguro"
-                                   class="form-label fw-semibold">
-
-                                Número de afiliado del seguro médico
-
-                                <span class="text-secondary fw-normal">
-                                    (opcional)
-                                </span>
-
-                            </label>
-
-                            <input type="text"
-                                   id="numeroSeguro"
-                                   class="form-control"
-                                   th:classappend="${resultadoValidacion.tieneError('numeroSeguro')} ? ' is-invalid'"
-                                   th:field="*{numeroSeguro}"
-                                   autocomplete="off">
-
-                            <div class="invalid-feedback"
-                                 th:if="${resultadoValidacion.tieneError('numeroSeguro')}"
-                                 th:text="${resultadoValidacion.obtenerMensaje('numeroSeguro')}">
-                            </div>
-
-                        </div>
-
-
-                        <hr class="my-4">
-
-
-                        <!-- ================================= -->
-                        <!-- CORREO                            -->
-                        <!-- ================================= -->
-
-                        <div class="mb-4">
-
-                            <label for="correoElectronico"
-                                   class="form-label fw-semibold">
-
-                                Correo electrónico
-                                <span class="text-danger">*</span>
-
-                            </label>
-
-                            <input type="email"
-                                   id="correoElectronico"
-                                   class="form-control"
-                                   th:classappend="${resultadoValidacion.tieneError('correoElectronico')} ? ' is-invalid'"
-                                   th:field="*{correoElectronico}"
-                                   autocomplete="email">
-
-                            <div class="invalid-feedback"
-                                 th:if="${resultadoValidacion.tieneError('correoElectronico')}"
-                                 th:text="${resultadoValidacion.obtenerMensaje('correoElectronico')}">
-                            </div>
-
-                        </div>
-
-
-                        <!-- ================================= -->
-                        <!-- USUARIO                           -->
-                        <!-- ================================= -->
-
-                        <div class="mb-4">
-
-                            <label for="nombreUsuario"
-                                   class="form-label fw-semibold">
-
-                                Nombre de usuario
-                                <span class="text-danger">*</span>
-
-                            </label>
-
-                            <input type="text"
-                                   id="nombreUsuario"
-                                   class="form-control"
-                                   th:classappend="${resultadoValidacion.tieneError('nombreUsuario')} ? ' is-invalid'"
-                                   th:field="*{nombreUsuario}"
-                                   autocomplete="username">
-
-                            <div class="invalid-feedback"
-                                 th:if="${resultadoValidacion.tieneError('nombreUsuario')}"
-                                 th:text="${resultadoValidacion.obtenerMensaje('nombreUsuario')}">
-                            </div>
-
-                            <div class="form-text">
-                                Entre 8 y 9 caracteres alfanuméricos.
-                            </div>
-
-                        </div>
-
-
-                        <!-- ================================= -->
-                        <!-- CONTRASEÑA                        -->
-                        <!-- ================================= -->
-
-                        <div class="mb-4">
-
-                            <label for="contrasena"
-                                   class="form-label fw-semibold">
-
-                                Contraseña
-                                <span class="text-danger">*</span>
-
-                            </label>
-
-
-                            <div class="input-group has-validation">
-
-                                <input type="password"
-                                       id="contrasena"
-                                       class="form-control"
-                                       th:classappend="${resultadoValidacion.tieneError('contrasena')} ? ' is-invalid'"
-                                       th:field="*{contrasena}"
-                                       autocomplete="new-password">
-
-
-                                <button type="button"
-                                        class="btn btn-outline-secondary"
-                                        id="btnMostrarContrasena"
-                                        aria-label="Mostrar contraseña">
-
-                                    <i class="bi bi-eye"
-                                       id="iconoContrasena"></i>
-
-                                </button>
-
-
-                                <div class="invalid-feedback"
-                                     th:if="${resultadoValidacion.tieneError('contrasena')}"
-                                     th:text="${resultadoValidacion.obtenerMensaje('contrasena')}">
-                                </div>
-
-                            </div>
-
-
-                            <div class="form-text">
-                                La contraseña debe contener al menos
-                                12 caracteres.
-                            </div>
-
-                        </div>
-
-
-                        <!-- ================================= -->
-                        <!-- BOTONES                           -->
-                        <!-- ================================= -->
-
-                        <div class="row g-3 mt-4">
-
-
-                            <div class="col-12 col-md-6">
-
-                                <!-- CU-02 - REGISTRO NORMAL -->
-
-                                <button th:if="${origen != 'recepcion'}"
-                                        type="button"
-                                        class="btn btn-outline-secondary w-100"
-                                        data-bs-toggle="modal"
-                                        data-bs-target="#modalVolverPortal">
-
-                                    <i class="bi bi-arrow-left me-2"></i>
-
-                                    Volver al portal
-
-                                </button>
-
-
-                                <!-- CU-05 FA03 - REGISTRO DESDE RECEPCIÓN -->
-
-                                <a th:if="${origen == 'recepcion'}"
-                                   th:href="@{/interno/recepcion}"
-                                   class="btn btn-outline-secondary w-100">
-
-                                    <i class="bi bi-arrow-left me-2"></i>
-
-                                    Volver a Recepción
-
-                                </a>
-
-                            </div>
-
-
-                            <div class="col-12 col-md-6">
-
-                                <button type="submit"
-                                        class="btn btn-primary w-100">
-
-                                    <i class="bi bi-person-check-fill me-2"></i>
-
-                                    Registrarse
-
-                                </button>
-
-                            </div>
-
-
-                        </div>
-
-
-                    </form>
-
-
-                    <!-- ================================= -->
-                    <!-- LOGIN                             -->
-                    <!-- ================================= -->
-
-                    <div th:if="${origen != 'recepcion'}"
-                         class="text-center mt-4">
-
-    <span class="text-secondary">
-        ¿Ya tiene una cuenta?
-    </span>
-
-                        <a th:href="@{/login}"
-                           class="text-decoration-none fw-semibold">
-
-                            Iniciar sesión
-
-                        </a>
-
-                    </div>
-
-
-                </div>
-
-            </div>
+            </p>
 
         </div>
 
     </div>
+
+
+    <!-- ================================= -->
+    <!-- ERROR GENERAL                     -->
+    <!-- ================================= -->
+
+    <div class="alert alert-danger"
+         role="alert"
+         th:if="${resultadoValidacion.tieneError('registro')}">
+
+        <i class="bi bi-exclamation-triangle-fill me-2" aria-hidden="true"></i>
+
+        <span th:text="${resultadoValidacion.obtenerMensaje('registro')}">
+            No fue posible completar el registro.
+        </span>
+
+    </div>
+
+
+    <!-- ================================= -->
+    <!-- FORMULARIO                        -->
+    <!-- ================================= -->
+
+    <form th:action="@{/registro}"
+          th:object="${registro}"
+          method="post"
+          class="santos-form"
+          novalidate>
+
+
+        <!-- ================================================= -->
+        <!-- CU-05 FA03 - CONSERVAR ORIGEN RECEPCIÓN          -->
+        <!-- ================================================= -->
+
+        <input type="hidden"
+               name="origen"
+               th:value="${origen}">
+
+
+        <!-- CSRF -->
+
+        <input type="hidden"
+               th:if="${_csrf != null}"
+               th:name="${_csrf.parameterName}"
+               th:value="${_csrf.token}">
+
+
+        <div class="santos-rejilla santos-ap santos-ap-2">
+
+
+            <!-- ============================================= -->
+            <!-- DATOS DEL PACIENTE                            -->
+            <!-- ============================================= -->
+
+            <section class="santos-panel santos-datos">
+
+
+                <!-- ================================= -->
+                <!-- NOMBRE COMPLETO                   -->
+                <!-- ================================= -->
+
+                <div class="santos-campo santos-span2">
+
+                    <label for="nombreCompleto"
+                           class="form-label fw-semibold">
+
+                        Nombre completo
+                        <span class="text-danger">*</span>
+
+                    </label>
+
+                    <input type="text"
+                           id="nombreCompleto"
+                           class="form-control"
+                           th:classappend="${resultadoValidacion.tieneError('nombreCompleto')} ? ' is-invalid'"
+                           th:field="*{nombreCompleto}"
+                           autocomplete="name">
+
+                    <div class="invalid-feedback"
+                         th:if="${resultadoValidacion.tieneError('nombreCompleto')}"
+                         th:text="${resultadoValidacion.obtenerMensaje('nombreCompleto')}">
+                    </div>
+
+                </div>
+
+
+                <!-- ================================= -->
+                <!-- DPI                               -->
+                <!-- ================================= -->
+
+                <div class="santos-campo">
+
+                    <label for="dpi"
+                           class="form-label fw-semibold">
+
+                        DPI
+                        <span class="text-danger">*</span>
+
+                    </label>
+
+                    <input type="text"
+                           id="dpi"
+                           class="form-control"
+                           th:classappend="${resultadoValidacion.tieneError('dpi')} ? ' is-invalid'"
+                           th:field="*{dpi}"
+                           inputmode="numeric"
+                           autocomplete="off"
+                           aria-describedby="ayudaDpi">
+
+                    <div class="invalid-feedback"
+                         th:if="${resultadoValidacion.tieneError('dpi')}"
+                         th:text="${resultadoValidacion.obtenerMensaje('dpi')}">
+                    </div>
+
+                    <div class="form-text" id="ayudaDpi">
+                        Ingrese los 13 dígitos de su DPI.
+                    </div>
+
+                </div>
+
+
+                <!-- ================================= -->
+                <!-- NIT                               -->
+                <!-- ================================= -->
+
+                <div class="santos-campo">
+
+                    <label for="nit"
+                           class="form-label fw-semibold">
+
+                        NIT
+                        <span class="text-danger">*</span>
+
+                    </label>
+
+                    <input type="text"
+                           id="nit"
+                           class="form-control"
+                           th:classappend="${resultadoValidacion.tieneError('nit')} ? ' is-invalid'"
+                           th:field="*{nit}"
+                           autocomplete="off"
+                           aria-describedby="ayudaNit">
+
+                    <div class="invalid-feedback"
+                         th:if="${resultadoValidacion.tieneError('nit')}"
+                         th:text="${resultadoValidacion.obtenerMensaje('nit')}">
+                    </div>
+
+                    <div class="form-text" id="ayudaNit">
+                        Debe contener entre 8 y 9 caracteres alfanuméricos.
+                    </div>
+
+                </div>
+
+
+                <!-- ================================= -->
+                <!-- TELÉFONO                          -->
+                <!-- ================================= -->
+
+                <div class="santos-campo">
+
+                    <label for="telefono"
+                           class="form-label fw-semibold">
+
+                        Número de teléfono
+                        <span class="text-danger">*</span>
+
+                    </label>
+
+                    <input type="text"
+                           id="telefono"
+                           class="form-control"
+                           th:classappend="${resultadoValidacion.tieneError('telefono')} ? ' is-invalid'"
+                           th:field="*{telefono}"
+                           inputmode="numeric"
+                           autocomplete="tel">
+
+                    <div class="invalid-feedback"
+                         th:if="${resultadoValidacion.tieneError('telefono')}"
+                         th:text="${resultadoValidacion.obtenerMensaje('telefono')}">
+                    </div>
+
+                </div>
+
+
+                <!-- ================================= -->
+                <!-- SEGURO MÉDICO                     -->
+                <!-- ================================= -->
+
+                <div class="santos-campo">
+
+                    <label for="numeroSeguro"
+                           class="form-label fw-semibold">
+
+                        Número de afiliado del seguro médico
+
+                        <span class="text-secondary fw-normal">
+                            (opcional)
+                        </span>
+
+                    </label>
+
+                    <input type="text"
+                           id="numeroSeguro"
+                           class="form-control"
+                           th:classappend="${resultadoValidacion.tieneError('numeroSeguro')} ? ' is-invalid'"
+                           th:field="*{numeroSeguro}"
+                           autocomplete="off">
+
+                    <div class="invalid-feedback"
+                         th:if="${resultadoValidacion.tieneError('numeroSeguro')}"
+                         th:text="${resultadoValidacion.obtenerMensaje('numeroSeguro')}">
+                    </div>
+
+                </div>
+
+
+            </section>
+
+
+            <!-- ============================================= -->
+            <!-- DATOS DE ACCESO                               -->
+            <!-- ============================================= -->
+
+            <section class="santos-panel santos-cuenta">
+
+
+                <!-- ================================= -->
+                <!-- CORREO                            -->
+                <!-- ================================= -->
+
+                <div class="santos-campo">
+
+                    <label for="correoElectronico"
+                           class="form-label fw-semibold">
+
+                        Correo electrónico
+                        <span class="text-danger">*</span>
+
+                    </label>
+
+                    <input type="email"
+                           id="correoElectronico"
+                           class="form-control"
+                           th:classappend="${resultadoValidacion.tieneError('correoElectronico')} ? ' is-invalid'"
+                           th:field="*{correoElectronico}"
+                           autocomplete="email">
+
+                    <div class="invalid-feedback"
+                         th:if="${resultadoValidacion.tieneError('correoElectronico')}"
+                         th:text="${resultadoValidacion.obtenerMensaje('correoElectronico')}">
+                    </div>
+
+                </div>
+
+
+                <!-- ================================= -->
+                <!-- USUARIO                           -->
+                <!-- ================================= -->
+
+                <div class="santos-campo">
+
+                    <label for="nombreUsuario"
+                           class="form-label fw-semibold">
+
+                        Nombre de usuario
+                        <span class="text-danger">*</span>
+
+                    </label>
+
+                    <input type="text"
+                           id="nombreUsuario"
+                           class="form-control"
+                           th:classappend="${resultadoValidacion.tieneError('nombreUsuario')} ? ' is-invalid'"
+                           th:field="*{nombreUsuario}"
+                           autocomplete="username"
+                           aria-describedby="ayudaUsuario">
+
+                    <div class="invalid-feedback"
+                         th:if="${resultadoValidacion.tieneError('nombreUsuario')}"
+                         th:text="${resultadoValidacion.obtenerMensaje('nombreUsuario')}">
+                    </div>
+
+                    <div class="form-text" id="ayudaUsuario">
+                        Entre 8 y 9 caracteres alfanuméricos.
+                    </div>
+
+                </div>
+
+
+                <!-- ================================= -->
+                <!-- CONTRASEÑA                        -->
+                <!-- ================================= -->
+
+                <div class="santos-campo">
+
+                    <label for="contrasena"
+                           class="form-label fw-semibold">
+
+                        Contraseña
+                        <span class="text-danger">*</span>
+
+                    </label>
+
+
+                    <div class="input-group has-validation">
+
+                        <input type="password"
+                               id="contrasena"
+                               class="form-control"
+                               th:classappend="${resultadoValidacion.tieneError('contrasena')} ? ' is-invalid'"
+                               th:field="*{contrasena}"
+                               autocomplete="new-password"
+                               aria-describedby="ayudaContrasena">
+
+
+                        <button type="button"
+                                class="btn btn-outline-secondary"
+                                id="btnMostrarContrasena"
+                                aria-label="Mostrar contraseña">
+
+                            <i class="bi bi-eye"
+                               id="iconoContrasena"></i>
+
+                        </button>
+
+
+                        <div class="invalid-feedback"
+                             th:if="${resultadoValidacion.tieneError('contrasena')}"
+                             th:text="${resultadoValidacion.obtenerMensaje('contrasena')}">
+                        </div>
+
+                    </div>
+
+
+                    <div class="form-text" id="ayudaContrasena">
+                        La contraseña debe contener al menos
+                        12 caracteres.
+                    </div>
+
+                </div>
+
+
+            </section>
+
+
+        </div>
+
+
+        <!-- ================================= -->
+        <!-- BOTONES                           -->
+        <!-- ================================= -->
+
+        <div class="santos-barra">
+
+
+            <div>
+
+                <!-- CU-02 - REGISTRO NORMAL -->
+
+                <button th:if="${origen != 'recepcion'}"
+                        type="button"
+                        class="btn btn-outline-secondary"
+                        data-bs-toggle="modal"
+                        data-bs-target="#modalVolverPortal">
+
+                    <i class="bi bi-arrow-left" aria-hidden="true"></i>
+
+                    Volver al portal
+
+                </button>
+
+
+                <!-- CU-05 FA03 - REGISTRO DESDE RECEPCIÓN -->
+
+                <a th:if="${origen == 'recepcion'}"
+                   th:href="@{/interno/recepcion}"
+                   class="btn btn-outline-secondary">
+
+                    <i class="bi bi-arrow-left" aria-hidden="true"></i>
+
+                    Volver a Recepción
+
+                </a>
+
+            </div>
+
+
+            <div>
+
+                <button type="submit"
+                        class="btn btn-primary">
+
+                    <i class="bi bi-person-check-fill" aria-hidden="true"></i>
+
+                    Registrarse
+
+                </button>
+
+            </div>
+
+
+        </div>
+
+
+    </form>
+
+
+    <!-- ================================= -->
+    <!-- LOGIN                             -->
+    <!-- ================================= -->
+
+    <div th:if="${origen != 'recepcion'}"
+         class="text-center santos-login">
+
+        <span class="text-secondary">
+            ¿Ya tiene una cuenta?
+        </span>
+
+        <a th:href="@{/login}"
+           class="santos-enlace text-decoration-none fw-semibold">
+
+            Iniciar sesión
+
+        </a>
+
+    </div>
+
 
 </main>
 

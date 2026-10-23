@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="es"
       xmlns:th="http://www.thymeleaf.org">
@@ -10,6 +9,10 @@
     <meta name="viewport"
           content="width=device-width, initial-scale=1.0">
 
+    <meta name="theme-color" content="#ffffff">
+
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='9' fill='%231b5fa6'/%3E%3Cpath d='M16 8v16M8 16h16' stroke='white' stroke-width='3' stroke-linecap='round'/%3E%3C/svg%3E">
+
     <title>
         Especialidades por Sede | SANTOS Clínica Médica
     </title>
@@ -18,119 +21,524 @@
          BOOTSTRAP 5
          ================================================ -->
 
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
+          rel="stylesheet">
+
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+          rel="stylesheet">
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"
           rel="stylesheet">
 
     <style>
 
         /* =============================================
-           ESTILOS GENERALES
+           TOKENS SANTOS
            ============================================= */
 
+        :root {
+            --font: 'Plus Jakarta Sans', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+            --ink: #0f172a; --ink-2: #334155; --muted: #475569;
+            --line: #e2e8f0; --line-strong: #cbd5e1; --bg: #f8fafc; --band: #f1f5f9;
+            --blue: #1b5fa6; --blue-dark: #124a85; --blue-tint: #eaf2fb; --blue-line: #c7dbf0;
+            --teal: #0f766e; --teal-tint: #e6f6f3; --danger: #b91c1c;
+            --ring: rgba(27, 95, 166, .22); --ease: cubic-bezier(.23, 1, .32, 1);
+
+            --bs-body-font-family: var(--font);
+            --bs-body-color: #0f172a;
+            --bs-body-bg: #f8fafc;
+            --bs-border-color: #e2e8f0;
+            --bs-secondary-color: #475569;
+            --bs-primary-rgb: 27, 95, 166;
+            --bs-success-rgb: 15, 118, 110;
+            --bs-danger-rgb: 185, 28, 28;
+            --bs-link-color: #1b5fa6;
+        }
+
         body {
-            background: #f3f6fb;
-            font-family: Arial, sans-serif;
-            color: #243247;
+            font-family: var(--font);
+            color: var(--ink);
+            background: var(--bg);
+            -webkit-font-smoothing: antialiased;
         }
 
-        .encabezado {
-            background: linear-gradient(
-                    135deg,
-                    #123c72,
-                    #1b5fa6
-            );
-            color: white;
-            padding: 34px 0;
-            margin-bottom: 35px;
+        :where(a, button, input, select, textarea):focus-visible {
+            outline: 3px solid var(--teal);
+            outline-offset: 2px;
         }
 
-        .encabezado h1 {
-            font-size: 28px;
-            font-weight: bold;
-            margin-bottom: 7px;
+        .btn:focus-visible,
+        .page-link:focus-visible,
+        .dropdown-item:focus-visible {
+            outline: 3px solid var(--teal);
+            outline-offset: 2px;
+            box-shadow: none;
         }
 
-        .encabezado p {
-            margin-bottom: 0;
-            opacity: 0.9;
+        .santos-skip {
+            position: absolute;
+            left: 12px;
+            top: -64px;
+            z-index: 50;
+            padding: 10px 16px;
+            border-radius: 10px;
+            background: var(--ink);
+            color: #fff;
+            font-weight: 700;
+            text-decoration: none;
         }
 
-        .tarjeta {
-            background: white;
-            border-radius: 14px;
-            padding: 25px;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
-            margin-bottom: 25px;
+        .santos-skip:focus {
+            top: 12px;
+            color: #fff;
         }
 
-        .titulo-seccion {
-            font-size: 19px;
-            font-weight: bold;
-            color: #123c72;
+        /* =============================================
+           BARRA DE MARCA
+           ============================================= */
+
+        .santos-navbar {
+            position: sticky;
+            top: 0;
+            z-index: 30;
+            min-height: 60px;
+            display: flex;
+            align-items: center;
+            background: rgba(255, 255, 255, .92);
+            backdrop-filter: saturate(160%) blur(10px);
+            border-bottom: 1px solid var(--line);
+        }
+
+        .santos-marca {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 1rem;
+            font-weight: 800;
+            letter-spacing: .14em;
+            color: var(--ink);
+        }
+
+        .santos-simbolo {
+            display: grid;
+            place-items: center;
+            width: 38px;
+            height: 38px;
+            border-radius: 12px;
+            background: var(--blue);
+            color: #fff;
+        }
+
+        /* =============================================
+           ENCABEZADO, FRANJA Y PANELES
+           ============================================= */
+
+        main.container {
+            max-width: 1240px;
+            padding-top: 22px;
+            padding-bottom: 14px;
+        }
+
+        .santos-encabezado {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            align-items: flex-end;
+            gap: 12px 20px;
+            margin-bottom: 14px;
+        }
+
+        .santos-encabezado h1 {
+            margin: 0 0 4px;
+            font-size: clamp(1.4rem, 1.1rem + 1vw, 1.75rem);
+            font-weight: 800;
+            letter-spacing: -.025em;
+            text-wrap: balance;
+        }
+
+        .santos-encabezado p {
+            margin: 0;
+            color: var(--muted);
+            font-size: .95rem;
+        }
+
+        .santos-encabezado-acc {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .santos-franja {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 4px 10px;
+            margin-bottom: 12px;
+            padding: 9px 16px;
+            border: 1px solid var(--blue-line);
+            border-radius: 12px;
+            background: var(--blue-tint);
+            color: #0d3a6b;
+            font-size: .875rem;
+        }
+
+        .santos-franja h2 {
+            margin: 0;
+            font-size: .875rem;
+            font-weight: 800;
+        }
+
+        .santos-franja p {
+            margin: 0;
+            color: var(--ink-2);
+        }
+
+        .santos-panel {
+            border: 1px solid var(--line);
+            border-radius: 18px;
+            background: #fff;
+            box-shadow: 0 1px 2px rgba(15, 23, 42, .03);
+        }
+
+        .santos-filtros {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: flex-end;
+            gap: 10px 28px;
+            margin-bottom: 12px;
+            padding: 14px 20px;
+        }
+
+        .santos-filtros h2 {
+            margin: 0;
+            padding-bottom: 12px;
+            font-size: .95rem;
+            font-weight: 800;
+        }
+
+        .santos-filtros form {
+            flex: 1 1 420px;
+        }
+
+        .santos-panel-cab {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            align-items: center;
+            gap: 8px;
+            padding: 14px 20px;
+            border-bottom: 1px solid var(--line);
+        }
+
+        .santos-panel-cab h2 {
+            margin: 0;
+            font-size: 1rem;
+            font-weight: 800;
+            letter-spacing: -.01em;
+        }
+
+        .santos-total {
+            display: inline-flex;
+            align-items: center;
+            padding: 5px 12px;
+            border: 1px solid var(--blue-line);
+            border-radius: 999px;
+            background: var(--blue-tint);
+            color: var(--blue-dark);
+            font-size: .78rem;
+            font-weight: 700;
+        }
+
+        .santos-panel-pie {
+            padding: 10px 16px;
+            border-top: 1px solid var(--line);
+        }
+
+        /* =============================================
+           ALERTAS
+           ============================================= */
+
+        .alert {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 12px;
+            padding: 11px 16px;
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: .92rem;
+        }
+
+        .alert::before {
+            content: "";
+            flex: none;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: currentColor;
+        }
+
+        .alert-success {
+            background: #ecfdf5;
+            border-color: #a7f3d0;
+            color: #065f46;
+        }
+
+        .alert-danger {
+            background: #fef2f2;
+            border-color: #fecaca;
+            color: #991b1b;
+        }
+
+        /* =============================================
+           CAMPOS
+           ============================================= */
+
+        .form-label {
+            margin-bottom: 6px;
+            color: var(--ink-2);
+            font-size: .78rem;
+            font-weight: 700;
+        }
+
+        .form-control {
+            min-height: 46px;
+            border: 1.5px solid var(--line-strong);
+            border-radius: 12px;
+            background: #fff;
+            color: var(--ink);
+            font-size: 1rem;
+        }
+
+        .form-control::placeholder {
+            color: #64748b;
+            opacity: 1;
+        }
+
+        .form-control:focus {
+            border-color: var(--blue);
+            box-shadow: 0 0 0 4px var(--ring);
+            outline: 0;
+        }
+
+        /* =============================================
+           BOTONES
+           ============================================= */
+
+        .btn {
+            --bs-btn-border-radius: 12px;
+            --bs-btn-font-weight: 700;
+            --bs-btn-padding-x: 1.1rem;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            min-height: 44px;
+            border-width: 1.5px;
+            font-family: inherit;
+            transition: transform 160ms var(--ease);
+        }
+
+        .btn:active {
+            transform: scale(.97);
+        }
+
+        .btn-sm {
+            --bs-btn-padding-x: .8rem;
+            --bs-btn-font-size: .8125rem;
+            min-height: 34px;
+        }
+
+        .btn:disabled,
+        .btn.disabled {
+            background: var(--line);
+            border-color: var(--line-strong);
+            color: var(--ink-2);
+            opacity: 1;
+        }
+
+        .santos-pildora {
+            border-radius: 999px;
+        }
+
+        .btn:not(.show):hover {
+            color: var(--bs-btn-color);
+            background-color: var(--bs-btn-bg);
+            border-color: var(--bs-btn-border-color);
         }
 
         .btn-principal {
-            background-color: #1b5fa6;
-            color: white;
-            border: none;
+            --bs-btn-color: #fff;
+            --bs-btn-bg: #1b5fa6;
+            --bs-btn-border-color: #1b5fa6;
+            --bs-btn-active-color: #fff;
+            --bs-btn-active-bg: #0d3a6b;
+            --bs-btn-active-border-color: #0d3a6b;
         }
 
-        .btn-principal:hover {
-            background-color: #12477d;
-            color: white;
+        .btn-outline-secondary {
+            --bs-btn-color: #334155;
+            --bs-btn-bg: #fff;
+            --bs-btn-border-color: #cbd5e1;
+            --bs-btn-active-color: #0f172a;
+            --bs-btn-active-bg: #e2e8f0;
+            --bs-btn-active-border-color: #94a3b8;
         }
 
-        .tabla-cabecera th {
-            background: #eaf2fc;
-            color: #123c72;
-            font-weight: bold;
+        .btn-outline-primary {
+            --bs-btn-color: #1b5fa6;
+            --bs-btn-bg: #fff;
+            --bs-btn-border-color: #c7dbf0;
+            --bs-btn-active-color: #124a85;
+            --bs-btn-active-bg: #d6e6f7;
+            --bs-btn-active-border-color: #1b5fa6;
         }
 
-        .tabla-cabecera th,
-        .table td {
-            padding: 15px 12px;
+        .btn-outline-warning {
+            --bs-btn-color: #92400e;
+            --bs-btn-bg: #fff;
+            --bs-btn-border-color: #f1d9a8;
+            --bs-btn-active-color: #78350f;
+            --bs-btn-active-bg: #fef3c7;
+            --bs-btn-active-border-color: #92400e;
+        }
+
+        .btn-outline-danger {
+            --bs-btn-color: #b91c1c;
+            --bs-btn-bg: #fff;
+            --bs-btn-border-color: #dc2626;
+            --bs-btn-active-color: #991b1b;
+            --bs-btn-active-bg: #fee2e2;
+            --bs-btn-active-border-color: #dc2626;
+        }
+
+        .btn-outline-success {
+            --bs-btn-color: #0f766e;
+            --bs-btn-bg: #fff;
+            --bs-btn-border-color: #99d5cd;
+            --bs-btn-active-color: #0b5f58;
+            --bs-btn-active-bg: #ccece7;
+            --bs-btn-active-border-color: #0f766e;
+        }
+
+        @media (hover: hover) and (pointer: fine) {
+            .btn-principal:not(.show):hover { background-color: #124a85; border-color: #124a85; color: #fff; }
+            .btn-outline-secondary:not(.show):hover { background-color: var(--band); border-color: #94a3b8; color: var(--ink); }
+            .btn-outline-primary:not(.show):hover { background-color: var(--blue-tint); border-color: var(--blue); color: var(--blue-dark); }
+            .btn-outline-warning:not(.show):hover { background-color: #fffbeb; border-color: #92400e; color: #78350f; }
+            .btn-outline-danger:not(.show):hover { background-color: #fef2f2; border-color: #dc2626; color: #991b1b; }
+            .btn-outline-success:not(.show):hover { background-color: var(--teal-tint); border-color: var(--teal); color: #0b5f58; }
+            .dropdown-item:hover { background-color: #fef2f2; }
+            .page-link:hover { background-color: var(--blue-tint); border-color: var(--blue); color: var(--blue-dark); }
+            .santos-tabla tbody tr:hover td { background: var(--bg); }
+            .santos-tabla tbody tr:hover td.tabla-vacia { background: transparent; }
+        }
+
+        /* =============================================
+           ETIQUETAS DE ESTADO
+           ============================================= */
+
+        .santos-estado {
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            padding: 5px 11px;
+            border: 1px solid var(--line-strong);
+            border-radius: 999px;
+            font-size: .78rem;
+            font-weight: 700;
+            line-height: 1;
+        }
+
+        .santos-estado::before {
+            content: "";
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            background: currentColor;
+        }
+
+        .santos-estado-activo {
+            background: #ecfdf5;
+            border-color: #a7f3d0;
+            color: #065f46;
+        }
+
+        .santos-estado-inactivo {
+            background: var(--band);
+            color: var(--ink-2);
+        }
+
+        /* =============================================
+           TABLA
+           ============================================= */
+
+        .santos-tabla {
+            --bs-table-bg: transparent;
+            min-width: 760px;
+            margin: 0;
+            font-size: .9rem;
+            color: var(--ink);
+        }
+
+        .santos-tabla thead th {
+            position: sticky;
+            top: 0;
+            z-index: 2;
+            padding: 11px 16px;
+            border: 0;
+            background: #f8fafc;
+            box-shadow: inset 0 -1px 0 var(--line);
+            color: var(--muted);
+            font-size: .72rem;
+            font-weight: 700;
+            letter-spacing: .06em;
+            text-transform: uppercase;
+            white-space: nowrap;
+        }
+
+        .santos-tabla td {
+            padding: 11px 16px;
+            border: 0;
+            border-bottom: 1px solid var(--line);
+            box-shadow: none;
             vertical-align: middle;
         }
 
-        .badge-activa {
-            background: #d9f7e7;
-            color: #126b3b;
-            padding: 7px 12px;
-            border-radius: 20px;
-            font-size: 13px;
-            font-weight: bold;
+        .santos-tabla tbody tr:last-child td {
+            border-bottom: 0;
         }
 
-        .badge-inactiva {
-            background: #ffe8e8;
-            color: #a52a2a;
-            padding: 7px 12px;
-            border-radius: 20px;
-            font-size: 13px;
-            font-weight: bold;
+        .santos-tabla td:first-child {
+            color: var(--muted);
+            font-weight: 700;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .santos-num {
+            text-align: right;
+            white-space: nowrap;
+            font-variant-numeric: tabular-nums;
+        }
+
+        td.santos-num {
+            font-weight: 700;
         }
 
         .tabla-vacia {
-            padding: 40px;
-            color: #6b7280;
+            padding: 40px 16px !important;
+            color: var(--ink-2);
             text-align: center;
         }
 
-        .pagination .page-link {
-            color: #1b5fa6;
-        }
-
-        .pagination .active .page-link {
-            background: #1b5fa6;
-            border-color: #1b5fa6;
-            color: white;
-        }
-
-        .pie {
-            text-align: center;
-            color: #64748b;
-            padding: 20px;
-            font-size: 13px;
+        .santos-acciones {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: flex-end;
+            align-items: center;
+            gap: 6px;
         }
 
         /* =============================================
@@ -139,14 +547,25 @@
 
         .menu-acciones {
             display: inline-block;
-            margin-left: 6px;
         }
 
         .menu-acciones .dropdown-menu {
-            min-width: 170px;
+            --bs-dropdown-min-width: 170px;
+            --bs-dropdown-padding-x: 6px;
+            --bs-dropdown-padding-y: 6px;
+            --bs-dropdown-border-color: #e2e8f0;
+            --bs-dropdown-border-radius: 12px;
+            --bs-dropdown-box-shadow: 0 8px 24px rgba(15, 23, 42, .08);
+            --bs-dropdown-link-active-bg: #fee2e2;
+            --bs-dropdown-link-hover-bg: #fff;
         }
 
         .menu-acciones .dropdown-item {
+            display: flex;
+            align-items: center;
+            min-height: 40px;
+            border-radius: 8px;
+            font-weight: 600;
             cursor: pointer;
         }
 
@@ -154,48 +573,227 @@
             margin: 0;
         }
 
-        @media (max-width: 768px) {
+        /* =============================================
+           PAGINACIÓN
+           ============================================= */
 
-            .encabezado h1 {
-                font-size: 23px;
+        .pagination {
+            --bs-pagination-color: #1b5fa6;
+            --bs-pagination-bg: #fff;
+            --bs-pagination-border-color: #cbd5e1;
+            --bs-pagination-hover-color: #1b5fa6;
+            --bs-pagination-hover-bg: #fff;
+            --bs-pagination-hover-border-color: #cbd5e1;
+            --bs-pagination-focus-color: #1b5fa6;
+            --bs-pagination-focus-bg: #fff;
+            --bs-pagination-active-color: #fff;
+            --bs-pagination-active-bg: #1b5fa6;
+            --bs-pagination-active-border-color: #1b5fa6;
+            --bs-pagination-disabled-color: #334155;
+            --bs-pagination-disabled-bg: #e2e8f0;
+            --bs-pagination-disabled-border-color: #cbd5e1;
+            gap: 6px;
+            margin: 0;
+        }
+
+        .page-link {
+            display: grid;
+            place-items: center;
+            min-width: 40px;
+            min-height: 40px;
+            border-radius: 10px !important;
+            font-size: .875rem;
+            font-weight: 700;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .page-item:not(:first-child) .page-link {
+            margin-left: 0;
+        }
+
+        /* =============================================
+           PIE
+           ============================================= */
+
+        .santos-pie {
+            padding: 12px 16px 18px;
+            text-align: center;
+            color: var(--muted);
+            font-size: .78rem;
+        }
+
+        /* =============================================
+           ENTRADA SUTIL
+           ============================================= */
+
+        @keyframes santos-entra {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: none; }
+        }
+
+        .santos-ap { animation: santos-entra 260ms var(--ease) backwards; }
+        .santos-ap-2 { animation-delay: 50ms; }
+        .santos-ap-3 { animation-delay: 100ms; }
+        .santos-ap-4 { animation-delay: 150ms; }
+
+        /* =============================================
+           ESCRITORIO: PÁGINA FIJA, SOLO LA TABLA HACE SCROLL
+           ============================================= */
+
+        @media (min-width: 992px) and (min-height: 640px) {
+
+            body.santos-pagina-lista {
+                height: 100dvh;
+                overflow: hidden;
+                display: flex;
+                flex-direction: column;
             }
 
-            .tarjeta {
-                padding: 15px;
+            body.santos-pagina-lista > main {
+                flex: 1 1 0;
+                min-height: 0;
+                display: flex;
+                flex-direction: column;
             }
 
+            .santos-encabezado,
+            .santos-franja,
+            .santos-filtros,
+            .alert {
+                flex: none;
+            }
+
+            .santos-tabla-panel {
+                flex: 1 1 0;
+                min-height: 0;
+                display: flex;
+                flex-direction: column;
+                overflow: hidden;
+            }
+
+            .santos-tabla-panel > .table-responsive {
+                flex: 1 1 auto;
+                min-height: 0;
+                overflow: auto;
+            }
+
+            .santos-panel-cab,
+            .santos-panel-pie {
+                flex: none;
+            }
+
+            .santos-pie {
+                flex: none;
+                padding: 4px 16px 10px;
+            }
+        }
+
+        @media (max-width: 575.98px) {
+            .santos-encabezado-acc,
+            .santos-encabezado-acc .btn {
+                width: 100%;
+            }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after {
+                animation: none !important;
+                transition: none !important;
+            }
+
+            .btn:active {
+                transform: none;
+            }
         }
 
     </style>
 
 </head>
 
-<body>
+<body class="santos-pagina-lista">
+
+<a class="santos-skip" href="#contenido">Saltar al contenido</a>
 
 
 <!-- =====================================================
-     ENCABEZADO
+     BARRA DE MARCA
      ===================================================== -->
 
-<header class="encabezado">
+<header class="santos-navbar">
 
     <div class="container">
 
-        <h1>
-            SANTOS | Especialidades por Sede
-        </h1>
+        <div class="santos-marca">
 
-        <p>
-            Configuración y administración de especialidades
-            médicas por sucursal.
-        </p>
+            <span class="santos-simbolo">
+
+                <svg viewBox="0 0 24 24"
+                     width="20"
+                     height="20"
+                     fill="none"
+                     stroke="currentColor"
+                     stroke-width="2.5"
+                     stroke-linecap="round"
+                     aria-hidden="true">
+                    <path d="M12 5v14M5 12h14"/>
+                </svg>
+
+            </span>
+
+            SANTOS
+
+        </div>
 
     </div>
 
 </header>
 
 
-<main class="container">
+<main class="container" id="contenido">
+
+
+    <!-- =================================================
+         ENCABEZADO DE PÁGINA
+         ================================================= -->
+
+    <div class="santos-encabezado santos-ap">
+
+        <div>
+
+            <h1>
+                Especialidades por Sede
+            </h1>
+
+            <p>
+                Configuración y administración de especialidades
+                médicas por sucursal.
+            </p>
+
+        </div>
+
+        <div class="santos-encabezado-acc">
+
+            <!-- =====================================================
+                 CU-14 - REGRESAR AL PANEL DE CATÁLOGOS
+                 ===================================================== -->
+
+            <a th:href="@{/admin/catalogos}"
+               class="btn btn-outline-secondary santos-pildora">
+
+                <i class="bi bi-arrow-left" aria-hidden="true"></i>
+                Regresar a Catálogos
+
+            </a>
+
+            <a th:href="@{/branch-specialty/create}"
+               class="btn btn-principal">
+                <i class="bi bi-plus-lg" aria-hidden="true"></i>
+                Asignar Especialidad
+            </a>
+
+        </div>
+
+    </div>
 
 
     <!-- =================================================
@@ -218,40 +816,22 @@
 
 
     <!-- =================================================
-         BARRA DE ACCIONES
+         FRANJA INFORMATIVA
          ================================================= -->
 
-    <section class="tarjeta">
+    <section class="santos-franja santos-ap santos-ap-2"
+             aria-labelledby="tituloAsignaciones">
 
-        <div class="d-flex flex-wrap
-                    justify-content-between
-                    align-items-center
-                    gap-3">
+        <i class="bi bi-info-circle" aria-hidden="true"></i>
 
-            <div>
+        <h2 id="tituloAsignaciones">
+            Asignaciones registradas
+        </h2>
 
-                <h2 class="titulo-seccion">
-                    Asignaciones registradas
-                </h2>
-
-                <p class="text-muted mb-0">
-                    Consulte las especialidades habilitadas
-                    en cada sucursal.
-                </p>
-
-            </div>
-
-            <div class="d-flex flex-wrap gap-2">
-
-
-                <a th:href="@{/branch-specialty/create}"
-                   class="btn btn-principal">
-                    + Asignar Especialidad
-                </a>
-
-            </div>
-
-        </div>
+        <p>
+            Consulte las especialidades habilitadas
+            en cada sucursal.
+        </p>
 
     </section>
 
@@ -260,9 +840,10 @@
          FILTRO POR ID
          ================================================= -->
 
-    <section class="tarjeta">
+    <section class="santos-panel santos-filtros santos-ap santos-ap-3"
+             aria-labelledby="tituloBusqueda">
 
-        <h2 class="titulo-seccion mb-3">
+        <h2 id="tituloBusqueda">
             Buscar asignación
         </h2>
 
@@ -293,6 +874,7 @@
 
                     <button type="submit"
                             class="btn btn-principal">
+                        <i class="bi bi-search" aria-hidden="true"></i>
                         Buscar
                     </button>
 
@@ -318,18 +900,16 @@
          TABLA DE ASIGNACIONES
          ================================================= -->
 
-    <section class="tarjeta">
+    <section class="santos-panel santos-tabla-panel santos-ap santos-ap-4"
+             aria-labelledby="tituloListado">
 
-        <div class="d-flex flex-wrap
-                    justify-content-between
-                    align-items-center
-                    gap-2 mb-3">
+        <div class="santos-panel-cab">
 
-            <h2 class="titulo-seccion mb-0">
+            <h2 id="tituloListado">
                 Listado de especialidades por sede
             </h2>
 
-            <span class="text-muted small"
+            <span class="santos-total"
                   th:if="${!filtrando and totalRegistros != null}"
                   th:text="|Total: ${totalRegistros} asignaciones|">
                 Total de asignaciones
@@ -340,8 +920,7 @@
 
         <div class="table-responsive">
 
-            <table class="table table-hover
-                          table-bordered align-middle">
+            <table class="table santos-tabla align-middle">
 
                 <thead class="tabla-cabecera">
 
@@ -359,7 +938,8 @@
                         Especialidad
                     </th>
 
-                    <th scope="col">
+                    <th scope="col"
+                        class="santos-num">
                         Precio de consulta
                     </th>
 
@@ -367,7 +947,8 @@
                         Estado
                     </th>
 
-                    <th scope="col">
+                    <th scope="col"
+                        class="text-end">
                         Acciones
                     </th>
 
@@ -396,7 +977,7 @@
                         Medicina General
                     </td>
 
-                    <td>
+                    <td class="santos-num">
                         Q
                         <span th:text="${#numbers.formatDecimal(
                                 asignacion.precioConsulta,
@@ -412,12 +993,12 @@
                     <td>
 
                         <span th:if="${asignacion.activo}"
-                              class="badge-activa">
+                              class="santos-estado santos-estado-activo">
                             Activa
                         </span>
 
                         <span th:unless="${asignacion.activo}"
-                              class="badge-inactiva">
+                              class="santos-estado santos-estado-inactivo">
                             Inactiva
                         </span>
 
@@ -425,139 +1006,143 @@
 
                     <td>
 
-                        <!-- =================================
-                             CONSULTAR ASIGNACIÓN
-                             ================================= -->
+                        <div class="santos-acciones">
 
-                        <a th:href="@{/branch-specialty(
+                            <!-- =================================
+                                 CONSULTAR ASIGNACIÓN
+                                 ================================= -->
+
+                            <a th:href="@{/branch-specialty(
                                 id=${asignacion.id}
                         )}"
-                           class="btn btn-sm btn-outline-primary">
-                            Consultar
-                        </a>
+                               class="btn btn-sm btn-outline-primary">
+                                Consultar
+                            </a>
 
 
-                        <!-- =====================================================
-                             CU-14 - CATÁLOGO 9
-                             EDITAR PRECIO DE CONSULTA
-                             ===================================================== -->
-                        <!--
-                             Permite modificar el precio configurado para
-                             una especialidad dentro de una sucursal.
+                            <!-- =====================================================
+                                 CU-14 - CATÁLOGO 9
+                                 EDITAR PRECIO DE CONSULTA
+                                 ===================================================== -->
+                            <!--
+                                 Permite modificar el precio configurado para
+                                 una especialidad dentro de una sucursal.
 
-                             SEGURIDAD:
-                             - Solo aparece en asignaciones activas.
-                             - El Service valida al Administrador.
-                             - Protege citas antiguas pendientes de pago.
-                             - Conserva los precios acordados.
-                             - Registra auditoría.
-                             ===================================================== -->
+                                 SEGURIDAD:
+                                 - Solo aparece en asignaciones activas.
+                                 - El Service valida al Administrador.
+                                 - Protege citas antiguas pendientes de pago.
+                                 - Conserva los precios acordados.
+                                 - Registra auditoría.
+                                 ===================================================== -->
 
-                        <a th:if="${asignacion.activo}"
-                           th:href="@{/branch-specialty/edit/{id}(id=${asignacion.id})}"
-                           class="btn btn-sm btn-outline-warning ms-1">
+                            <a th:if="${asignacion.activo}"
+                               th:href="@{/branch-specialty/edit/{id}(id=${asignacion.id})}"
+                               class="btn btn-sm btn-outline-warning">
 
-                            Editar Precio
+                                Editar Precio
 
-                        </a>
-
-
-                        <!-- =================================
-                             CU-13 - FA02
-                             ELIMINAR / DESACTIVAR
-                             =================================
-
-                             Solo se muestra el menú cuando
-                             la asignación está activa.
-
-                             Se utiliza POST y se solicita
-                             confirmación al Administrador.
-
-                             El Service realiza la validación
-                             de citas, permisos y auditoría.
-
-                             ================================= -->
-
-                        <div class="dropdown menu-acciones"
-                             th:if="${asignacion.activo}">
-
-                            <!-- BOTÓN DEL MENÚ -->
-
-                            <button type="button"
-                                    class="btn btn-sm btn-outline-danger dropdown-toggle"
-                                    data-bs-toggle="dropdown"
-                                    aria-expanded="false">
-                                Acciones
-                            </button>
+                            </a>
 
 
-                            <!-- OPCIONES DISPONIBLES -->
+                            <!-- =================================
+                                 CU-13 - FA02
+                                 ELIMINAR / DESACTIVAR
+                                 =================================
 
-                            <ul class="dropdown-menu dropdown-menu-end">
+                                 Solo se muestra el menú cuando
+                                 la asignación está activa.
 
-                                <li>
+                                 Se utiliza POST y se solicita
+                                 confirmación al Administrador.
 
-                                    <!-- =========================
-                                         FORMULARIO DE ELIMINACIÓN
-                                         =========================
+                                 El Service realiza la validación
+                                 de citas, permisos y auditoría.
 
-                                         Thymeleaf con Spring MVC
-                                         agrega automáticamente
-                                         el campo CSRF cuando se
-                                         procesa th:action.
+                                 ================================= -->
 
-                                         No utilizamos un enlace
-                                         GET para desactivar.
+                            <div class="dropdown menu-acciones"
+                                 th:if="${asignacion.activo}">
 
-                                         ========================= -->
+                                <!-- BOTÓN DEL MENÚ -->
 
-                                    <form method="post"
-                                          th:action="@{/branch-specialty/delete/{id}(id=${asignacion.id})}"
-                                          onsubmit="return confirm('¿Confirmar eliminación?');">
+                                <button type="button"
+                                        class="btn btn-sm btn-outline-danger dropdown-toggle"
+                                        data-bs-toggle="dropdown"
+                                        data-bs-popper-config='{"strategy":"fixed"}'
+                                        aria-expanded="false">
+                                    Acciones
+                                </button>
 
-                                        <button type="submit"
-                                                class="dropdown-item text-danger">
-                                            Eliminar
-                                        </button>
 
-                                    </form>
+                                <!-- OPCIONES DISPONIBLES -->
 
-                                </li>
+                                <ul class="dropdown-menu dropdown-menu-end">
 
-                            </ul>
+                                    <li>
+
+                                        <!-- =========================
+                                             FORMULARIO DE ELIMINACIÓN
+                                             =========================
+
+                                             Thymeleaf con Spring MVC
+                                             agrega automáticamente
+                                             el campo CSRF cuando se
+                                             procesa th:action.
+
+                                             No utilizamos un enlace
+                                             GET para desactivar.
+
+                                             ========================= -->
+
+                                        <form method="post"
+                                              th:action="@{/branch-specialty/delete/{id}(id=${asignacion.id})}"
+                                              onsubmit="return confirm('¿Confirmar eliminación?');">
+
+                                            <button type="submit"
+                                                    class="dropdown-item text-danger">
+                                                Eliminar
+                                            </button>
+
+                                        </form>
+
+                                    </li>
+
+                                </ul>
+
+                            </div>
+
+
+
+                            <!-- =========================================
+                                 CU-13 - REACTIVAR ASIGNACIÓN
+                                 =========================================
+
+                                 Solo aparece cuando la asignación
+                                 se encuentra inactiva.
+
+                                 Utiliza POST con protección CSRF.
+
+                                 La validación de permisos, sede,
+                                 especialidad y auditoría se realiza
+                                 en el backend.
+
+                                 ========================================= -->
+
+                            <form th:unless="${asignacion.activo}"
+                                  th:action="@{/branch-specialty/reactivate/{id}(id=${asignacion.id})}"
+                                  method="post"
+                                  class="d-inline"
+                                  onsubmit="return confirm('¿Confirmar reactivación?');">
+
+                                <button type="submit"
+                                        class="btn btn-sm btn-outline-success">
+                                    Reactivar
+                                </button>
+
+                            </form>
 
                         </div>
-
-
-
-                        <!-- =========================================
-                             CU-13 - REACTIVAR ASIGNACIÓN
-                             =========================================
-
-                             Solo aparece cuando la asignación
-                             se encuentra inactiva.
-
-                             Utiliza POST con protección CSRF.
-
-                             La validación de permisos, sede,
-                             especialidad y auditoría se realiza
-                             en el backend.
-
-                             ========================================= -->
-
-                        <form th:unless="${asignacion.activo}"
-                              th:action="@{/branch-specialty/reactivate/{id}(id=${asignacion.id})}"
-                              method="post"
-                              class="d-inline ms-2"
-                              onsubmit="return confirm('¿Confirmar reactivación?');">
-
-                            <button type="submit"
-                                    class="btn btn-sm btn-outline-success">
-                                Reactivar
-                            </button>
-
-                        </form>
-
 
                     </td>
 
@@ -602,7 +1187,7 @@
                       and totalPaginas != null
                       and totalPaginas > 1}"
              aria-label="Paginación de asignaciones"
-             class="mt-4">
+             class="santos-panel-pie">
 
             <ul class="pagination justify-content-center
                        flex-wrap">
@@ -667,21 +1252,6 @@
 
     </section>
 
-    <!-- =====================================================
-         CU-14 - REGRESAR AL PANEL DE CATÁLOGOS
-         ===================================================== -->
-
-    <div class="mt-3 mb-4">
-
-        <a th:href="@{/admin/catalogos}"
-           class="btn btn-outline-secondary">
-
-            &#8592; Regresar a Catálogos
-
-        </a>
-
-    </div>
-
 </main>
 
 
@@ -692,7 +1262,7 @@
      PIE DE PÁGINA
      ===================================================== -->
 
-<footer class="pie">
+<footer class="santos-pie">
 
     SANTOS Clínica Médica
     |

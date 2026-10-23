@@ -1,3 +1,4 @@
+
 HELP.md
 target/
 .mvn/wrapper/maven-wrapper.jar
@@ -31,3 +32,35 @@ build/
 
 ### VS Code ###
 .vscode/
+
+# =====================================================
+# SANTOS CLINICA MEDICA - ARCHIVOS PRIVADOS
+# =====================================================
+
+# Variables de entorno y credenciales
+.env
+.env.*
+!.env.example
+
+# Configuracion privada de Docker
+/.env.docker.local
+
+# Respaldos de PostgreSQL
+*.backup
+*.bak
+*.dump
+/backups/
+/.santos/
+
+# Llaves, certificados y almacenes privados
+*.pem
+*.key
+*.p12
+*.pfx
+*.jks
+
+# Archivos temporales y registros
+*.log
+logs/
+*.tmp
+*.swp

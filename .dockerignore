@@ -1,0 +1,40 @@
+
+# =====================================================
+# SANTOS CLÍNICA MÉDICA
+# DOCKERIGNORE - ARCHIVOS EXCLUIDOS
+# =====================================================
+
+# Git y GitKraken
+.git/
+.gitignore
+
+# IntelliJ IDEA
+.idea/
+*.iml
+
+# Archivos generados por Maven
+target/
+
+# Variables y archivos privados
+.env
+.env.*
+!.env.example
+
+# Archivos de registro
+*.log
+logs/
+
+# Respaldos y bases de datos locales
+*.backup
+*.bak
+*.dump
+
+# Llaves y certificados privados
+*.pem
+*.key
+
+# Archivos temporales
+*.tmp
+*.swp
+.DS_Store
+Thumbs.db
