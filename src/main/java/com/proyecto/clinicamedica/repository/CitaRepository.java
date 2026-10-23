@@ -826,5 +826,88 @@ public interface CitaRepository
     );
 
 
+    // =====================================================
+    // CU-16 - GESTIÓN DE AGENDA MÉDICA
+    // CONSULTAR CITAS PARA EL CALENDARIO
+    // =====================================================
+    //
+    // Permite obtener las citas del médico dentro
+    // del período solicitado.
+    //
+    // SEGURIDAD:
+    // - Filtra por el médico indicado.
+    // - El Service validará que corresponda
+    //   al médico autenticado.
+    //
+    // ESTADOS EXCLUIDOS:
+    // - Pendiente
+    // - Pendiente de pago
+    // - No asistió
+    // - Cancelada
+    //
+    // COMPATIBILIDAD:
+    // - Incluye citas normales y seguimientos.
+    // - Contempla fechaHoraFin nula.
+    // - No modifica citas existentes.
+    // - No altera la disponibilidad del CU-03.
+    //
+    // INTERVALO:
+    // - Fecha inicial inclusiva.
+    // - Fecha final exclusiva.
+    // =====================================================
+
+    @Query("""
+            SELECT DISTINCT c
+            FROM Cita c
+
+            JOIN FETCH c.paciente
+            JOIN FETCH c.estadoCita
+            JOIN FETCH c.sucursal
+
+            WHERE c.medico.id = :idMedico
+
+              AND LOWER(TRIM(c.estadoCita.nombre))
+                  NOT IN (
+                      'pendiente',
+                      'pendiente de pago',
+                      'no asistió',
+                      'no asistio',
+                      'cancelada'
+                  )
+
+              AND (
+                  (
+                      c.fechaHoraFin IS NOT NULL
+                      AND c.fechaHoraCita < :hasta
+                      AND c.fechaHoraFin > :desde
+                  )
+
+                  OR
+
+                  (
+                      c.fechaHoraFin IS NULL
+                      AND c.fechaHoraCita >= :desde
+                      AND c.fechaHoraCita < :hasta
+                  )
+              )
+
+            ORDER BY
+                c.fechaHoraCita ASC,
+                c.id ASC
+            """)
+    List<Cita> buscarCitasParaAgendaMedica(
+
+            @Param("idMedico")
+            Integer idMedico,
+
+            @Param("desde")
+            OffsetDateTime desde,
+
+            @Param("hasta")
+            OffsetDateTime hasta
+    );
+
+
+
 
 }

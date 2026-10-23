@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="es"
       xmlns:th="http://www.thymeleaf.org">
@@ -10,116 +9,382 @@
     <meta name="viewport"
           content="width=device-width, initial-scale=1.0">
 
+    <meta name="theme-color" content="#1B5FA6">
+
     <title>
         Exámenes de Laboratorio | Clínica Médica SANTOS
     </title>
 
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Crect width='24' height='24' rx='6' fill='%231B5FA6'/%3E%3Cpath d='M9 4h6v5h5v6h-5v5H9v-5H4V9h5z' fill='white'/%3E%3C/svg%3E">
+
     <!-- =====================================================
-         BOOTSTRAP 5
+         BOOTSTRAP 5 E ICONOS
          ===================================================== -->
 
     <link
             href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
             rel="stylesheet">
 
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"
+          rel="stylesheet">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
+          rel="stylesheet">
+
     <!-- =====================================================
-         ESTILOS
+         TEMA SANTOS (autocontenido: no depende de otros archivos)
          ===================================================== -->
 
     <style>
 
+        :root {
+            --bs-body-font-family: 'Plus Jakarta Sans', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+            --bs-body-color: #0f172a;
+            --bs-body-bg: #f8fafc;
+            --bs-secondary-color: #475569;
+            --bs-border-color: #cbd5e1;
+            --bs-primary: #1b5fa6;
+            --bs-primary-rgb: 27, 95, 166;
+            --bs-success-rgb: 15, 118, 110;
+            --bs-danger-rgb: 185, 28, 28;
+            --bs-link-color: #124a85;
+
+            --sa-ink: #0f172a;
+            --sa-muted: #475569;
+            --sa-line: #e2e8f0;
+            --sa-line-strong: #cbd5e1;
+            --sa-band: #f1f5f9;
+            --sa-blue: #1b5fa6;
+            --sa-blue-dark: #124a85;
+            --sa-blue-tint: #eaf2fb;
+            --sa-blue-line: #c7dbf0;
+            --sa-teal: #0f766e;
+            --sa-ring: rgba(27, 95, 166, 0.22);
+            --sa-ease: cubic-bezier(0.23, 1, 0.32, 1);
+        }
+
+        /* ---------- Base ---------- */
+
+        html, body { min-height: 100dvh; }
+
         body {
-            background: #f1f5f9;
-            font-family: Arial, sans-serif;
-            color: #1e293b;
+            display: flex;
+            flex-direction: column;
+            color: var(--sa-ink);
+            background: var(--bs-body-bg);
+            -webkit-font-smoothing: antialiased;
         }
 
-        .encabezado {
-            background: linear-gradient(
-                    135deg,
-                    #0f172a,
-                    #1e40af
-            );
-            color: white;
-            padding: 28px;
-            border-radius: 14px;
-            margin-bottom: 25px;
+        body > main { flex: 1 0 auto; }
+
+        h1, h2, h3 { color: var(--sa-ink); letter-spacing: -0.02em; text-wrap: balance; }
+        .text-secondary { color: var(--sa-muted) !important; }
+        .text-muted { color: var(--sa-muted) !important; }
+
+        :where(a, button, input, select, textarea):focus-visible {
+            outline: 3px solid var(--sa-teal);
+            outline-offset: 2px;
+            box-shadow: none;
         }
 
-        .encabezado h2 {
-            font-weight: 700;
-            margin-bottom: 6px;
+        .skip-link {
+            position: absolute;
+            left: 16px;
+            top: -64px;
+            z-index: 2000;
+            padding: 10px 16px;
+            border-radius: 10px;
+            background: var(--sa-ink);
+            color: #fff;
+            font-weight: 600;
+            text-decoration: none;
         }
 
-        .encabezado p {
-            margin-bottom: 0;
-            opacity: 0.85;
+        .skip-link:focus { top: 12px; color: #fff; }
+
+        /* ---------- Barra superior ---------- */
+
+        .santos-navbar {
+            min-height: 60px;
+            padding-block: 8px;
+            background: rgba(255, 255, 255, 0.92);
+            backdrop-filter: saturate(160%) blur(10px);
+            -webkit-backdrop-filter: saturate(160%) blur(10px);
+            border-bottom: 1px solid var(--sa-line);
         }
 
-        .tarjeta {
-            background: white;
-            border: 1px solid #e2e8f0;
-            border-radius: 14px;
-            padding: 24px;
-            margin-bottom: 24px;
-            box-shadow: 0 3px 12px rgba(0, 0, 0, 0.05);
+        .santos-marca {
+            display: inline-flex;
+            align-items: center;
+            gap: 12px;
+            margin: 0;
+            font-size: 1.15rem;
+            font-weight: 800;
+            letter-spacing: 0.08em;
+            color: var(--sa-ink);
         }
 
-        .titulo-seccion {
-            font-size: 1.1rem;
-            font-weight: 700;
-            color: #0f172a;
-            margin-bottom: 18px;
+        .santos-simbolo {
+            display: grid;
+            place-items: center;
+            width: 38px;
+            height: 38px;
+            border-radius: 12px;
+            background: var(--sa-blue);
+            color: #fff;
+            font-size: 1.2rem;
         }
+
+        /* ---------- Botones ---------- */
+
+        .btn {
+            --bs-btn-border-radius: 12px;
+            --bs-btn-font-weight: 600;
+            --bs-btn-disabled-opacity: 1;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 42px;
+            transition: background-color 160ms var(--sa-ease), border-color 160ms var(--sa-ease),
+            color 160ms var(--sa-ease), transform 120ms var(--sa-ease);
+        }
+
+        .btn:active { transform: scale(0.97); }
+        .btn-sm { min-height: 34px; --bs-btn-border-radius: 10px; }
+
+        .btn-primary {
+            --bs-btn-bg: #1b5fa6;
+            --bs-btn-border-color: #1b5fa6;
+            --bs-btn-color: #fff;
+            --bs-btn-hover-bg: #124a85;
+            --bs-btn-hover-border-color: #124a85;
+            --bs-btn-hover-color: #fff;
+            --bs-btn-active-bg: #0d3a6b;
+            --bs-btn-active-border-color: #0d3a6b;
+            --bs-btn-active-color: #fff;
+        }
+
+        .btn-outline-primary {
+            --bs-btn-color: #124a85;
+            --bs-btn-border-color: #1b5fa6;
+            --bs-btn-hover-bg: #eaf2fb;
+            --bs-btn-hover-border-color: #1b5fa6;
+            --bs-btn-hover-color: #0f2f52;
+            --bs-btn-active-bg: #1b5fa6;
+            --bs-btn-active-border-color: #1b5fa6;
+            --bs-btn-active-color: #ffffff;
+        }
+
+        .btn-outline-secondary {
+            --bs-btn-color: #334155;
+            --bs-btn-border-color: #cbd5e1;
+            --bs-btn-hover-bg: #f1f5f9;
+            --bs-btn-hover-border-color: #94a3b8;
+            --bs-btn-hover-color: #0f172a;
+            --bs-btn-active-bg: #e2e8f0;
+            --bs-btn-active-border-color: #94a3b8;
+            --bs-btn-active-color: #0f172a;
+        }
+
+        .btn-outline-danger {
+            --bs-btn-color: #b91c1c;
+            --bs-btn-border-color: #dc2626;
+            --bs-btn-hover-bg: #fef2f2;
+            --bs-btn-hover-color: #991b1b;
+            --bs-btn-hover-border-color: #b91c1c;
+            --bs-btn-active-bg: #fee2e2;
+            --bs-btn-active-color: #991b1b;
+            --bs-btn-active-border-color: #b91c1c;
+        }
+
+        /* ---------- Formularios ---------- */
 
         .form-label {
+            margin-bottom: 0.3rem;
+            font-size: 0.85rem;
             font-weight: 600;
-            font-size: 0.9rem;
+            color: var(--sa-ink);
         }
 
         .form-control,
         .form-select {
-            border-radius: 8px;
+            min-height: 42px;
+            padding-block: 0.45rem;
+            border: 1.5px solid var(--sa-line-strong);
+            border-radius: 12px;
+            background-color: #fff;
+            color: var(--sa-ink);
+            font-size: 0.93rem;
+            font-weight: 500;
+            transition: border-color 160ms var(--sa-ease), box-shadow 160ms var(--sa-ease);
         }
 
-        .btn {
-            border-radius: 8px;
+        .form-control::placeholder { color: #64748b; font-weight: 400; opacity: 1; }
+
+        @media (hover: hover) and (pointer: fine) {
+            .form-control:hover, .form-select:hover { border-color: #94a3b8; }
         }
 
-        .table thead th {
-            background: #eaf0f8;
-            color: #334155;
+        .form-control:focus,
+        .form-select:focus {
+            border-color: var(--sa-blue);
+            background-color: #fff;
+            color: var(--sa-ink);
+            box-shadow: 0 0 0 4px var(--sa-ring);
+        }
+
+        /* ---------- Avisos ---------- */
+
+        .alert { --bs-alert-border-radius: 14px; padding: 12px 16px; font-size: 0.93rem; }
+        .alert-success { --bs-alert-bg: #ecfdf5; --bs-alert-border-color: #a7f3d0; --bs-alert-color: #064e3b; }
+        .alert-danger { --bs-alert-bg: #fef2f2; --bs-alert-border-color: #fecaca; --bs-alert-color: #991b1b; }
+
+        .informacion {
+            padding: 10px 16px;
+            border: 1px solid var(--sa-blue-line);
+            border-left: 4px solid var(--sa-blue);
+            border-radius: 12px;
+            background: var(--sa-blue-tint);
+            color: #0f2f52;
             font-size: 0.88rem;
-            white-space: nowrap;
-            vertical-align: middle;
+            line-height: 1.5;
         }
 
-        .table tbody td {
-            vertical-align: middle;
-            font-size: 0.9rem;
+        .informacion strong { color: #0f2f52; }
+
+        /* ---------- Estructura de listado ---------- */
+
+        .santos-vista-lista { display: flex; flex-direction: column; gap: 14px; }
+        .santos-vista-lista > * { flex: none; }
+        .santos-vista-lista > .alert { margin-bottom: 0; }
+
+        .santos-encabezado-pagina {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px 24px;
         }
+
+        .santos-encabezado-pagina h1 { margin: 0; font-size: 1.5rem; font-weight: 800; letter-spacing: -0.03em; }
+        .santos-encabezado-pagina p { font-size: 0.92rem; }
+
+        .santos-panel,
+        .card.santos-panel {
+            border: 1px solid var(--sa-line);
+            border-radius: 18px;
+            background: #ffffff;
+            box-shadow: 0 1px 2px rgba(15, 23, 42, 0.03);
+            animation: sa-aparecer 380ms var(--sa-ease) backwards;
+        }
+
+        .santos-panel > .card-header { border-bottom: 1px solid var(--sa-line); border-radius: 18px 18px 0 0; }
+        .santos-panel > .card-footer { border-top: 1px solid var(--sa-line); border-radius: 0 0 18px 18px; }
+        .santos-panel-cab { padding: 12px 20px; }
+        .santos-panel-cab h2 { margin: 0; font-size: 1.05rem; font-weight: 800; }
+        .santos-panel-pie { padding: 10px 20px; }
+
+        /* ---------- Tabla compacta con encabezado fijo ---------- */
+
+        .santos-tabla {
+            --bs-table-bg: transparent;
+            --bs-table-hover-bg: #f1f5f9;
+            --bs-table-cell-padding-y: 0.55rem;
+            --bs-table-cell-padding-x: 0.75rem;
+            --bs-table-border-color: #e2e8f0;
+            font-size: 0.9rem;
+            color: var(--sa-ink);
+        }
+
+        .santos-tabla thead th {
+            position: sticky;
+            top: 0;
+            z-index: 2;
+            background: #f8fafc;
+            border-bottom: 0;
+            box-shadow: inset 0 -1px 0 var(--sa-line);
+            color: var(--sa-muted);
+            font-size: 0.72rem;
+            font-weight: 700;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+            white-space: nowrap;
+        }
+
+        .santos-rol {
+            padding: 5px 10px;
+            border-radius: 999px;
+            background: var(--sa-blue-tint);
+            color: var(--sa-blue-dark);
+            font-size: 0.78rem;
+            font-weight: 700;
+        }
+
+        .santos-estado {
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            padding: 5px 11px;
+            border: 1px solid var(--sa-line-strong);
+            border-radius: 999px;
+            font-size: 0.78rem;
+            font-weight: 700;
+            line-height: 1;
+        }
+
+        .santos-estado::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: currentColor; }
+        .santos-estado-activo { background: #ecfdf5; border-color: #a7f3d0; color: #065f46; }
+        .santos-estado-inactivo { background: var(--sa-band); border-color: var(--sa-line-strong); color: #334155; }
+
+        /* ---------- Paginación ---------- */
+
+        .pagination {
+            --bs-pagination-color: #124a85;
+            --bs-pagination-bg: #ffffff;
+            --bs-pagination-border-color: #cbd5e1;
+            --bs-pagination-hover-color: #0f172a;
+            --bs-pagination-hover-bg: #eaf2fb;
+            --bs-pagination-hover-border-color: #c7dbf0;
+            --bs-pagination-focus-color: #0f172a;
+            --bs-pagination-focus-bg: #eaf2fb;
+            --bs-pagination-focus-box-shadow: 0 0 0 4px rgba(27, 95, 166, 0.22);
+            --bs-pagination-active-bg: #1b5fa6;
+            --bs-pagination-active-border-color: #1b5fa6;
+            --bs-pagination-active-color: #ffffff;
+            --bs-pagination-disabled-color: #475569;
+            --bs-pagination-disabled-bg: #f1f5f9;
+            --bs-pagination-disabled-border-color: #e2e8f0;
+            --bs-pagination-padding-x: 0.75rem;
+            --bs-pagination-padding-y: 0.3rem;
+            --bs-pagination-font-size: 0.88rem;
+            --bs-pagination-border-radius: 10px;
+            flex-wrap: wrap;
+            gap: 4px;
+        }
+
+        .pagination .page-link { border-radius: 10px; font-weight: 600; }
+
+        /* ---------- Propios de esta vista ---------- */
 
         .nombre-examen {
             font-weight: 700;
-            color: #1e40af;
+            color: var(--sa-blue-dark);
         }
 
         .descripcion {
-            max-width: 250px;
+            max-width: 280px;
             overflow-wrap: anywhere;
-            color: #64748b;
+            color: var(--sa-muted);
             font-size: 0.85rem;
         }
 
         .precio {
-            font-weight: 700;
-            color: #15803d;
+            font-weight: 800;
+            color: #0f766e;
             white-space: nowrap;
-        }
-
-        .badge {
-            font-size: 0.78rem;
-            padding: 7px 11px;
+            font-variant-numeric: tabular-nums;
         }
 
         .acciones {
@@ -134,90 +399,120 @@
         }
 
         .paginacion-info {
-            font-size: 0.9rem;
-            color: #64748b;
+            font-size: 0.88rem;
+            color: var(--sa-muted);
         }
 
-        .pagination .page-link {
-            color: #1d4ed8;
+        .paginacion-info strong {
+            color: var(--sa-ink);
         }
 
-        .pagination .active .page-link {
-            background: #1d4ed8;
-            border-color: #1d4ed8;
-            color: white;
+        /* ---------- Escritorio: página fija, solo la tabla hace scroll ---------- */
+
+        @media (min-width: 992px) and (min-height: 640px) {
+
+            body.santos-pagina-lista { height: 100dvh; overflow: hidden; }
+            body.santos-pagina-lista > main { flex: 1 1 0; min-height: 0; }
+            .santos-vista-lista > .santos-tabla-panel { flex: 1 1 0; min-height: 0; }
+            .santos-tabla-panel > .table-responsive { flex: 1 1 auto; min-height: 0; overflow: auto; }
         }
 
-        @media (max-width: 768px) {
+        @keyframes sa-aparecer {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: none; }
+        }
 
-            .encabezado {
-                padding: 20px;
-            }
-
-            .tarjeta {
-                padding: 15px;
-            }
-
-            .encabezado h2 {
-                font-size: 1.4rem;
-            }
+        @media (prefers-reduced-motion: reduce) {
+            .santos-panel { animation: none; }
+            .btn:active { transform: none; }
         }
 
     </style>
 
 </head>
 
-<body>
+<body class="santos-pagina-lista">
 
-<div class="container-fluid px-3 px-lg-4 py-4">
+<a class="skip-link" href="#contenido">Saltar al contenido</a>
+
+<!-- =====================================================
+     BARRA SUPERIOR
+     ===================================================== -->
+
+<nav class="navbar santos-navbar sticky-top">
+
+    <div class="container-fluid px-4">
+
+        <span class="navbar-brand santos-marca">
+
+            <span class="santos-simbolo" aria-hidden="true">
+                <i class="bi bi-plus-lg"></i>
+            </span>
+
+            <span>SANTOS</span>
+
+        </span>
+
+    </div>
+
+</nav>
+
+
+<main id="contenido" class="container-fluid px-4 py-3 santos-vista-lista">
 
     <!-- =====================================================
          ENCABEZADO
          ===================================================== -->
 
-    <div class="encabezado">
+    <section class="santos-encabezado-pagina">
 
-        <div class="d-flex flex-column flex-md-row
-                    justify-content-between
-                    align-items-md-center gap-3">
+        <div>
 
-            <div>
+            <h1 class="h3 fw-bold mb-1">
+                Exámenes de Laboratorio
+            </h1>
 
-                <h2>
-                    Exámenes de Laboratorio
-                </h2>
-
-                <p>
-                    CU-14 | Administración de Catálogos
-                </p>
-
-                <p class="mt-2">
-                    Clínica Médica SANTOS
-                </p>
-
-            </div>
-
-            <div class="d-flex gap-2 flex-wrap">
-
-                <a th:href="@{/admin/laboratorios}"
-                   class="btn btn-outline-light">
-
-                    Ver Laboratorios
-
-                </a>
-
-                <a th:href="@{/admin/examenes-laboratorio/create}"
-                   class="btn btn-light fw-bold">
-
-                    + Nuevo Examen
-
-                </a>
-
-            </div>
+            <p class="text-secondary mb-0">
+                CU-14 | Administración de Catálogos
+                · Clínica Médica SANTOS
+            </p>
 
         </div>
 
-    </div>
+        <div class="d-flex flex-wrap gap-2">
+
+            <!-- =====================================================
+                 CU-14 - REGRESAR AL PANEL DE CATÁLOGOS
+                 ===================================================== -->
+
+            <a th:href="@{/admin/catalogos}"
+               class="btn btn-outline-secondary rounded-pill px-3">
+
+                <i class="bi bi-arrow-left me-2" aria-hidden="true"></i>
+
+                Regresar a Catálogos
+
+            </a>
+
+            <a th:href="@{/admin/laboratorios}"
+               class="btn btn-outline-primary px-3">
+
+                Ver Laboratorios
+
+            </a>
+
+            <a th:href="@{/admin/examenes-laboratorio/create}"
+               class="btn btn-primary px-4">
+
+                <i class="bi bi-plus-lg me-2" aria-hidden="true"></i>
+
+                Nuevo Examen
+
+            </a>
+
+        </div>
+
+    </section>
 
     <!-- =====================================================
          MENSAJES DE CONFIRMACIÓN
@@ -260,181 +555,212 @@
     </div>
 
     <!-- =====================================================
+         NOTA INFORMATIVA
+         ===================================================== -->
+
+    <div class="informacion">
+
+        <strong>Información importante:</strong>
+
+        Los cambios en los precios del catálogo se
+        aplicarán a las nuevas órdenes de laboratorio.
+
+        Las órdenes registradas anteriormente conservan
+        sus precios históricos.
+
+        Los exámenes asociados a órdenes existentes
+        tienen restricciones de desactivación.
+
+    </div>
+
+    <!-- =====================================================
          FILTROS
          ===================================================== -->
 
-    <div class="tarjeta">
+    <section class="card santos-panel" aria-labelledby="titulo-busqueda">
 
-        <h5 class="titulo-seccion">
-            Buscar y filtrar exámenes
-        </h5>
+        <div class="card-body p-3">
 
-        <form th:action="@{/admin/examenes-laboratorio}"
-              method="get">
+            <h2 id="titulo-busqueda" class="h6 fw-bold mb-3">
+                Buscar y filtrar exámenes
+            </h2>
 
-            <div class="row g-3">
+            <form th:action="@{/admin/examenes-laboratorio}"
+                  method="get">
 
-                <!-- ========================================
-                     BÚSQUEDA GENERAL
-                     ======================================== -->
+                <div class="row g-3 align-items-end">
 
-                <div class="col-md-5">
+                    <!-- ========================================
+                         BÚSQUEDA GENERAL
+                         ======================================== -->
 
-                    <label for="texto"
-                           class="form-label">
+                    <div class="col-md-6 col-lg-4">
 
-                        Buscar examen
+                        <label for="texto"
+                               class="form-label">
 
-                    </label>
+                            Buscar examen
 
-                    <input
-                            type="text"
-                            id="texto"
-                            name="texto"
-                            class="form-control"
-                            maxlength="200"
-                            placeholder="Nombre, descripción o laboratorio"
-                            th:value="${textoBusqueda}">
+                        </label>
 
-                </div>
+                        <input
+                                type="text"
+                                id="texto"
+                                name="texto"
+                                class="form-control"
+                                maxlength="200"
+                                placeholder="Nombre, descripción o laboratorio"
+                                th:value="${textoBusqueda}">
 
-                <!-- ========================================
-                     FILTRO POR LABORATORIO
-                     ======================================== -->
+                    </div>
 
-                <div class="col-md-4">
+                    <!-- ========================================
+                         FILTRO POR LABORATORIO
+                         ======================================== -->
 
-                    <label for="idLaboratorio"
-                           class="form-label">
+                    <div class="col-md-6 col-lg-3">
 
-                        Laboratorio
-
-                    </label>
-
-                    <select
-                            id="idLaboratorio"
-                            name="idLaboratorio"
-                            class="form-select">
-
-                        <option value=""
-                                th:selected="${idLaboratorioFiltro == null}">
-
-                            Todos los laboratorios
-
-                        </option>
-
-                        <option
-                                th:each="laboratorio : ${laboratoriosFiltro}"
-                                th:value="${laboratorio.id}"
-                                th:selected="${idLaboratorioFiltro != null
-                                and idLaboratorioFiltro == laboratorio.id}"
-                                th:text="${laboratorio.nombre
-                                + (laboratorio.activo ? '' : ' (Inactivo)')}">
+                        <label for="idLaboratorio"
+                               class="form-label">
 
                             Laboratorio
 
-                        </option>
+                        </label>
 
-                    </select>
+                        <select
+                                id="idLaboratorio"
+                                name="idLaboratorio"
+                                class="form-select">
+
+                            <option value=""
+                                    th:selected="${idLaboratorioFiltro == null}">
+
+                                Todos los laboratorios
+
+                            </option>
+
+                            <option
+                                    th:each="laboratorio : ${laboratoriosFiltro}"
+                                    th:value="${laboratorio.id}"
+                                    th:selected="${idLaboratorioFiltro != null
+                                    and idLaboratorioFiltro == laboratorio.id}"
+                                    th:text="${laboratorio.nombre
+                                    + (laboratorio.activo ? '' : ' (Inactivo)')}">
+
+                                Laboratorio
+
+                            </option>
+
+                        </select>
+
+                    </div>
+
+                    <!-- ========================================
+                         FILTRO POR ESTADO
+                         ======================================== -->
+
+                    <div class="col-md-6 col-lg-2">
+
+                        <label for="estado"
+                               class="form-label">
+
+                            Estado
+
+                        </label>
+
+                        <select
+                                id="estado"
+                                name="estado"
+                                class="form-select">
+
+                            <option value="todos"
+                                    th:selected="${estadoFiltro == 'todos'}">
+
+                                Todos
+
+                            </option>
+
+                            <option value="activos"
+                                    th:selected="${estadoFiltro == 'activos'}">
+
+                                Activos
+
+                            </option>
+
+                            <option value="inactivos"
+                                    th:selected="${estadoFiltro == 'inactivos'}">
+
+                                Inactivos
+
+                            </option>
+
+                        </select>
+
+                    </div>
+
+                    <!-- ============================================
+                         BOTONES DE FILTROS
+                         ============================================ -->
+
+                    <div class="col-md-6 col-lg-3">
+
+                        <div class="d-flex gap-2">
+
+                            <button type="submit"
+                                    class="btn btn-primary flex-fill">
+
+                                Buscar
+
+                            </button>
+
+                            <a th:href="@{/admin/examenes-laboratorio}"
+                               class="btn btn-outline-secondary flex-fill">
+
+                                Limpiar filtros
+
+                            </a>
+
+                        </div>
+
+                    </div>
 
                 </div>
 
-                <!-- ========================================
-                     FILTRO POR ESTADO
-                     ======================================== -->
+            </form>
 
-                <div class="col-md-3">
+        </div>
 
-                    <label for="estado"
-                           class="form-label">
-
-                        Estado
-
-                    </label>
-
-                    <select
-                            id="estado"
-                            name="estado"
-                            class="form-select">
-
-                        <option value="todos"
-                                th:selected="${estadoFiltro == 'todos'}">
-
-                            Todos
-
-                        </option>
-
-                        <option value="activos"
-                                th:selected="${estadoFiltro == 'activos'}">
-
-                            Activos
-
-                        </option>
-
-                        <option value="inactivos"
-                                th:selected="${estadoFiltro == 'inactivos'}">
-
-                            Inactivos
-
-                        </option>
-
-                    </select>
-
-                </div>
-
-            </div>
-
-            <!-- ============================================
-                 BOTONES DE FILTROS
-                 ============================================ -->
-
-            <div class="d-flex gap-2 flex-wrap mt-4">
-
-                <button type="submit"
-                        class="btn btn-primary">
-
-                    Buscar
-
-                </button>
-
-                <a th:href="@{/admin/examenes-laboratorio}"
-                   class="btn btn-outline-secondary">
-
-                    Limpiar filtros
-
-                </a>
-
-            </div>
-
-        </form>
-
-    </div>
+    </section>
 
     <!-- =====================================================
          TABLA DE EXÁMENES
          ===================================================== -->
 
-    <div class="tarjeta">
+    <section class="card santos-panel santos-tabla-panel" aria-label="Exámenes registrados">
 
-        <div class="d-flex justify-content-between
-                    align-items-center flex-wrap gap-2 mb-3">
+        <div class="card-header bg-white santos-panel-cab">
 
-            <h5 class="titulo-seccion mb-0">
-                Exámenes registrados
-            </h5>
+            <div class="d-flex justify-content-between
+                        align-items-center flex-wrap gap-2">
 
-            <span class="badge text-bg-primary">
+                <h2 class="h5 fw-bold mb-0">
+                    Exámenes registrados
+                </h2>
 
-                Total:
-                <span th:text="${totalRegistros}">0</span>
+                <span class="badge santos-rol">
 
-            </span>
+                    Total:
+                    <span th:text="${totalRegistros}">0</span>
+
+                </span>
+
+            </div>
 
         </div>
 
         <div class="table-responsive">
 
-            <table class="table table-bordered table-hover">
+            <table class="table santos-tabla table-hover align-middle mb-0">
 
                 <!-- ========================================
                      ENCABEZADO
@@ -444,7 +770,7 @@
 
                 <tr>
 
-                    <th>ID</th>
+                    <th class="ps-4">ID</th>
 
                     <th>Examen</th>
 
@@ -476,7 +802,7 @@
 
                     <!-- ID -->
 
-                    <td th:text="${examen.id}">
+                    <td class="ps-4" th:text="${examen.id}">
                         1
                     </td>
 
@@ -563,7 +889,7 @@
 
                         <span
                                 th:if="${examen.activo}"
-                                class="badge text-bg-success">
+                                class="santos-estado santos-estado-activo">
 
                             Activo
 
@@ -571,7 +897,7 @@
 
                         <span
                                 th:unless="${examen.activo}"
-                                class="badge text-bg-secondary">
+                                class="santos-estado santos-estado-inactivo">
 
                             Inactivo
 
@@ -592,7 +918,7 @@
                             <a th:href="@{/admin/examenes-laboratorio/edit/{id}(
                                     id=${examen.id}
                                 )}"
-                               class="btn btn-warning btn-sm">
+                               class="btn btn-outline-primary btn-sm">
 
                                 Editar
 
@@ -621,7 +947,7 @@
 
                                 <button
                                         type="submit"
-                                        class="btn btn-danger btn-sm">
+                                        class="btn btn-outline-danger btn-sm">
 
                                     Desactivar
 
@@ -652,13 +978,13 @@
                 <tr th:if="${#lists.isEmpty(examenes)}">
 
                     <td colspan="9"
-                        class="text-center py-5">
+                        class="text-center py-4">
 
-                        <div class="text-muted">
+                        <div class="text-secondary">
 
-                            <h5>
+                            <h2 class="h6 fw-bold">
                                 No se encontraron resultados.
-                            </h5>
+                            </h2>
 
                             <p class="mb-0">
                                 Modifique los filtros o registre
@@ -678,156 +1004,129 @@
         </div>
 
         <!-- =================================================
-             INFORMACIÓN DE PAGINACIÓN
+             INFORMACIÓN DE PAGINACIÓN Y PAGINACIÓN
              ================================================= -->
 
-        <div class="paginacion-info mt-3">
+        <div class="card-footer bg-white santos-panel-pie">
 
-            Registros encontrados:
+            <div class="d-flex flex-wrap
+                        justify-content-between
+                        align-items-center gap-3">
 
-            <strong th:text="${totalRegistros}">
-                0
-            </strong>
+                <div class="paginacion-info">
 
-            <span th:if="${totalPaginas > 0}">
+                    Registros encontrados:
 
-                | Página
+                    <strong th:text="${totalRegistros}">
+                        0
+                    </strong>
 
-                <strong th:text="${paginaActual + 1}">
-                    1
-                </strong>
+                    <span th:if="${totalPaginas > 0}">
 
-                de
+                        | Página
 
-                <strong th:text="${totalPaginas}">
-                    1
-                </strong>
+                        <strong th:text="${paginaActual + 1}">
+                            1
+                        </strong>
 
-            </span>
+                        de
+
+                        <strong th:text="${totalPaginas}">
+                            1
+                        </strong>
+
+                    </span>
+
+                </div>
+
+                <!-- =================================================
+                     PAGINACIÓN
+                     ================================================= -->
+
+                <nav th:if="${totalPaginas > 1}"
+                     aria-label="Paginación de exámenes">
+
+                    <ul class="pagination justify-content-end flex-wrap mb-0">
+
+                        <!-- ANTERIOR -->
+
+                        <li class="page-item"
+                            th:classappend="${paginaActual == 0} ? 'disabled'">
+
+                            <a class="page-link"
+                               th:href="${paginaActual > 0}
+                                   ? @{/admin/examenes-laboratorio(
+                                       page=${paginaActual - 1},
+                                       texto=${textoBusqueda},
+                                       estado=${estadoFiltro},
+                                       idLaboratorio=${idLaboratorioFiltro}
+                                   )}
+                                   : '#'">
+
+                                Anterior
+
+                            </a>
+
+                        </li>
+
+                        <!-- NÚMEROS DE PÁGINA -->
+
+                        <li
+                                th:each="numero : ${#numbers.sequence(
+                                0,
+                                totalPaginas - 1
+                            )}"
+                                class="page-item"
+                                th:classappend="${numero == paginaActual} ? 'active'">
+
+                            <a class="page-link"
+                               th:href="@{/admin/examenes-laboratorio(
+                                   page=${numero},
+                                   texto=${textoBusqueda},
+                                   estado=${estadoFiltro},
+                                   idLaboratorio=${idLaboratorioFiltro}
+                               )}"
+                               th:text="${numero + 1}">
+
+                                1
+
+                            </a>
+
+                        </li>
+
+                        <!-- SIGUIENTE -->
+
+                        <li class="page-item"
+                            th:classappend="${paginaActual >= totalPaginas - 1}
+                                ? 'disabled'">
+
+                            <a class="page-link"
+                               th:href="${paginaActual < totalPaginas - 1}
+                                   ? @{/admin/examenes-laboratorio(
+                                       page=${paginaActual + 1},
+                                       texto=${textoBusqueda},
+                                       estado=${estadoFiltro},
+                                       idLaboratorio=${idLaboratorioFiltro}
+                                   )}
+                                   : '#'">
+
+                                Siguiente
+
+                            </a>
+
+                        </li>
+
+                    </ul>
+
+                </nav>
+
+            </div>
 
         </div>
 
-        <!-- =================================================
-             PAGINACIÓN
-             ================================================= -->
+    </section>
 
-        <nav th:if="${totalPaginas > 1}"
-             class="mt-4"
-             aria-label="Paginación de exámenes">
-
-            <ul class="pagination justify-content-center flex-wrap">
-
-                <!-- ANTERIOR -->
-
-                <li class="page-item"
-                    th:classappend="${paginaActual == 0} ? 'disabled'">
-
-                    <a class="page-link"
-                       th:href="${paginaActual > 0}
-                           ? @{/admin/examenes-laboratorio(
-                               page=${paginaActual - 1},
-                               texto=${textoBusqueda},
-                               estado=${estadoFiltro},
-                               idLaboratorio=${idLaboratorioFiltro}
-                           )}
-                           : '#'">
-
-                        Anterior
-
-                    </a>
-
-                </li>
-
-                <!-- NÚMEROS DE PÁGINA -->
-
-                <li
-                        th:each="numero : ${#numbers.sequence(
-                        0,
-                        totalPaginas - 1
-                    )}"
-                        class="page-item"
-                        th:classappend="${numero == paginaActual} ? 'active'">
-
-                    <a class="page-link"
-                       th:href="@{/admin/examenes-laboratorio(
-                           page=${numero},
-                           texto=${textoBusqueda},
-                           estado=${estadoFiltro},
-                           idLaboratorio=${idLaboratorioFiltro}
-                       )}"
-                       th:text="${numero + 1}">
-
-                        1
-
-                    </a>
-
-                </li>
-
-                <!-- SIGUIENTE -->
-
-                <li class="page-item"
-                    th:classappend="${paginaActual >= totalPaginas - 1}
-                        ? 'disabled'">
-
-                    <a class="page-link"
-                       th:href="${paginaActual < totalPaginas - 1}
-                           ? @{/admin/examenes-laboratorio(
-                               page=${paginaActual + 1},
-                               texto=${textoBusqueda},
-                               estado=${estadoFiltro},
-                               idLaboratorio=${idLaboratorioFiltro}
-                           )}
-                           : '#'">
-
-                        Siguiente
-
-                    </a>
-
-                </li>
-
-            </ul>
-
-        </nav>
-
-    </div>
-
-
-
-    <!-- =====================================================
-         CU-14 - REGRESAR AL PANEL DE CATÁLOGOS
-         ===================================================== -->
-
-    <a th:href="@{/admin/catalogos}"
-       class="btn btn-outline-secondary">
-
-        <i class="bi bi-arrow-left me-2"></i>
-
-        Regresar a Catálogos
-
-    </a>
-
-<br>
-    <br>
-    <!-- =====================================================
-         NOTA INFORMATIVA
-         ===================================================== -->
-
-    <div class="alert alert-info">
-
-        <strong>Información importante:</strong>
-
-        Los cambios en los precios del catálogo se
-        aplicarán a las nuevas órdenes de laboratorio.
-
-        Las órdenes registradas anteriormente conservan
-        sus precios históricos.
-
-        Los exámenes asociados a órdenes existentes
-        tienen restricciones de desactivación.
-
-    </div>
-
-</div>
+</main>
 
 <!-- =========================================================
      BOOTSTRAP JAVASCRIPT

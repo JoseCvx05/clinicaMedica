@@ -1,0 +1,3991 @@
+
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <meta name="theme-color" content="#1B5FA6">
+
+    <meta name="_csrf"
+          th:content="${_csrf != null ? _csrf.token : ''}"
+          content="">
+
+    <meta name="_csrf_header"
+          th:content="${_csrf != null ? _csrf.headerName : 'X-XSRF-TOKEN'}"
+          content="X-XSRF-TOKEN">
+
+    <title>Agenda Médica | SANTOS</title>
+
+    <link rel="preconnect"
+          href="https://fonts.googleapis.com">
+
+    <link rel="preconnect"
+          href="https://fonts.gstatic.com"
+          crossorigin>
+
+    <link
+            href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
+            rel="stylesheet">
+
+    <style>
+
+        /* =============================================
+           CU-16 - ESTILOS DE AGENDA MÉDICA
+           ============================================= */
+
+        :root {
+            --primario: #1B5FA6;
+            --primario-oscuro: #124577;
+            --fondo: #F3F6FB;
+            --blanco: #FFFFFF;
+            --texto: #1E293B;
+            --secundario: #64748B;
+            --borde: #DCE5F0;
+            --exito: #15803D;
+            --peligro: #DC2626;
+            --violeta: #8B5CF6;
+            --radio: 15px;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            background: var(--fondo);
+            color: var(--texto);
+            font-family: "Plus Jakarta Sans", Arial, sans-serif;
+            font-size: 14px;
+        }
+
+        button,
+        input,
+        select,
+        textarea {
+            font: inherit;
+        }
+
+        button {
+            cursor: pointer;
+        }
+
+        button:disabled {
+            opacity: .65;
+            cursor: wait;
+        }
+
+        a {
+            color: inherit;
+            text-decoration: none;
+        }
+
+        .encabezado {
+            background: var(--blanco);
+            border-bottom: 1px solid var(--borde);
+        }
+
+        .barra {
+            max-width: 1500px;
+            margin: auto;
+            padding: 17px 28px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .marca {
+            display: flex;
+            align-items: center;
+            gap: 13px;
+        }
+
+        .logo {
+            display: grid;
+            place-items: center;
+            width: 43px;
+            height: 43px;
+            border-radius: 12px;
+            background: var(--primario);
+            color: white;
+            font-weight: 800;
+            font-size: 22px;
+        }
+
+        .marca-texto {
+            display: grid;
+            gap: 2px;
+        }
+
+        .marca-texto strong {
+            font-size: 17px;
+        }
+
+        .marca-texto span {
+            color: var(--secundario);
+            font-size: 12px;
+        }
+
+        .acciones-superiores {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .rol {
+            background: #E8F2FF;
+            color: var(--primario);
+            border-radius: 999px;
+            padding: 8px 13px;
+            font-weight: 700;
+            font-size: 12px;
+        }
+
+        .boton {
+            border: 1px solid var(--borde);
+            background: white;
+            color: var(--texto);
+            border-radius: 10px;
+            padding: 10px 15px;
+            font-weight: 700;
+            transition: .15s;
+        }
+
+        .boton:hover {
+            background: #EDF4FC;
+        }
+
+        .boton-principal {
+            background: var(--primario);
+            border-color: var(--primario);
+            color: white;
+        }
+
+        .boton-principal:hover {
+            background: var(--primario-oscuro);
+            color: white;
+        }
+
+        .boton-peligro {
+            color: var(--peligro);
+            border-color: #FECACA;
+        }
+
+        .pagina {
+            max-width: 1500px;
+            margin: auto;
+            padding: 28px;
+        }
+
+        .introduccion {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+            margin-bottom: 25px;
+        }
+
+        .introduccion h1 {
+            margin: 0 0 7px;
+            font-size: clamp(23px, 3vw, 32px);
+            letter-spacing: -.7px;
+        }
+
+        .introduccion p {
+            margin: 0;
+            color: var(--secundario);
+            line-height: 1.6;
+        }
+
+        .distribucion {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) 355px;
+            gap: 20px;
+            align-items: start;
+        }
+
+        .distribucion.panel-oculto {
+            grid-template-columns: 1fr;
+        }
+
+        .panel-oculto #panelTareas {
+            display: none;
+        }
+
+        .tarjeta {
+            background: var(--blanco);
+            border: 1px solid var(--borde);
+            border-radius: var(--radio);
+            box-shadow: 0 4px 20px rgba(30, 58, 95, .035);
+            min-width: 0;
+        }
+
+        .barra-calendario {
+            padding: 23px;
+            border-bottom: 1px solid var(--borde);
+        }
+
+        .titulo-calendario {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .titulo-calendario h2 {
+            margin: 0;
+            font-size: 21px;
+            text-transform: capitalize;
+        }
+
+        .controles {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-top: 19px;
+        }
+
+        .controles .boton {
+            padding: 9px 13px;
+        }
+
+        .vistas {
+            display: inline-flex;
+            padding: 4px;
+            background: #EEF3F9;
+            border-radius: 12px;
+            margin-left: auto;
+        }
+
+        .vistas button {
+            border: none;
+            padding: 9px 12px;
+            border-radius: 9px;
+            background: transparent;
+            font-weight: 700;
+            color: var(--secundario);
+        }
+
+        .vistas button.activo {
+            background: white;
+            color: var(--primario);
+            box-shadow: 0 1px 6px rgba(0, 0, 0, .08);
+        }
+
+        .calendario-contenedor {
+            overflow-x: auto;
+            padding: 20px;
+        }
+
+        .calendario-mes {
+            display: grid;
+            grid-template-columns: repeat(7, minmax(0, 1fr));
+            gap: 5px;
+            min-width: 630px;
+        }
+
+        .nombre-dia {
+            padding: 12px 5px;
+            text-align: center;
+            font-size: 12px;
+            font-weight: 800;
+            color: var(--secundario);
+        }
+
+        .dia {
+            display: flex;
+            flex-direction: column;
+            text-align: left;
+            gap: 11px;
+            background: #FFFFFF;
+            border: 1px solid var(--borde);
+            border-radius: 10px;
+            min-height: 100px;
+            padding: 10px;
+            color: var(--texto);
+        }
+
+        .dia:hover {
+            background: #F0F7FF;
+            border-color: #93BCE8;
+        }
+
+        .dia.otro-mes {
+            background: #F8FAFC;
+            color: #A0AEC0;
+        }
+
+        .dia.seleccionado {
+            border: 2px solid var(--primario);
+            background: #EAF4FF;
+        }
+
+        .dia.hoy .numero-dia {
+            background: var(--primario);
+            color: white;
+        }
+
+        .numero-dia {
+            display: grid;
+            place-items: center;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            font-weight: 800;
+        }
+
+        .ayuda-dia {
+            color: var(--secundario);
+            font-size: 10px;
+            font-weight: 500;
+            line-height: 1.5;
+        }
+
+        .vista-dia {
+            min-height: 310px;
+            padding: 24px;
+        }
+
+        .vista-dia h3 {
+            margin: 0 0 20px;
+            text-transform: capitalize;
+        }
+
+        .aviso-integracion {
+            border: 1px dashed #B6C9DF;
+            background: #F7FAFF;
+            color: #55708D;
+            padding: 16px;
+            border-radius: 12px;
+            line-height: 1.7;
+            font-size: 12px;
+        }
+
+        /* =============================================
+           TASKPANEL
+           ============================================= */
+
+        .panel-tareas {
+            position: sticky;
+            top: 15px;
+        }
+
+        .panel-cabecera {
+            padding: 22px;
+            border-bottom: 1px solid var(--borde);
+        }
+
+        .panel-cabecera h2 {
+            margin: 0 0 5px;
+            font-size: 20px;
+        }
+
+        .panel-cabecera p {
+            margin: 0;
+            color: var(--secundario);
+            font-size: 12px;
+            line-height: 1.6;
+        }
+
+        .contenido-panel {
+            padding: 20px;
+        }
+
+        .campo {
+            display: flex;
+            flex-direction: column;
+            gap: 7px;
+            margin-bottom: 15px;
+        }
+
+        .campo label {
+            font-size: 12px;
+            font-weight: 800;
+        }
+
+        .campo input,
+        .campo select,
+        .campo textarea {
+            border: 1px solid #CCD8E5;
+            border-radius: 9px;
+            outline: none;
+            padding: 11px;
+            width: 100%;
+            background: white;
+            color: var(--texto);
+        }
+
+        .campo input:focus,
+        .campo select:focus,
+        .campo textarea:focus {
+            border-color: var(--primario);
+            box-shadow: 0 0 0 3px #E0F0FF;
+        }
+
+        .campo textarea {
+            min-height: 75px;
+            resize: vertical;
+        }
+
+        .contadores {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+            margin-bottom: 20px;
+        }
+
+        .contador {
+            background: #F4F7FB;
+            border-radius: 10px;
+            padding: 12px 5px;
+            text-align: center;
+        }
+
+        .contador strong {
+            display: block;
+            font-size: 21px;
+            color: var(--primario);
+        }
+
+        .contador span {
+            font-size: 10px;
+            color: var(--secundario);
+        }
+
+        .separador {
+            border: none;
+            border-top: 1px solid var(--borde);
+            margin: 22px 0;
+        }
+
+        .subtitulo {
+            margin: 0 0 15px;
+            font-size: 15px;
+        }
+
+        .lista-tareas {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .tarea {
+            border: 1px solid var(--borde);
+            border-left: 4px solid #94A3B8;
+            border-radius: 10px;
+            padding: 13px;
+        }
+
+        .tarea.prioridad-1 {
+            border-left-color: #EAB308;
+        }
+
+        .tarea.prioridad-2 {
+            border-left-color: #DC2626;
+        }
+
+        .tarea.completada {
+            background: #F0FDF4;
+        }
+
+        .tarea h4 {
+            margin: 0 0 6px;
+            font-size: 13px;
+            overflow-wrap: anywhere;
+        }
+
+        .tarea.completada h4 {
+            text-decoration: line-through;
+            color: var(--secundario);
+        }
+
+        .tarea p {
+            margin: 0 0 10px;
+            color: var(--secundario);
+            font-size: 12px;
+            overflow-wrap: anywhere;
+            white-space: pre-wrap;
+        }
+
+        .datos-tarea {
+            font-size: 11px;
+            color: var(--secundario);
+            margin-bottom: 12px;
+            line-height: 1.7;
+        }
+
+        .acciones-tarea {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .acciones-tarea button {
+            font-size: 11px;
+            padding: 8px 10px;
+        }
+
+        .mensaje {
+            padding: 12px;
+            border-radius: 9px;
+            margin-bottom: 15px;
+            font-size: 12px;
+            line-height: 1.5;
+        }
+
+        .mensaje-exito {
+            background: #DCFCE7;
+            color: #166534;
+        }
+
+        .mensaje-error {
+            background: #FEE2E2;
+            color: #991B1B;
+        }
+
+        .mensaje-info {
+            background: #EFF6FF;
+            color: #1D4ED8;
+        }
+
+        .oculto {
+            display: none;
+        }
+
+        .boton-ancho {
+            width: 100%;
+        }
+
+        @media (max-width: 1050px) {
+
+            .distribucion,
+            .distribucion.panel-oculto {
+                grid-template-columns: 1fr;
+            }
+
+            .panel-tareas {
+                position: static;
+            }
+        }
+
+        @media (max-width: 650px) {
+
+            .barra,
+            .pagina {
+                padding: 17px;
+            }
+
+            .introduccion {
+                align-items: flex-start;
+                flex-direction: column;
+            }
+
+            .barra-calendario {
+                padding: 17px;
+            }
+
+            .vistas {
+                margin-left: 0;
+            }
+        }
+
+
+        /* =============================================
+           CU-16 - CITAS REALES EN EL CALENDARIO
+           ============================================= */
+
+        .cita-calendario {
+            display: block;
+            width: 100%;
+            padding: 5px 7px;
+            border: 1px solid #DFE9F5;
+            border-left: 4px solid #64748B;
+            border-radius: 7px;
+            background: #F2F7FD;
+            color: #1E293B;
+            font-size: 10px;
+            font-weight: 700;
+            text-align: left;
+            overflow: hidden;
+            white-space: nowrap;
+            text-overflow: ellipsis;
+            cursor: pointer;
+        }
+
+        .cita-calendario:hover {
+            background: #DBEAFE;
+        }
+
+        .cita-calendario-dia {
+            padding: 13px;
+            margin-bottom: 10px;
+            font-size: 13px;
+            white-space: normal;
+        }
+
+        .mas-citas {
+            font-size: 10px;
+            color: #1B5FA6;
+            font-weight: 800;
+        }
+
+        .lista-citas-dia {
+            margin-top: 18px;
+        }
+
+
+        /* =============================================
+           CU-16 - EVENTOS MÉDICOS EN CALENDARIO
+           ============================================= */
+
+        .cita-calendario.evento-calendario {
+            background: #F3EDFF;
+            border-color: #DDD0FF;
+            border-left-color: #8B5CF6;
+            color: #5B21B6;
+        }
+
+        .cita-calendario.evento-calendario:hover {
+            background: #E9DDFF;
+        }
+
+
+        /* =============================================
+           CU-16 - FORMULARIO MODAL DE EVENTOS
+           ============================================= */
+
+        .dialogo-evento {
+            width: min(92vw, 560px);
+            max-height: 90vh;
+            padding: 0;
+            border: 1px solid #DCE5F0;
+            border-radius: 16px;
+            background: #FFFFFF;
+            color: #1E293B;
+            box-shadow: 0 20px 60px rgba(15, 23, 42, .20);
+            font-family: "Plus Jakarta Sans", Arial, sans-serif;
+        }
+
+        .dialogo-evento::backdrop {
+            background: rgba(15, 23, 42, .60);
+        }
+
+        .dialogo-evento-cabecera {
+            padding: 22px 25px;
+            border-bottom: 1px solid #DCE5F0;
+        }
+
+        .dialogo-evento-cabecera h2 {
+            margin: 0 0 7px;
+            font-size: 21px;
+        }
+
+        .dialogo-evento-cabecera p {
+            margin: 0;
+            color: #64748B;
+            font-size: 12px;
+            line-height: 1.6;
+        }
+
+        .dialogo-evento-cuerpo {
+            padding: 24px;
+            overflow-y: auto;
+            max-height: 70vh;
+        }
+
+        .dialogo-evento .campo {
+            margin-bottom: 17px;
+        }
+
+        .dialogo-evento .campo label {
+            font-size: 12px;
+            font-weight: 800;
+        }
+
+        .dialogo-evento .campo input,
+        .dialogo-evento .campo select,
+        .dialogo-evento .campo textarea {
+            width: 100%;
+            padding: 11px;
+            border: 1px solid #CBD5E1;
+            border-radius: 9px;
+            background: #FFFFFF;
+            color: #1E293B;
+        }
+
+        .dialogo-evento .campo input:focus,
+        .dialogo-evento .campo select:focus,
+        .dialogo-evento .campo textarea:focus {
+            outline: 2px solid #93C5FD;
+            border-color: #1B5FA6;
+        }
+
+        .dialogo-evento .fechas-evento {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 12px;
+        }
+
+        .dialogo-evento .opcion-dia {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 18px;
+            font-weight: 700;
+        }
+
+        .dialogo-evento .opcion-dia input {
+            width: 18px;
+            height: 18px;
+        }
+
+        .dialogo-evento-acciones {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            padding-top: 12px;
+        }
+
+        .mensaje-error-evento {
+            padding: 11px;
+            border-radius: 9px;
+            background: #FEE2E2;
+            color: #991B1B;
+            margin-bottom: 15px;
+            font-size: 12px;
+        }
+
+        .confirmacion-evento {
+            margin: 12px 20px 0;
+            padding: 12px;
+            border-radius: 9px;
+            background: #DCFCE7;
+            color: #166534;
+            font-size: 12px;
+            font-weight: 700;
+        }
+
+        [hidden] {
+            display: none !important;
+        }
+
+        @media (max-width: 550px) {
+            .dialogo-evento .fechas-evento {
+                grid-template-columns: 1fr;
+            }
+        }
+
+
+        /* =============================================
+           CU-16 - FA03
+           VALIDACIÓN VISUAL DE EVENTOS
+           ============================================= */
+
+        #formularioNuevoEvento.validacion-activa
+        input:invalid,
+
+        #formularioNuevoEvento.validacion-activa
+        select:invalid,
+
+        #formularioNuevoEvento.validacion-activa
+        textarea:invalid,
+
+        #formularioNuevoEvento .campo-error {
+
+            border: 2px solid #DC2626 !important;
+            background: #FEF2F2 !important;
+            box-shadow: 0 0 0 2px rgba(
+                    220, 38, 38, 0.10
+            ) !important;
+        }
+
+
+
+    </style>
+</head>
+
+<body>
+
+<!-- =============================================
+     CABECERA GENERAL
+     ============================================= -->
+
+<header class="encabezado">
+
+    <div class="barra">
+
+        <a class="marca"
+           th:href="@{/interno/medico}"
+           href="/interno/medico">
+
+            <span class="logo">+</span>
+
+            <span class="marca-texto">
+                <strong>SANTOS</strong>
+                <span>Clínica Médica</span>
+            </span>
+
+        </a>
+
+        <div class="acciones-superiores">
+
+            <span class="rol">Médico</span>
+
+
+            <!-- CU-16 - VOLVER AL DASHBOARD PRINCIPAL -->
+
+            <a class="boton-cita"
+               th:href="@{/interno/dashboard}"
+               href="/interno/dashboard">
+
+                ← Volver al Dashboard
+
+            </a>
+
+
+            <form th:action="@{/logout-interno}"
+                  action="/logout-interno"
+                  method="post">
+
+                <input th:if="${_csrf != null}"
+                       type="hidden"
+                       th:name="${_csrf.parameterName}"
+                       th:value="${_csrf.token}">
+
+                <button class="boton boton-peligro"
+                        type="submit">
+
+                    Cerrar sesión
+                </button>
+
+            </form>
+
+        </div>
+
+    </div>
+
+</header>
+
+<!-- =============================================
+     CONTENIDO PRINCIPAL
+     ============================================= -->
+
+<main class="pagina">
+
+    <section class="introduccion">
+
+        <div>
+
+            <h1>Agenda Médica</h1>
+
+            <p>
+                Organice sus actividades, consulte el calendario
+                y administre sus tareas personales.
+            </p>
+
+        </div>
+
+        <button id="botonPanel"
+                class="boton boton-principal"
+                type="button"
+                aria-expanded="true"
+                aria-controls="panelTareas">
+
+            Ocultar TaskPanel
+        </button>
+
+    </section>
+
+    <div class="distribucion" id="distribucion">
+
+        <!-- =========================================
+             CALENDARIO
+             ========================================= -->
+
+        <section class="tarjeta"
+                 aria-label="Calendario médico">
+
+            <div class="barra-calendario">
+
+                <div class="titulo-calendario">
+
+                    <h2 id="periodoCalendario">
+                        Calendario
+                    </h2>
+
+
+                    <!-- =========================================
+                         CU-16 - NUEVO EVENTO
+                         ========================================= -->
+
+                    <button
+                            type="button"
+                            id="botonNuevoEvento"
+                            class="boton boton-principal">
+
+                        + Nuevo Evento
+
+                    </button>
+
+                    <button class="boton"
+                            type="button"
+                            id="botonHoy">
+
+                        Hoy
+                    </button>
+
+                </div>
+
+                <div class="controles">
+
+                    <button id="botonAnterior"
+                            class="boton"
+                            type="button"
+                            aria-label="Período anterior">
+
+                        ← Anterior
+                    </button>
+
+                    <button id="botonSiguiente"
+                            class="boton"
+                            type="button"
+                            aria-label="Período siguiente">
+
+                        Siguiente →
+                    </button>
+
+                    <div class="vistas"
+                         aria-label="Vista del calendario">
+
+                        <button type="button"
+                                data-vista="mes"
+                                class="activo"
+                                aria-pressed="true">
+
+                            Mes
+                        </button>
+
+                        <button type="button"
+                                data-vista="semana"
+                                aria-pressed="false">
+
+                            Semana
+                        </button>
+
+                        <button type="button"
+                                data-vista="dia"
+                                aria-pressed="false">
+
+                            Día
+                        </button>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- CU-16 - Confirmación de creación de eventos -->
+            <div id="confirmacionNuevoEvento"
+                 class="confirmacion-evento"
+                 role="status"
+                 aria-live="polite"
+                 hidden>
+            </div>
+
+
+            <div class="calendario-contenedor">
+
+                <div id="calendario"
+                     aria-label="Días del calendario">
+                </div>
+
+            </div>
+
+            <div style="padding: 0 20px 20px">
+
+
+                <div class="aviso-integracion"
+                     id="estadoCitas"
+                     role="status"
+                     aria-live="polite">
+
+                    Cargando las citas médicas reales
+                    del calendario...
+
+                </div>
+
+
+            </div>
+
+        </section>
+
+        <!-- =========================================
+             TASKPANEL - FA06
+             ========================================= -->
+
+        <aside class="tarjeta panel-tareas"
+               id="panelTareas"
+               aria-label="Panel de tareas médicas">
+
+            <div class="panel-cabecera">
+
+                <h2>Mis tareas</h2>
+
+                <p>
+                    Organice sus pendientes por fecha,
+                    prioridad y estado.
+                </p>
+
+            </div>
+
+            <div class="contenido-panel">
+
+                <!-- FECHA -->
+
+                <div class="campo">
+
+                    <label for="fechaTareas">
+                        Fecha seleccionada
+                    </label>
+
+                    <input type="date"
+                           id="fechaTareas"
+                           required>
+
+                </div>
+
+                <!-- CONTADORES -->
+
+                <div class="contadores">
+
+                    <div class="contador">
+                        <strong id="totalTareas">0</strong>
+                        <span>Total</span>
+                    </div>
+
+                    <div class="contador">
+                        <strong id="totalPendientes">0</strong>
+                        <span>Pendientes</span>
+                    </div>
+
+                    <div class="contador">
+                        <strong id="totalCompletadas">0</strong>
+                        <span>Completadas</span>
+                    </div>
+
+                </div>
+
+                <!-- FILTRO -->
+
+                <div class="campo">
+
+                    <label for="filtroTareas">
+                        Mostrar tareas
+                    </label>
+
+                    <select id="filtroTareas">
+
+                        <option value="todas">
+                            Todas
+                        </option>
+
+                        <option value="pendientes">
+                            Pendientes
+                        </option>
+
+                        <option value="completadas">
+                            Completadas
+                        </option>
+
+                    </select>
+
+                </div>
+
+                <!-- MENSAJES -->
+
+                <div id="mensajeTareas"
+                     class="mensaje mensaje-info oculto"
+                     role="status"
+                     aria-live="polite">
+                </div>
+
+                <!-- LISTA -->
+
+                <div id="listaTareas"
+                     class="lista-tareas"
+                     aria-live="polite">
+                </div>
+
+                <hr class="separador">
+
+                <!-- =================================
+                     CREAR TAREA
+                     ================================= -->
+
+                <h3 class="subtitulo">
+                    Nueva tarea
+                </h3>
+
+                <form id="formularioTarea">
+
+                    <div class="campo">
+
+                        <label for="tituloTarea">
+                            Título *
+                        </label>
+
+                        <input type="text"
+                               id="tituloTarea"
+                               minlength="5"
+                               maxlength="200"
+                               required
+                               placeholder="Ej. Revisar resultados">
+
+                    </div>
+
+                    <div class="campo">
+
+                        <label for="descripcionTarea">
+                            Descripción
+                        </label>
+
+                        <textarea
+                                id="descripcionTarea"
+                                maxlength="1000"
+                                placeholder="Descripción opcional">
+                        </textarea>
+
+                    </div>
+
+                    <div class="campo">
+
+                        <label for="prioridadTarea">
+                            Prioridad *
+                        </label>
+
+                        <select id="prioridadTarea"
+                                required>
+
+                            <option value="0">Baja</option>
+                            <option value="1" selected>Normal</option>
+                            <option value="2">Alta</option>
+
+                        </select>
+
+                    </div>
+
+                    <div class="campo">
+
+                        <label for="fechaLimiteTarea">
+                            Fecha límite *
+                        </label>
+
+                        <input type="date"
+                               id="fechaLimiteTarea"
+                               required>
+
+                    </div>
+
+                    <button type="submit"
+                            id="botonCrearTarea"
+                            class="boton boton-principal boton-ancho">
+
+                        Guardar tarea
+                    </button>
+
+                </form>
+
+            </div>
+
+        </aside>
+
+    </div>
+
+</main>
+
+<!-- =============================================
+     CU-16 - MODAL: CREAR EVENTO
+     ============================================= -->
+
+<dialog
+        id="dialogoNuevoEvento"
+        class="dialogo-evento"
+        aria-labelledby="tituloDialogoNuevoEvento">
+
+    <div class="dialogo-evento-cabecera">
+
+        <h2 id="tituloDialogoNuevoEvento">
+            Nuevo Evento Médico
+        </h2>
+
+        <p>
+            Registre reuniones, descansos,
+            capacitaciones y actividades personales.
+        </p>
+
+    </div>
+
+    <div class="dialogo-evento-cuerpo">
+
+        <div
+                id="mensajeErrorNuevoEvento"
+                class="mensaje-error-evento"
+                role="alert"
+                hidden>
+        </div>
+
+        <form id="formularioNuevoEvento">
+
+            <!-- TÍTULO -->
+
+            <div class="campo">
+
+                <label for="tituloNuevoEvento">
+                    Título *
+                </label>
+
+                <input
+                        id="tituloNuevoEvento"
+                        type="text"
+                        minlength="5"
+                        maxlength="200"
+                        required
+                        placeholder="Ej. Reunión médica">
+
+            </div>
+
+            <!-- DESCRIPCIÓN -->
+
+            <div class="campo">
+
+                <label for="descripcionNuevoEvento">
+                    Descripción
+                </label>
+
+                <textarea
+                        id="descripcionNuevoEvento"
+                        maxlength="500"
+                        rows="3"
+                        placeholder="Descripción opcional">
+                </textarea>
+
+            </div>
+
+            <!-- TIPO -->
+
+            <div class="campo">
+
+                <label for="tipoNuevoEvento">
+                    Tipo de evento *
+                </label>
+
+                <select id="tipoNuevoEvento" required>
+
+                    <option value="0">Reunión</option>
+                    <option value="1">Descanso</option>
+                    <option value="2">Capacitación</option>
+                    <option value="3">Personal</option>
+                    <option value="4">Otro</option>
+
+                </select>
+
+            </div>
+
+            <!-- TODO EL DÍA -->
+
+            <label class="opcion-dia">
+
+                <input
+                        type="checkbox"
+                        id="todoElDiaNuevoEvento">
+
+                Todo el día
+
+            </label>
+
+            <!-- FECHAS -->
+
+            <div class="fechas-evento">
+
+                <div class="campo">
+
+                    <label for="inicioNuevoEvento">
+                        Fecha de inicio *
+                    </label>
+
+                    <input
+                            type="datetime-local"
+                            id="inicioNuevoEvento"
+                            required>
+
+                </div>
+
+                <div class="campo">
+
+                    <label for="finNuevoEvento">
+                        Fecha de fin *
+                    </label>
+
+                    <input
+                            type="datetime-local"
+                            id="finNuevoEvento"
+                            required>
+
+                </div>
+
+            </div>
+
+            <!-- ACCIONES -->
+
+            <div class="dialogo-evento-acciones">
+
+                <button
+                        type="button"
+                        id="cancelarNuevoEvento"
+                        class="boton">
+
+                    Cancelar
+
+                </button>
+
+
+                <!-- CU-16 - FA04: ELIMINAR EVENTO -->
+
+                <button
+                        type="button"
+                        id="botonEliminarEvento"
+                        class="boton boton-peligro"
+                        hidden>
+
+                    Eliminar evento
+
+                </button>
+
+
+                <button
+                        type="submit"
+                        id="guardarNuevoEvento"
+                        class="boton boton-principal">
+
+                    Guardar evento
+
+                </button>
+
+            </div>
+
+        </form>
+
+    </div>
+
+</dialog>
+
+
+<!-- =============================================
+     CU-16 - DETALLES DEL EVENTO MÉDICO
+     ============================================= -->
+
+<dialog id="dialogoDetalleEvento"
+        class="dialogo-evento"
+        aria-labelledby="tituloDialogoDetalleEvento">
+
+    <div class="dialogo-evento-cabecera">
+
+        <h2 id="tituloDialogoDetalleEvento">
+            Detalles del Evento Médico
+        </h2>
+
+        <p>
+            Información del evento seleccionado.
+        </p>
+
+    </div>
+
+    <div class="dialogo-evento-cuerpo">
+
+        <div class="campo">
+            <label>Título</label>
+            <p id="detalleEventoTitulo"></p>
+        </div>
+
+        <div class="campo">
+            <label>Descripción</label>
+            <p id="detalleEventoDescripcion"></p>
+        </div>
+
+        <div class="campo">
+            <label>Tipo de evento</label>
+            <p id="detalleEventoTipo"></p>
+        </div>
+
+        <div class="campo">
+            <label>Fecha de inicio</label>
+            <p id="detalleEventoInicio"></p>
+        </div>
+
+        <div class="campo">
+            <label>Fecha de fin</label>
+            <p id="detalleEventoFin"></p>
+        </div>
+
+        <div class="campo">
+            <label>Duración</label>
+            <p id="detalleEventoDuracion"></p>
+        </div>
+
+        <div class="dialogo-evento-acciones">
+
+            <button type="button"
+                    id="botonCerrarDetalleEvento"
+                    class="boton">
+                Cerrar
+            </button>
+
+            <button type="button"
+                    id="botonEditarDesdeDetalleEvento"
+                    class="boton boton-principal">
+                Editar evento
+            </button>
+
+        </div>
+
+    </div>
+
+</dialog>
+
+
+<!-- =============================================
+     CU-16 - FA01
+     VENTANA DE DETALLES DE CITA MÉDICA
+     ============================================= -->
+
+<dialog id="dialogoDetalleCita"
+        class="dialogo-evento"
+        aria-labelledby="tituloDialogoDetalleCita">
+
+    <!-- CABECERA -->
+
+    <div class="dialogo-evento-cabecera">
+
+        <h2 id="tituloDialogoDetalleCita">
+            Detalles de la Cita Médica
+        </h2>
+
+        <p>
+            Información de la cita programada
+            en la agenda del médico.
+        </p>
+
+    </div>
+
+    <!-- CONTENIDO -->
+
+    <div class="dialogo-evento-cuerpo">
+
+        <div class="campo">
+            <label>Título</label>
+            <p id="detalleCitaTitulo"></p>
+        </div>
+
+        <div class="campo">
+            <label>Paciente</label>
+            <p id="detalleCitaPaciente"></p>
+        </div>
+
+        <div class="campo">
+            <label>Estado de la cita</label>
+            <p id="detalleCitaEstado"></p>
+        </div>
+
+        <div class="campo">
+            <label>Tipo</label>
+            <p id="detalleCitaTipo"></p>
+        </div>
+
+        <div class="campo">
+            <label>Descripción</label>
+            <p id="detalleCitaDescripcion"></p>
+        </div>
+
+        <div class="campo">
+            <label>Fecha y hora de inicio</label>
+            <p id="detalleCitaInicio"></p>
+        </div>
+
+        <div class="campo">
+            <label>Fecha y hora de fin</label>
+            <p id="detalleCitaFin"></p>
+        </div>
+
+        <!-- ACCIONES -->
+
+        <div class="dialogo-evento-acciones">
+
+            <button
+                    type="button"
+                    id="botonCerrarDetalleCita"
+                    class="boton boton-principal">
+
+                Cerrar
+
+            </button>
+
+        </div>
+
+    </div>
+
+</dialog>
+
+
+<script>
+
+    /* =============================================
+       CU-16 - CONFIGURACIÓN GENERAL
+       ============================================= */
+
+    const URL_TAREAS =
+        "/interno/medico/agenda/tareas";
+
+    const ZONA_HORARIA =
+        "America/Guatemala";
+
+    const tokenCSRF =
+        document.querySelector('meta[name="_csrf"]')
+            ?.content || "";
+
+    const encabezadoCSRF =
+        document.querySelector('meta[name="_csrf_header"]')
+            ?.content || "X-XSRF-TOKEN";
+
+    const distribucion =
+        document.getElementById("distribucion");
+
+    const panelTareas =
+        document.getElementById("panelTareas");
+
+    const botonPanel =
+        document.getElementById("botonPanel");
+
+    const contenedorCalendario =
+        document.getElementById("calendario");
+
+    const listaTareas =
+        document.getElementById("listaTareas");
+
+    const mensajeTareas =
+        document.getElementById("mensajeTareas");
+
+    const fechaTareas =
+        document.getElementById("fechaTareas");
+
+    const fechaLimiteTarea =
+        document.getElementById("fechaLimiteTarea");
+
+    const filtroTareas =
+        document.getElementById("filtroTareas");
+
+    let vistaActual = "mes";
+
+    let numeroConsulta = 0;
+
+    /* =============================================
+       FECHAS - GUATEMALA
+       ============================================= */
+
+    function obtenerHoyGuatemala() {
+
+        const partes = new Intl.DateTimeFormat(
+            "en-US",
+            {
+                timeZone: ZONA_HORARIA,
+                year: "numeric",
+                month: "2-digit",
+                day: "2-digit"
+            }
+        ).formatToParts(new Date());
+
+        const valores = {};
+
+        partes.forEach(parte => {
+            valores[parte.type] = parte.value;
+        });
+
+        return (
+            valores.year + "-" +
+            valores.month + "-" +
+            valores.day
+        );
+    }
+
+    let fechaSeleccionada =
+        obtenerHoyGuatemala();
+
+    function convertirFecha(fechaISO) {
+
+        return new Date(
+            fechaISO + "T12:00:00Z"
+        );
+    }
+
+    function obtenerISO(fecha) {
+
+        return fecha.toISOString().slice(0, 10);
+    }
+
+    function sumarDias(fechaISO, dias) {
+
+        const fecha = convertirFecha(fechaISO);
+
+        fecha.setUTCDate(
+            fecha.getUTCDate() + dias
+        );
+
+        return obtenerISO(fecha);
+    }
+
+    function sumarMeses(fechaISO, cantidad) {
+
+        const fecha = convertirFecha(fechaISO);
+
+        const anio = fecha.getUTCFullYear();
+        const mes = fecha.getUTCMonth();
+        const dia = fecha.getUTCDate();
+
+        const primerDia = new Date(
+            Date.UTC(anio, mes + cantidad, 1)
+        );
+
+        const ultimoDia = new Date(
+            Date.UTC(
+                primerDia.getUTCFullYear(),
+                primerDia.getUTCMonth() + 1,
+                0
+            )
+        ).getUTCDate();
+
+        primerDia.setUTCDate(
+            Math.min(dia, ultimoDia)
+        );
+
+        return obtenerISO(primerDia);
+    }
+
+    function inicioSemana(fechaISO) {
+
+        const fecha = convertirFecha(fechaISO);
+
+        const diaSemana =
+            (fecha.getUTCDay() + 6) % 7;
+
+        return sumarDias(
+            fechaISO,
+            -diaSemana
+        );
+    }
+
+    function fechaLegible(fechaISO, opciones) {
+
+        return new Intl.DateTimeFormat(
+            "es-GT",
+            {
+                timeZone: "UTC",
+                ...opciones
+            }
+        ).format(
+            convertirFecha(fechaISO)
+        );
+    }
+
+    /* =============================================
+       CALENDARIO - VISTAS
+       ============================================= */
+
+    function crearBotonDia(fechaISO, otroMes) {
+
+        const boton =
+            document.createElement("button");
+
+        boton.type = "button";
+
+        boton.className = "dia";
+
+        boton.dataset.fecha = fechaISO;
+
+        const hoy = obtenerHoyGuatemala();
+
+        if (otroMes) {
+            boton.classList.add("otro-mes");
+        }
+
+        if (fechaISO === hoy) {
+            boton.classList.add("hoy");
+        }
+
+        if (fechaISO === fechaSeleccionada) {
+            boton.classList.add("seleccionado");
+        }
+
+        boton.setAttribute(
+            "aria-label",
+            fechaLegible(
+                fechaISO,
+                {
+                    weekday: "long",
+                    day: "numeric",
+                    month: "long",
+                    year: "numeric"
+                }
+            )
+        );
+
+        const numero =
+            document.createElement("span");
+
+        numero.className = "numero-dia";
+
+        numero.textContent =
+            convertirFecha(fechaISO).getUTCDate();
+
+        const ayuda =
+            document.createElement("span");
+
+        ayuda.className = "ayuda-dia";
+
+        ayuda.textContent =
+            "Seleccionar tareas";
+
+        boton.append(numero, ayuda);
+
+        boton.addEventListener(
+            "click",
+            () => seleccionarFecha(fechaISO)
+        );
+
+        return boton;
+    }
+
+    function renderizarCalendario() {
+
+        const periodo =
+            document.getElementById("periodoCalendario");
+
+        contenedorCalendario.replaceChildren();
+
+        const fecha = convertirFecha(
+            fechaSeleccionada
+        );
+
+        if (vistaActual === "mes") {
+
+            periodo.textContent = fechaLegible(
+                fechaSeleccionada,
+                {
+                    month: "long",
+                    year: "numeric"
+                }
+            );
+
+            const cuadricula =
+                document.createElement("div");
+
+            cuadricula.className =
+                "calendario-mes";
+
+            const nombres = [
+                "Lun", "Mar", "Mié", "Jue",
+                "Vie", "Sáb", "Dom"
+            ];
+
+            nombres.forEach(nombre => {
+
+                const encabezado =
+                    document.createElement("div");
+
+                encabezado.className =
+                    "nombre-dia";
+
+                encabezado.textContent = nombre;
+
+                cuadricula.appendChild(
+                    encabezado
+                );
+            });
+
+            const primerDiaMes = new Date(
+                Date.UTC(
+                    fecha.getUTCFullYear(),
+                    fecha.getUTCMonth(),
+                    1
+                )
+            );
+
+            const desplazamiento =
+                (primerDiaMes.getUTCDay() + 6) % 7;
+
+            const fechaInicio = sumarDias(
+                obtenerISO(primerDiaMes),
+                -desplazamiento
+            );
+
+            for (let i = 0; i < 42; i++) {
+
+                const fechaDia =
+                    sumarDias(fechaInicio, i);
+
+                const fechaObjeto =
+                    convertirFecha(fechaDia);
+
+                const otroMes =
+                    fechaObjeto.getUTCMonth() !==
+                    fecha.getUTCMonth();
+
+                cuadricula.appendChild(
+                    crearBotonDia(
+                        fechaDia,
+                        otroMes
+                    )
+                );
+            }
+
+            contenedorCalendario.appendChild(
+                cuadricula
+            );
+
+        } else if (vistaActual === "semana") {
+
+            const inicio =
+                inicioSemana(fechaSeleccionada);
+
+            const fin =
+                sumarDias(inicio, 6);
+
+            periodo.textContent =
+                "Semana: " +
+                fechaLegible(
+                    inicio,
+                    {day: "numeric", month: "short"}
+                ) +
+                " — " +
+                fechaLegible(
+                    fin,
+                    {
+                        day: "numeric",
+                        month: "short",
+                        year: "numeric"
+                    }
+                );
+
+            const cuadricula =
+                document.createElement("div");
+
+            cuadricula.className =
+                "calendario-mes";
+
+            for (let i = 0; i < 7; i++) {
+
+                const fechaDia =
+                    sumarDias(inicio, i);
+
+                const encabezado =
+                    document.createElement("div");
+
+                encabezado.className =
+                    "nombre-dia";
+
+                encabezado.textContent =
+                    fechaLegible(
+                        fechaDia,
+                        {weekday: "short"}
+                    );
+
+                cuadricula.appendChild(
+                    encabezado
+                );
+            }
+
+            for (let i = 0; i < 7; i++) {
+
+                cuadricula.appendChild(
+                    crearBotonDia(
+                        sumarDias(inicio, i),
+                        false
+                    )
+                );
+            }
+
+            contenedorCalendario.appendChild(
+                cuadricula
+            );
+
+        } else {
+
+            periodo.textContent = fechaLegible(
+                fechaSeleccionada,
+                {
+                    weekday: "long",
+                    day: "numeric",
+                    month: "long",
+                    year: "numeric"
+                }
+            );
+
+            const bloque =
+                document.createElement("div");
+
+            bloque.className = "vista-dia";
+
+            const titulo =
+                document.createElement("h3");
+
+            titulo.textContent =
+                fechaLegible(
+                    fechaSeleccionada,
+                    {
+                        weekday: "long",
+                        day: "numeric",
+                        month: "long"
+                    }
+                );
+
+            const aviso =
+                document.createElement("div");
+
+            aviso.className =
+                "aviso-integracion";
+
+            aviso.textContent =
+                "Día seleccionado. Puede gestionar " +
+                "sus tareas en el TaskPanel lateral. " +
+                "Las citas y los eventos se mostrarán " +
+                "cuando integremos sus Services.";
+
+            bloque.append(titulo, aviso);
+
+            contenedorCalendario.appendChild(
+                bloque
+            );
+        }
+        cargarCitasCalendario();
+    }
+
+    function seleccionarFecha(fechaISO) {
+
+        fechaSeleccionada = fechaISO;
+
+        fechaTareas.value = fechaISO;
+
+        fechaLimiteTarea.value = fechaISO;
+
+        renderizarCalendario();
+
+        cargarTareas();
+    }
+
+    function cambiarPeriodo(cantidad) {
+
+        if (vistaActual === "mes") {
+
+            seleccionarFecha(
+                sumarMeses(
+                    fechaSeleccionada,
+                    cantidad
+                )
+            );
+
+        } else if (vistaActual === "semana") {
+
+            seleccionarFecha(
+                sumarDias(
+                    fechaSeleccionada,
+                    cantidad * 7
+                )
+            );
+
+        } else {
+
+            seleccionarFecha(
+                sumarDias(
+                    fechaSeleccionada,
+                    cantidad
+                )
+            );
+        }
+    }
+
+    document.getElementById("botonAnterior")
+        .addEventListener(
+            "click",
+            () => cambiarPeriodo(-1)
+        );
+
+    document.getElementById("botonSiguiente")
+        .addEventListener(
+            "click",
+            () => cambiarPeriodo(1)
+        );
+
+    document.getElementById("botonHoy")
+        .addEventListener(
+            "click",
+            () => seleccionarFecha(
+                obtenerHoyGuatemala()
+            )
+        );
+
+    document.querySelectorAll("[data-vista]")
+        .forEach(boton => {
+
+            boton.addEventListener(
+                "click",
+                () => {
+
+                    vistaActual =
+                        boton.dataset.vista;
+
+                    document.querySelectorAll(
+                        "[data-vista]"
+                    ).forEach(elemento => {
+
+                        const activo =
+                            elemento === boton;
+
+                        elemento.classList.toggle(
+                            "activo",
+                            activo
+                        );
+
+                        elemento.setAttribute(
+                            "aria-pressed",
+                            String(activo)
+                        );
+                    });
+
+                    renderizarCalendario();
+                }
+            );
+        });
+
+    botonPanel.addEventListener(
+        "click",
+        () => {
+
+            const ocultar =
+                !distribucion.classList.contains(
+                    "panel-oculto"
+                );
+
+            distribucion.classList.toggle(
+                "panel-oculto",
+                ocultar
+            );
+
+            panelTareas.setAttribute(
+                "aria-hidden",
+                String(ocultar)
+            );
+
+            botonPanel.setAttribute(
+                "aria-expanded",
+                String(!ocultar)
+            );
+
+            botonPanel.textContent = ocultar
+                ? "Mostrar TaskPanel"
+                : "Ocultar TaskPanel";
+        }
+    );
+
+    /* =============================================
+       COMUNICACIÓN SEGURA CON SPRING BOOT
+       ============================================= */
+
+    async function solicitarAPI(
+        url,
+        opciones = {}
+    ) {
+
+        const metodo =
+            (opciones.method || "GET")
+                .toUpperCase();
+
+        const encabezados = new Headers(
+            opciones.headers || {}
+        );
+
+        if (metodo !== "GET") {
+
+            if (!tokenCSRF) {
+
+                throw new Error(
+                    "No se encontró el token CSRF. " +
+                    "Actualice la página."
+                );
+            }
+
+            encabezados.set(
+                encabezadoCSRF,
+                tokenCSRF
+            );
+        }
+
+        const respuesta = await fetch(
+            url,
+            {
+                ...opciones,
+                headers: encabezados,
+                credentials: "same-origin"
+            }
+        );
+
+        const texto = await respuesta.text();
+
+        let datos = {};
+
+        if (texto) {
+
+            try {
+                datos = JSON.parse(texto);
+            } catch {
+                datos = {};
+            }
+        }
+
+        if (!respuesta.ok) {
+
+            throw new Error(
+                datos.mensaje ||
+                datos.message ||
+                ("Error HTTP " + respuesta.status)
+            );
+        }
+
+        return datos;
+    }
+
+    /* =============================================
+       MENSAJES DEL TASKPANEL
+       ============================================= */
+
+    function mostrarMensaje(texto, tipo = "info") {
+
+        mensajeTareas.textContent = texto;
+
+        mensajeTareas.className =
+            "mensaje mensaje-" + tipo;
+    }
+
+    function ocultarMensaje() {
+
+        mensajeTareas.textContent = "";
+
+        mensajeTareas.className =
+            "mensaje mensaje-info oculto";
+    }
+
+    /* =============================================
+       FA06 - LISTAR Y FILTRAR TAREAS
+       ============================================= */
+
+    async function cargarTareas() {
+
+        const consultaActual =
+            ++numeroConsulta;
+
+        const parametros =
+            new URLSearchParams({
+                fecha: fechaSeleccionada,
+                filtro: filtroTareas.value
+            });
+
+        try {
+
+            const datos = await solicitarAPI(
+                URL_TAREAS + "?" +
+                parametros.toString()
+            );
+
+            if (consultaActual !== numeroConsulta) {
+                return;
+            }
+
+            document.getElementById(
+                "totalTareas"
+            ).textContent = datos.totalTareas;
+
+            document.getElementById(
+                "totalPendientes"
+            ).textContent = datos.totalPendientes;
+
+            document.getElementById(
+                "totalCompletadas"
+            ).textContent = datos.totalCompletadas;
+
+            renderizarTareas(datos.tareas || []);
+
+        } catch (error) {
+
+            if (consultaActual !== numeroConsulta) {
+                return;
+            }
+
+            listaTareas.replaceChildren();
+
+            mostrarMensaje(
+                error.message,
+                "error"
+            );
+        }
+    }
+
+    function renderizarTareas(tareas) {
+
+        listaTareas.replaceChildren();
+
+        if (tareas.length === 0) {
+
+            const vacio =
+                document.createElement("div");
+
+            vacio.className =
+                "mensaje mensaje-info";
+
+            vacio.textContent =
+                "No hay tareas para el filtro " +
+                "y la fecha seleccionados.";
+
+            listaTareas.appendChild(vacio);
+
+            return;
+        }
+
+        tareas.forEach(tarea => {
+
+            const tarjeta =
+                document.createElement("article");
+
+            tarjeta.className =
+                "tarea prioridad-" + tarea.prioridad;
+
+            if (tarea.completada) {
+                tarjeta.classList.add("completada");
+            }
+
+            const titulo =
+                document.createElement("h4");
+
+            titulo.textContent =
+                tarea.titulo;
+
+            const descripcion =
+                document.createElement("p");
+
+            descripcion.textContent =
+                tarea.descripcion || "";
+
+            const datos =
+                document.createElement("div");
+
+            datos.className = "datos-tarea";
+
+            datos.textContent =
+                "Prioridad: " +
+                tarea.nombrePrioridad +
+                " | Fecha límite: " +
+                tarea.fechaLimite +
+                " | Estado: " +
+                (
+                    tarea.completada
+                        ? "Completada"
+                        : "Pendiente"
+                );
+
+            const acciones =
+                document.createElement("div");
+
+            acciones.className =
+                "acciones-tarea";
+
+            const cambiarEstado =
+                document.createElement("button");
+
+            cambiarEstado.type = "button";
+
+            cambiarEstado.className =
+                "boton";
+
+            cambiarEstado.textContent =
+                tarea.completada
+                    ? "Marcar pendiente"
+                    : "Completar";
+
+            cambiarEstado.addEventListener(
+                "click",
+                () => actualizarEstado(
+                    tarea.id,
+                    !tarea.completada
+                )
+            );
+
+            const eliminar =
+                document.createElement("button");
+
+            eliminar.type = "button";
+
+            eliminar.className =
+                "boton boton-peligro";
+
+            eliminar.textContent =
+                "Eliminar";
+
+            eliminar.addEventListener(
+                "click",
+                () => eliminarTarea(tarea.id)
+            );
+
+            acciones.append(
+                cambiarEstado,
+                eliminar
+            );
+
+            tarjeta.append(
+                titulo,
+                descripcion,
+                datos,
+                acciones
+            );
+
+            listaTareas.appendChild(
+                tarjeta
+            );
+        });
+    }
+
+    filtroTareas.addEventListener(
+        "change",
+        cargarTareas
+    );
+
+    fechaTareas.addEventListener(
+        "change",
+        () => {
+
+            if (fechaTareas.value) {
+
+                seleccionarFecha(
+                    fechaTareas.value
+                );
+            }
+        }
+    );
+
+    /* =============================================
+       FA06 - CREAR TAREA
+       ============================================= */
+
+    document.getElementById("formularioTarea")
+        .addEventListener(
+            "submit",
+            async evento => {
+
+                evento.preventDefault();
+
+                const formulario = evento.currentTarget;
+
+                if (!formulario.reportValidity()) {
+                    return;
+                }
+
+                const boton =
+                    document.getElementById(
+                        "botonCrearTarea"
+                    );
+
+                boton.disabled = true;
+
+                try {
+
+                    const nuevaTarea = {
+
+                        titulo:
+                            document.getElementById(
+                                "tituloTarea"
+                            ).value.trim(),
+
+                        descripcion:
+                            document.getElementById(
+                                "descripcionTarea"
+                            ).value.trim(),
+
+                        prioridad:
+                            Number(
+                                document.getElementById(
+                                    "prioridadTarea"
+                                ).value
+                            ),
+
+                        fechaLimite:
+                        fechaLimiteTarea.value
+                    };
+
+                    const resultado =
+                        await solicitarAPI(
+                            URL_TAREAS,
+                            {
+                                method: "POST",
+                                headers: {
+                                    "Content-Type":
+                                        "application/json"
+                                },
+                                body: JSON.stringify(
+                                    nuevaTarea
+                                )
+                            }
+                        );
+
+                    formulario.reset();
+
+                    document.getElementById(
+                        "prioridadTarea"
+                    ).value = "1";
+
+                    ocultarMensaje();
+
+                    mostrarMensaje(
+                        resultado.mensaje,
+                        "exito"
+                    );
+
+                    seleccionarFecha(
+                        nuevaTarea.fechaLimite
+                    );
+
+                } catch (error) {
+
+                    mostrarMensaje(
+                        error.message,
+                        "error"
+                    );
+
+                } finally {
+
+                    boton.disabled = false;
+                }
+            }
+        );
+
+    /* =============================================
+       FA06 - COMPLETAR / DESCOMPLETAR
+       ============================================= */
+
+    async function actualizarEstado(
+        idTarea,
+        completar
+    ) {
+
+        try {
+
+            const parametros =
+                new URLSearchParams({
+                    completar: String(completar)
+                });
+
+            const resultado =
+                await solicitarAPI(
+                    URL_TAREAS +
+                    "/" + idTarea +
+                    "/estado?" +
+                    parametros.toString(),
+                    {
+                        method: "POST"
+                    }
+                );
+
+            mostrarMensaje(
+                resultado.mensaje,
+                "exito"
+            );
+
+            await cargarTareas();
+
+        } catch (error) {
+
+            mostrarMensaje(
+                error.message,
+                "error"
+            );
+        }
+    }
+
+    /* =============================================
+       FA06 - ELIMINAR TAREA
+       ============================================= */
+
+    async function eliminarTarea(idTarea) {
+
+        const confirmar =
+            window.confirm(
+                "¿Está seguro de eliminar esta tarea?"
+            );
+
+        if (!confirmar) {
+            return;
+        }
+
+        try {
+
+            const resultado =
+                await solicitarAPI(
+                    URL_TAREAS +
+                    "/" + idTarea +
+                    "/eliminar",
+                    {
+                        method: "POST"
+                    }
+                );
+
+            mostrarMensaje(
+                resultado.mensaje,
+                "exito"
+            );
+
+            await cargarTareas();
+
+        } catch (error) {
+
+            mostrarMensaje(
+                error.message,
+                "error"
+            );
+        }
+    }
+
+
+    /* =============================================
+       CU-16 - CITAS MÉDICAS REALES
+       ============================================= */
+
+    let numeroConsultaCitas = 0;
+
+    /* =============================================
+       IDENTIFICAR PERÍODO DEL CALENDARIO
+       ============================================= */
+
+    function obtenerRangoCitasCalendario() {
+
+        if (vistaActual === "dia") {
+
+            return {
+                desde: fechaSeleccionada,
+                hasta: fechaSeleccionada
+            };
+        }
+
+        if (vistaActual === "semana") {
+
+            const desde =
+                inicioSemana(fechaSeleccionada);
+
+            return {
+                desde: desde,
+                hasta: sumarDias(desde, 6)
+            };
+        }
+
+        // Vista mensual: incluir los 42 días
+        // que aparecen en la cuadrícula.
+
+        const fecha =
+            convertirFecha(fechaSeleccionada);
+
+        const primerDiaMes =
+            new Date(
+                Date.UTC(
+                    fecha.getUTCFullYear(),
+                    fecha.getUTCMonth(),
+                    1
+                )
+            );
+
+        const desde =
+            inicioSemana(obtenerISO(primerDiaMes));
+
+        return {
+            desde: desde,
+            hasta: sumarDias(desde, 41)
+        };
+    }
+
+    /* =============================================
+       CONVERTIR FECHA A DÍA DE GUATEMALA
+       ============================================= */
+
+    function obtenerFechaCitaGuatemala(valor) {
+
+        if (!valor) {
+            return null;
+        }
+
+        const fecha = new Date(valor);
+
+        if (Number.isNaN(fecha.getTime())) {
+            return null;
+        }
+
+        const partes =
+            new Intl.DateTimeFormat(
+                "en-US",
+                {
+                    timeZone: ZONA_HORARIA,
+                    year: "numeric",
+                    month: "2-digit",
+                    day: "2-digit"
+                }
+            ).formatToParts(fecha);
+
+        const datos = {};
+
+        partes.forEach(parte => {
+            datos[parte.type] = parte.value;
+        });
+
+        return (
+            datos.year + "-" +
+            datos.month + "-" +
+            datos.day
+        );
+    }
+
+    /* =============================================
+       VERIFICAR SI UNA CITA OCUPA UN DÍA
+       ============================================= */
+
+    function citaCorrespondeAlDia(cita, fechaISO) {
+
+        const desde =
+            obtenerFechaCitaGuatemala(
+                cita.fechaInicio
+            );
+
+        if (!desde) {
+            return false;
+        }
+
+        // Una cita puede no tener fecha de fin.
+        // No inventamos una duración.
+
+        let hasta = desde;
+
+        if (cita.fechaFin) {
+
+            const fin =
+                new Date(cita.fechaFin);
+
+            if (!Number.isNaN(fin.getTime())
+                && fin.getTime() >
+                new Date(cita.fechaInicio).getTime()) {
+
+                // Fin exclusivo: una cita que termina
+                // exactamente a medianoche no se
+                // muestra también en el día siguiente.
+
+                hasta =
+                    obtenerFechaCitaGuatemala(
+                        new Date(fin.getTime() - 1)
+                    );
+            }
+        }
+
+        return fechaISO >= desde
+            && fechaISO <= hasta;
+    }
+
+    /* =============================================
+       FORMATEAR FECHAS Y HORAS
+       ============================================= */
+
+    function formatearHoraCita(valor) {
+
+        if (!valor) {
+            return "Sin hora registrada";
+        }
+
+        return new Intl.DateTimeFormat(
+            "es-GT",
+            {
+                timeZone: ZONA_HORARIA,
+                hour: "2-digit",
+                minute: "2-digit",
+                hour12: false
+            }
+        ).format(new Date(valor));
+    }
+
+    function formatearFechaHoraCita(valor) {
+
+        if (!valor) {
+            return "No registrada";
+        }
+
+        return new Intl.DateTimeFormat(
+            "es-GT",
+            {
+                timeZone: ZONA_HORARIA,
+                dateStyle: "medium",
+                timeStyle: "short"
+            }
+        ).format(new Date(valor));
+    }
+
+
+    /* =============================================
+       CU-16 - CARGAR CITAS Y EVENTOS
+       ============================================= */
+
+    async function cargarCitasCalendario() {
+
+        const consultaActual =
+            ++numeroConsultaCitas;
+
+        const rango =
+            obtenerRangoCitasCalendario();
+
+        const estado =
+            document.getElementById("estadoCitas");
+
+        if (estado) {
+            estado.textContent =
+                "Cargando citas y eventos médicos...";
+        }
+
+        const parametros =
+            new URLSearchParams({
+                desde: rango.desde,
+                hasta: rango.hasta
+            });
+
+        try {
+
+            // Consultas independientes al servidor.
+
+            const [citas, eventos] =
+                await Promise.all([
+
+                    solicitarAPI(
+                        "/interno/medico/agenda/citas?" +
+                        parametros.toString()
+                    ),
+
+                    solicitarAPI(
+                        "/interno/medico/agenda/eventos?" +
+                        parametros.toString()
+                    )
+
+                ]);
+
+            // Evitar mostrar resultados de una
+            // consulta anterior al cambiar de vista.
+
+            if (consultaActual !== numeroConsultaCitas) {
+                return;
+            }
+
+            // Combinar únicamente para visualizar.
+            // No se modifica ningún dato de PostgreSQL.
+
+            const elementos =
+                [...citas, ...eventos];
+
+            elementos.sort(
+                (a, b) =>
+                    new Date(a.fechaInicio) -
+                    new Date(b.fechaInicio)
+            );
+
+            mostrarCitasEnCalendario(elementos);
+
+            if (estado) {
+
+                estado.textContent =
+                    "Citas médicas del período: " +
+                    citas.length +
+                    " | Eventos médicos: " +
+                    eventos.length;
+            }
+
+        } catch (error) {
+
+            if (consultaActual !== numeroConsultaCitas) {
+                return;
+            }
+
+            if (estado) {
+
+                estado.textContent =
+                    "No fue posible cargar el calendario: " +
+                    error.message;
+            }
+        }
+    }
+
+
+
+    /* =============================================
+       CU-16 - FA01
+       MOSTRAR DETALLES DE CITA MÉDICA
+       ============================================= */
+
+    function mostrarDetalleCita(cita) {
+
+        // =========================================
+        // VALIDAR INFORMACIÓN
+        // =========================================
+
+        if (!cita) {
+            return;
+        }
+
+        // =========================================
+        // TÍTULO
+        // =========================================
+
+        document.getElementById(
+            "detalleCitaTitulo"
+        ).textContent =
+            cita.titulo || "Cita médica";
+
+        // =========================================
+        // PACIENTE
+        // =========================================
+
+        document.getElementById(
+            "detalleCitaPaciente"
+        ).textContent =
+            cita.nombrePaciente || "No registrado";
+
+        // =========================================
+        // ESTADO
+        // =========================================
+
+        document.getElementById(
+            "detalleCitaEstado"
+        ).textContent =
+            cita.estado || "No registrado";
+
+        // =========================================
+        // TIPO
+        // =========================================
+
+        document.getElementById(
+            "detalleCitaTipo"
+        ).textContent = "Cita médica";
+
+        // =========================================
+        // DESCRIPCIÓN
+        // =========================================
+
+        document.getElementById(
+            "detalleCitaDescripcion"
+        ).textContent =
+            cita.descripcion || "Sin descripción";
+
+        // =========================================
+        // FECHA DE INICIO
+        // =========================================
+
+        document.getElementById(
+            "detalleCitaInicio"
+        ).textContent =
+            formatearFechaHoraCita(
+                cita.fechaInicio
+            );
+
+        // =========================================
+        // FECHA DE FIN
+        // =========================================
+
+        document.getElementById(
+            "detalleCitaFin"
+        ).textContent =
+            formatearFechaHoraCita(
+                cita.fechaFin
+            );
+
+        // =========================================
+        // ABRIR VENTANA
+        // =========================================
+
+        document.getElementById(
+            "dialogoDetalleCita"
+        ).showModal();
+    }
+
+    /* =============================================
+       CU-16 - CERRAR DETALLES DE CITA
+       ============================================= */
+
+    document.getElementById(
+        "botonCerrarDetalleCita"
+    ).addEventListener(
+        "click",
+        function () {
+
+            document.getElementById(
+                "dialogoDetalleCita"
+            ).close();
+        }
+    );
+
+
+    /* =============================================
+       CU-16 - CREAR ELEMENTO VISUAL
+       CITA O EVENTO
+       ============================================= */
+
+    function crearElementoVisualCita(registro, vistaDia) {
+
+        const esEvento =
+            registro.tipo === "EVENTO";
+
+        const elemento =
+            document.createElement("span");
+
+        elemento.className =
+            "cita-calendario";
+
+        if (esEvento) {
+
+            elemento.classList.add(
+                "evento-calendario"
+            );
+        }
+
+        if (vistaDia) {
+
+            elemento.classList.add(
+                "cita-calendario-dia"
+            );
+        }
+
+        elemento.style.borderLeftColor =
+            esEvento
+                ? "#8B5CF6"
+                : (registro.color || "#64748B");
+
+        // =========================================
+        // HORARIO
+        // =========================================
+
+        const hora =
+            registro.todoElDia
+                ? "Todo el día"
+                : formatearHoraCita(
+                    registro.fechaInicio
+                );
+
+        // =========================================
+        // TÍTULO
+        // =========================================
+
+        const texto =
+            esEvento
+                ? registro.titulo
+                : registro.nombrePaciente;
+
+        elemento.textContent =
+            hora + " - " + texto;
+
+        elemento.title =
+            esEvento
+                ? registro.titulo +
+                " | " + registro.tipoEvento
+                : registro.titulo +
+                " | " + registro.estado;
+
+        // =========================================
+        // DETALLE AL SELECCIONAR
+        // =========================================
+
+        elemento.addEventListener(
+            "click",
+            evento => {
+
+                evento.stopPropagation();
+
+                if (esEvento) {
+
+                    mostrarDetalleEvento(registro.id);
+
+                } else {
+
+                    mostrarDetalleCita(registro);
+                }
+            }
+        );
+
+        return elemento;
+    }
+
+    /* =============================================
+       CU-16 - FA01
+       CONSULTAR DETALLE DEL EVENTO
+       ============================================= */
+
+    async function mostrarDetalleEvento(idEvento) {
+
+        try {
+
+            // El Service verifica que el evento
+            // pertenezca al Médico autenticado.
+
+            const evento =
+                await solicitarAPI(
+                    "/interno/medico/agenda/eventos/" +
+                    idEvento
+                );
+
+            // =====================================
+            // INICIO
+            // =====================================
+
+            const inicio =
+                evento.todoElDia
+                    ? formatearFechaHoraCita(
+                        evento.fechaInicio
+                    ).split(",")[0]
+                    : formatearFechaHoraCita(
+                        evento.fechaInicio
+                    );
+
+            // =====================================
+            // FIN
+            // =====================================
+            //
+            // Los eventos de todo el día usan
+            // fecha final exclusiva.
+            //
+            // Restamos un milisegundo solamente
+            // para presentar la última fecha.
+            //
+            // =====================================
+
+            let fin;
+
+            if (evento.todoElDia) {
+
+                const ultimoInstante =
+                    new Date(
+                        new Date(
+                            evento.fechaFin
+                        ).getTime() - 1
+                    );
+
+                fin =
+                    new Intl.DateTimeFormat(
+                        "es-GT",
+                        {
+                            timeZone: ZONA_HORARIA,
+                            dateStyle: "medium"
+                        }
+                    ).format(ultimoInstante);
+
+            } else {
+
+                fin =
+                    formatearFechaHoraCita(
+                        evento.fechaFin
+                    );
+            }
+
+
+            /* =============================================
+               MOSTRAR DETALLES EN VENTANA VISUAL
+               ============================================= */
+
+            document.getElementById(
+                "detalleEventoTitulo"
+            ).textContent = evento.titulo;
+
+            document.getElementById(
+                "detalleEventoDescripcion"
+            ).textContent =
+                evento.descripcion || "Sin descripción";
+
+            document.getElementById(
+                "detalleEventoTipo"
+            ).textContent = evento.tipoEvento;
+
+            document.getElementById(
+                "detalleEventoInicio"
+            ).textContent = inicio;
+
+            document.getElementById(
+                "detalleEventoFin"
+            ).textContent = fin;
+
+            document.getElementById(
+                "detalleEventoDuracion"
+            ).textContent =
+                evento.todoElDia
+                    ? "Evento de todo el día"
+                    : "Evento con horario definido";
+
+// Conservar los datos originales
+// para permitir la edición.
+
+            eventoSeleccionadoDetalle = evento;
+
+            document.getElementById(
+                "dialogoDetalleEvento"
+            ).showModal();
+
+
+        } catch (error) {
+
+            window.alert(
+                "No fue posible consultar el evento: " +
+                error.message
+            );
+        }
+    }
+
+
+    /* =============================================
+       CU-16 - BOTONES DE DETALLE DEL EVENTO
+       ============================================= */
+
+    let eventoSeleccionadoDetalle = null;
+
+    const dialogoDetalleEvento =
+        document.getElementById("dialogoDetalleEvento");
+
+    /* =============================================
+       CERRAR DETALLES
+       ============================================= */
+
+    document.getElementById(
+        "botonCerrarDetalleEvento"
+    ).addEventListener("click", function () {
+
+        dialogoDetalleEvento.close();
+
+        eventoSeleccionadoDetalle = null;
+    });
+
+    /* =============================================
+       EDITAR DESDE LOS DETALLES
+       ============================================= */
+
+    document.getElementById(
+        "botonEditarDesdeDetalleEvento"
+    ).addEventListener("click", function () {
+
+        if (!eventoSeleccionadoDetalle) {
+            return;
+        }
+
+        const evento = eventoSeleccionadoDetalle;
+
+        dialogoDetalleEvento.close();
+
+        eventoSeleccionadoDetalle = null;
+
+        abrirEdicionEvento(evento);
+    });
+
+    /* =============================================
+       MOSTRAR CITAS EN MES, SEMANA Y DÍA
+       ============================================= */
+
+    function mostrarCitasEnCalendario(citas) {
+
+        // =========================================
+        // MES Y SEMANA
+        // =========================================
+
+        const botonesDia =
+            contenedorCalendario.querySelectorAll(
+                ".dia[data-fecha]"
+            );
+
+        botonesDia.forEach(botonDia => {
+
+            const fechaISO =
+                botonDia.dataset.fecha;
+
+            const citasDelDia =
+                citas.filter(
+                    cita => citaCorrespondeAlDia(
+                        cita,
+                        fechaISO
+                    )
+                );
+
+            // Mostrar hasta dos citas en cada celda
+            // para conservar el tamaño del calendario.
+
+            citasDelDia.slice(0, 2).forEach(
+                cita => {
+
+                    botonDia.appendChild(
+                        crearElementoVisualCita(
+                            cita,
+                            false
+                        )
+                    );
+                }
+            );
+
+            if (citasDelDia.length > 2) {
+
+                const mas =
+                    document.createElement("span");
+
+                mas.className = "mas-citas";
+
+                mas.textContent =
+                    "+" + (citasDelDia.length - 2) +
+                    " elementos más";
+
+                botonDia.appendChild(mas);
+            }
+        });
+
+        // =========================================
+        // VISTA DIARIA
+        // =========================================
+
+        if (vistaActual !== "dia") {
+            return;
+        }
+
+        const vistaDia =
+            contenedorCalendario.querySelector(
+                ".vista-dia"
+            );
+
+        if (!vistaDia) {
+            return;
+        }
+
+        const lista =
+            document.createElement("div");
+
+        lista.className = "lista-citas-dia";
+
+        const citasDelDia =
+            citas.filter(
+                cita => citaCorrespondeAlDia(
+                    cita,
+                    fechaSeleccionada
+                )
+            );
+
+        if (citasDelDia.length === 0) {
+
+            const vacio =
+                document.createElement("p");
+
+            vacio.textContent =
+                "No hay citas médicas para este día.";
+
+            lista.appendChild(vacio);
+
+        } else {
+
+            citasDelDia.forEach(cita => {
+
+                lista.appendChild(
+                    crearElementoVisualCita(
+                        cita,
+                        true
+                    )
+                );
+            });
+        }
+
+        vistaDia.appendChild(lista);
+    }
+
+
+
+    /* =============================================
+       CU-16 - NUEVO EVENTO
+       CORRECCIÓN DEL BOTÓN Y FORMULARIO
+       ============================================= */
+
+    const botonNuevoEvento =
+        document.getElementById("botonNuevoEvento");
+
+    const dialogoNuevoEvento =
+        document.getElementById("dialogoNuevoEvento");
+
+    const formularioNuevoEvento =
+        document.getElementById("formularioNuevoEvento");
+
+    const inicioNuevoEvento =
+        document.getElementById("inicioNuevoEvento");
+
+    const finNuevoEvento =
+        document.getElementById("finNuevoEvento");
+
+    const todoElDiaNuevoEvento =
+        document.getElementById("todoElDiaNuevoEvento");
+
+    const mensajeErrorNuevoEvento =
+        document.getElementById("mensajeErrorNuevoEvento");
+
+    const confirmacionNuevoEvento =
+        document.getElementById("confirmacionNuevoEvento");
+
+    const botonGuardarNuevoEvento =
+        document.getElementById("guardarNuevoEvento");
+
+
+    const botonEliminarEvento =
+        document.getElementById("botonEliminarEvento");
+
+
+
+    /* =============================================
+       CU-16 - EDITAR EVENTOS MÉDICOS
+       ============================================= */
+
+    let idEventoEnEdicion = null;
+
+    /* =============================================
+       FORMATEAR FECHA Y HORA DE GUATEMALA
+       PARA EL INPUT DATETIME-LOCAL
+       ============================================= */
+
+    function fechaHoraParaFormulario(valor) {
+
+        const partes = {};
+
+        new Intl.DateTimeFormat("en-GB", {
+            timeZone: ZONA_HORARIA,
+            year: "numeric",
+            month: "2-digit",
+            day: "2-digit",
+            hour: "2-digit",
+            minute: "2-digit",
+            hourCycle: "h23"
+        }).formatToParts(new Date(valor))
+            .forEach(parte => {
+                partes[parte.type] = parte.value;
+            });
+
+        return (
+            partes.year + "-" +
+            partes.month + "-" +
+            partes.day + "T" +
+            partes.hour + ":" +
+            partes.minute
+        );
+    }
+
+    /* =============================================
+       ABRIR FORMULARIO PARA EDITAR
+       ============================================= */
+
+    function abrirEdicionEvento(evento) {
+
+        idEventoEnEdicion = evento.id;
+
+
+        botonEliminarEvento.hidden = false;
+
+
+        formularioNuevoEvento.reset();
+
+        formularioNuevoEvento.classList.remove(
+            "validacion-activa"
+        );
+
+        formularioNuevoEvento
+            .querySelectorAll(".campo-error")
+            .forEach(campo =>
+                campo.classList.remove("campo-error")
+            );
+
+        limpiarErrorNuevoEvento();
+
+
+
+        document.getElementById(
+            "tituloDialogoNuevoEvento"
+        ).textContent = "Editar Evento Médico";
+
+        botonGuardarNuevoEvento.textContent =
+            "Guardar cambios";
+
+        document.getElementById(
+            "tituloNuevoEvento"
+        ).value = evento.titulo || "";
+
+        document.getElementById(
+            "descripcionNuevoEvento"
+        ).value = evento.descripcion || "";
+
+        /* =====================================
+           RECUPERAR TIPO DE EVENTO
+           ===================================== */
+
+        const tipos = {
+            reunion: "0",
+            descanso: "1",
+            capacitacion: "2",
+            personal: "3",
+            otro: "4"
+        };
+
+        const nombreTipo = String(
+            evento.tipoEvento ?? "Otro"
+        ).normalize("NFD")
+            .replace(/[\u0300-\u036f]/g, "")
+            .toLowerCase()
+            .trim();
+
+        document.getElementById(
+            "tipoNuevoEvento"
+        ).value =
+            tipos[nombreTipo] ??
+            (["0", "1", "2", "3", "4"].includes(nombreTipo)
+                ? nombreTipo
+                : "4");
+
+        /* =====================================
+           RECUPERAR FECHAS
+           ===================================== */
+
+        const todoElDia = Boolean(evento.todoElDia);
+
+        todoElDiaNuevoEvento.checked = todoElDia;
+
+        inicioNuevoEvento.type =
+            todoElDia ? "date" : "datetime-local";
+
+        finNuevoEvento.type =
+            todoElDia ? "date" : "datetime-local";
+
+        if (todoElDia) {
+
+            inicioNuevoEvento.value =
+                obtenerFechaCitaGuatemala(
+                    evento.fechaInicio
+                );
+
+            // El servidor almacena el final exclusivo.
+            // Mostramos el último día incluido.
+
+            const ultimoDia =
+                new Date(
+                    new Date(evento.fechaFin).getTime() - 1
+                );
+
+            finNuevoEvento.value =
+                obtenerFechaCitaGuatemala(ultimoDia);
+
+        } else {
+
+            inicioNuevoEvento.value =
+                fechaHoraParaFormulario(
+                    evento.fechaInicio
+                );
+
+            finNuevoEvento.value =
+                fechaHoraParaFormulario(
+                    evento.fechaFin
+                );
+        }
+
+        dialogoNuevoEvento.showModal();
+    }
+
+    /* =============================================
+       MOSTRAR ERRORES
+       ============================================= */
+
+    function mostrarErrorNuevoEvento(mensaje) {
+
+        mensajeErrorNuevoEvento.textContent = mensaje;
+        mensajeErrorNuevoEvento.hidden = false;
+    }
+
+    function limpiarErrorNuevoEvento() {
+
+        mensajeErrorNuevoEvento.textContent = "";
+        mensajeErrorNuevoEvento.hidden = true;
+
+        finNuevoEvento.setCustomValidity("");
+    }
+
+    /* =============================================
+       ABRIR EL FORMULARIO
+       ============================================= */
+
+    botonNuevoEvento.addEventListener(
+        "click",
+        function () {
+
+
+            idEventoEnEdicion = null;
+
+
+            botonEliminarEvento.hidden = true;
+
+
+            document.getElementById(
+                "tituloDialogoNuevoEvento"
+            ).textContent = "Nuevo Evento Médico";
+
+            botonGuardarNuevoEvento.textContent =
+                "Guardar evento";
+
+
+            formularioNuevoEvento.reset();
+
+
+            formularioNuevoEvento.classList.remove(
+                "validacion-activa"
+            );
+
+            formularioNuevoEvento
+                .querySelectorAll(".campo-error")
+                .forEach(campo =>
+                    campo.classList.remove("campo-error")
+                );
+
+            limpiarErrorNuevoEvento();
+
+            todoElDiaNuevoEvento.checked = false;
+
+            inicioNuevoEvento.type = "datetime-local";
+            finNuevoEvento.type = "datetime-local";
+
+            inicioNuevoEvento.value =
+                fechaSeleccionada + "T13:00";
+
+            finNuevoEvento.value =
+                fechaSeleccionada + "T13:30";
+
+            dialogoNuevoEvento.showModal();
+        }
+    );
+
+    /* =============================================
+       CANCELAR FORMULARIO
+       ============================================= */
+
+    document.getElementById("cancelarNuevoEvento")
+        .addEventListener(
+            "click",
+            function () {
+
+                dialogoNuevoEvento.close();
+            }
+        );
+
+    /* =============================================
+       TODO EL DÍA
+       ============================================= */
+
+    todoElDiaNuevoEvento.addEventListener(
+        "change",
+        function () {
+
+            const todoElDia =
+                todoElDiaNuevoEvento.checked;
+
+            const fechaInicio =
+                inicioNuevoEvento.value.slice(0, 10)
+                || fechaSeleccionada;
+
+            const fechaFin =
+                finNuevoEvento.value.slice(0, 10)
+                || fechaInicio;
+
+            inicioNuevoEvento.type =
+                todoElDia ? "date" : "datetime-local";
+
+            finNuevoEvento.type =
+                todoElDia ? "date" : "datetime-local";
+
+            if (todoElDia) {
+
+                inicioNuevoEvento.value = fechaInicio;
+                finNuevoEvento.value = fechaFin;
+
+            } else {
+
+                inicioNuevoEvento.value =
+                    fechaInicio + "T13:00";
+
+                finNuevoEvento.value =
+                    fechaFin + "T13:30";
+            }
+
+            limpiarErrorNuevoEvento();
+        }
+    );
+
+    /* =============================================
+       LIMPIAR ERRORES AL CAMBIAR FECHAS
+       ============================================= */
+
+    [inicioNuevoEvento, finNuevoEvento]
+        .forEach(function (campo) {
+
+            campo.addEventListener(
+                "input",
+                limpiarErrorNuevoEvento
+            );
+        });
+
+    /* =============================================
+       GUARDAR EVENTO
+       ============================================= */
+
+    formularioNuevoEvento.addEventListener(
+        "submit",
+        async function (evento) {
+
+            evento.preventDefault();
+
+            limpiarErrorNuevoEvento();
+
+
+            /* =============================================
+               FA03 - VALIDAR CAMPOS OBLIGATORIOS
+               ============================================= */
+
+            formularioNuevoEvento.classList.add(
+                "validacion-activa"
+            );
+
+            const campoInvalido =
+                formularioNuevoEvento.querySelector(":invalid");
+
+            if (campoInvalido) {
+
+                const nombresCampos = {
+                    tituloNuevoEvento: "El título",
+                    tipoNuevoEvento: "El tipo de evento",
+                    inicioNuevoEvento: "La fecha de inicio",
+                    finNuevoEvento: "La fecha de fin"
+                };
+
+                const nombreCampo =
+                    nombresCampos[campoInvalido.id] ||
+                    "El campo seleccionado";
+
+                const mensaje =
+                    campoInvalido.validity.valueMissing
+                        ? nombreCampo + " es obligatorio."
+                        : nombreCampo + " contiene un valor inválido.";
+
+                mostrarErrorNuevoEvento(mensaje);
+
+                campoInvalido.reportValidity();
+
+                return;
+            }
+
+            /* =============================================
+               VALIDAR TÍTULO SIN SOLO ESPACIOS
+               ============================================= */
+
+            const campoTituloEvento =
+                document.getElementById("tituloNuevoEvento");
+
+            const tituloLimpio =
+                campoTituloEvento.value.trim();
+
+            if (tituloLimpio.length < 5) {
+
+                campoTituloEvento.classList.add("campo-error");
+
+                mostrarErrorNuevoEvento(
+                    "El título debe contener entre 5 y 200 caracteres."
+                );
+
+                campoTituloEvento.focus();
+
+                return;
+            }
+
+
+            const fechaInicio =
+                inicioNuevoEvento.value;
+
+            const fechaFin =
+                finNuevoEvento.value;
+
+            const todoElDia =
+                todoElDiaNuevoEvento.checked;
+
+            /* =====================================
+               FA03 - VALIDAR FECHAS
+               ===================================== */
+
+            const fechasIncorrectas =
+                todoElDia
+                    ? fechaFin < fechaInicio
+                    : fechaFin <= fechaInicio;
+
+            if (fechasIncorrectas) {
+
+                const mensaje =
+                    "La fecha de fin debe ser posterior " +
+                    "a la fecha de inicio.";
+
+                finNuevoEvento.setCustomValidity(mensaje);
+
+                mostrarErrorNuevoEvento(mensaje);
+
+                finNuevoEvento.reportValidity();
+
+                return;
+            }
+
+            /* =====================================
+               CONSTRUIR DATOS DEL EVENTO
+               ===================================== */
+
+            const datosEvento = {
+
+                titulo:
+                    document.getElementById(
+                        "tituloNuevoEvento"
+                    ).value.trim(),
+
+                descripcion:
+                    document.getElementById(
+                        "descripcionNuevoEvento"
+                    ).value.trim(),
+
+                tipoEvento:
+                    Number(
+                        document.getElementById(
+                            "tipoNuevoEvento"
+                        ).value
+                    ),
+
+                fechaInicio: fechaInicio,
+
+                fechaFin: fechaFin,
+
+                todoElDia: todoElDia
+            };
+
+            botonGuardarNuevoEvento.disabled = true;
+
+            try {
+
+                /* =================================
+                   GUARDAR MEDIANTE EL SERVICE
+                   ================================= */
+
+
+                const rutaGuardarEvento =
+                    idEventoEnEdicion === null
+                        ? "/interno/medico/agenda/eventos"
+                        : "/interno/medico/agenda/eventos/" +
+                        idEventoEnEdicion +
+                        "/actualizar";
+
+                const resultado =
+                    await solicitarAPI(
+                        rutaGuardarEvento,
+
+                        {
+                            method: "POST",
+                            headers: {
+                                "Content-Type":
+                                    "application/json"
+                            },
+                            body: JSON.stringify(datosEvento)
+                        }
+                    );
+
+                /* =================================
+                   CERRAR FORMULARIO
+                   ================================= */
+
+                dialogoNuevoEvento.close();
+
+                /* =================================
+                   MOSTRAR CONFIRMACIÓN
+                   ================================= */
+
+                confirmacionNuevoEvento.textContent =
+                    resultado.mensaje;
+
+                confirmacionNuevoEvento.hidden = false;
+
+                /* =================================
+                   ACTUALIZAR EL CALENDARIO
+                   ================================= */
+
+                seleccionarFecha(
+                    datosEvento.fechaInicio.slice(0, 10)
+                );
+
+            } catch (error) {
+
+                mostrarErrorNuevoEvento(error.message);
+
+                if (error.message.includes(
+                    "La fecha de fin debe ser posterior"
+                )) {
+
+                    finNuevoEvento.setCustomValidity(
+                        error.message
+                    );
+                }
+
+            } finally {
+
+                botonGuardarNuevoEvento.disabled = false;
+            }
+        }
+    );
+
+
+    /* =============================================
+       CU-16 - FA04
+       ELIMINAR EVENTO DESDE LA INTERFAZ
+       ============================================= */
+
+    botonEliminarEvento.addEventListener(
+        "click",
+        async function () {
+
+            // Solo se puede eliminar un evento
+            // que previamente fue seleccionado.
+
+            if (idEventoEnEdicion === null) {
+                return;
+            }
+
+            // =====================================
+            // CONFIRMACIÓN OBLIGATORIA
+            // =====================================
+
+            const confirmar = window.confirm(
+                "¿Está seguro de eliminar este evento?"
+            );
+
+            if (!confirmar) {
+                return;
+            }
+
+            const idEliminar = idEventoEnEdicion;
+
+            const fechaEvento =
+                inicioNuevoEvento.value.slice(0, 10);
+
+            botonEliminarEvento.disabled = true;
+            botonGuardarNuevoEvento.disabled = true;
+
+            limpiarErrorNuevoEvento();
+
+            try {
+
+                // =================================
+                // ELIMINAR MEDIANTE EL SERVICE
+                // =================================
+
+                const resultado =
+                    await solicitarAPI(
+                        "/interno/medico/agenda/eventos/" +
+                        idEliminar +
+                        "/eliminar",
+                        {
+                            method: "POST"
+                        }
+                    );
+
+                // =================================
+                // CERRAR FORMULARIO
+                // =================================
+
+                dialogoNuevoEvento.close();
+
+                idEventoEnEdicion = null;
+
+                // =================================
+                // CONFIRMACIÓN VISUAL
+                // =================================
+
+                confirmacionNuevoEvento.textContent =
+                    resultado.mensaje ||
+                    "Evento eliminado exitosamente.";
+
+                confirmacionNuevoEvento.hidden = false;
+
+                // =================================
+                // ACTUALIZAR CALENDARIO
+                // =================================
+
+                seleccionarFecha(
+                    fechaEvento || fechaSeleccionada
+                );
+
+            } catch (error) {
+
+                // Si el Service rechaza la operación
+                // mostramos el motivo sin cerrar
+                // el formulario.
+
+                mostrarErrorNuevoEvento(
+                    error.message
+                );
+
+            } finally {
+
+                botonEliminarEvento.disabled = false;
+                botonGuardarNuevoEvento.disabled = false;
+            }
+        }
+    );
+
+
+    /* =============================================
+       FA03 - LIMPIAR ERROR DEL TÍTULO
+       ============================================= */
+
+    document.getElementById("tituloNuevoEvento")
+        .addEventListener("input", function () {
+
+            this.classList.remove("campo-error");
+
+            mensajeErrorNuevoEvento.textContent = "";
+            mensajeErrorNuevoEvento.hidden = true;
+        });
+
+    /* =============================================
+       INICIALIZAR CU-16
+       ============================================= */
+
+    fechaTareas.value =
+        fechaSeleccionada;
+
+    fechaLimiteTarea.value =
+        fechaSeleccionada;
+
+    renderizarCalendario();
+
+    cargarTareas();
+
+</script>
+
+</body>
+</html>

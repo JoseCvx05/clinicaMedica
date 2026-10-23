@@ -593,6 +593,66 @@
 
 
             <!-- =================================================
+                 CU-16 - GESTIÓN DE AGENDA MÉDICA
+                 ACCESO EXCLUSIVO PARA MÉDICOS
+                 ================================================= -->
+
+            <div sec:authorize="hasRole('MEDICO')">
+
+                <div class="card santos-modulo h-100">
+
+                    <div class="card-body p-4 d-flex flex-column">
+
+                        <!-- ICONO DEL MÓDULO -->
+
+                        <div class="santos-modulo-icono
+                        bg-primary-subtle
+                        text-primary">
+
+                            <i class="bi bi-calendar-week-fill"
+                               aria-hidden="true"></i>
+
+                        </div>
+
+                        <!-- TÍTULO -->
+
+                        <h3 class="h5 fw-bold">
+                            Agenda Médica
+                        </h3>
+
+                        <!-- DESCRIPCIÓN -->
+
+                        <p class="text-secondary">
+
+                            Consulte sus citas médicas programadas,
+                            organice reuniones y eventos personales,
+                            gestione sus tareas y recordatorios,
+                            y visualice su disponibilidad
+                            en el calendario médico.
+
+                        </p>
+
+                        <!-- ACCESO AL CU-16 -->
+
+                        <a th:href="@{/interno/medico/agenda}"
+                           href="/interno/medico/agenda"
+                           class="btn btn-primary mt-auto">
+
+                            <i class="bi bi-calendar3 me-2"
+                               aria-hidden="true"></i>
+
+                            Ir a Agenda Médica
+
+                        </a>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- =================================================
                  CU-09
                  LABORATORISTA
                  ================================================= -->

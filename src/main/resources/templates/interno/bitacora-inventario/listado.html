@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="es" xmlns:th="http://www.thymeleaf.org">
 
@@ -8,7 +7,11 @@
     <meta name="viewport"
           content="width=device-width, initial-scale=1.0">
 
+    <meta name="theme-color" content="#1B5FA6">
+
     <title>Bitácora de Inventario | SANTOS</title>
+
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Crect width='24' height='24' rx='6' fill='%231B5FA6'/%3E%3Cpath d='M9 4h6v5h5v6h-5v5H9v-5H4V9h5z' fill='white'/%3E%3C/svg%3E">
 
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
           rel="stylesheet">
@@ -16,52 +19,32 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"
           rel="stylesheet">
 
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
+          rel="stylesheet">
+
+    <!-- Tema SANTOS interno (después de Bootstrap) -->
+    <link rel="stylesheet"
+          th:href="@{/css/santos-interno.css}"
+          href="/css/santos-interno.css">
+
     <style>
 
-        body {
-            background: #f1f5f9;
-            font-family: Arial, sans-serif;
-            color: #1e293b;
+        /* Estilos propios de esta vista */
+
+        .santos-tabla td {
+            font-variant-numeric: tabular-nums;
         }
 
-        .encabezado {
-            background: #123659;
-            color: white;
-            padding: 25px;
-            border-radius: 12px;
-        }
-
-        .tarjeta {
-            background: white;
-            border-radius: 12px;
-            padding: 22px;
-            box-shadow: 0 3px 12px rgba(0,0,0,0.06);
-        }
-
-        .table thead th {
-            background: #123659;
-            color: white;
-            font-size: 13px;
+        .santos-tabla td:not(:nth-child(2)):not(:nth-child(3)):not(:nth-child(8)):not(:nth-child(9)) {
             white-space: nowrap;
-            vertical-align: middle;
         }
 
-        .table tbody td {
-            vertical-align: middle;
-            font-size: 13px;
-        }
-
-        .table-responsive {
-            border-radius: 8px;
-        }
-
-        .form-label {
-            font-weight: 600;
-            font-size: 13px;
-        }
-
-        .badge {
-            font-size: 12px;
+        /* Columnas numéricas alineadas a la derecha */
+        .santos-tabla th:nth-child(n+4):nth-child(-n+7),
+        .santos-tabla td:nth-child(n+4):nth-child(-n+7) {
+            text-align: right;
         }
 
         .acciones {
@@ -80,62 +63,103 @@
             white-space: nowrap;
         }
 
-        .fila-inactiva {
-            background: #f8fafc;
-        }
-
-        .fila-inactiva td {
-            color: #64748b;
-        }
-
         .encabezado-acciones {
             min-width: 190px;
+        }
+
+        /* Movimiento inactivo: fila atenuada pero legible */
+        .santos-tabla tr.fila-inactiva td {
+            background-color: #f8fafc;
+            color: var(--sa-muted);
+        }
+
+        .btn-outline-warning {
+            --bs-btn-color: #92400e;
+            --bs-btn-border-color: #d97706;
+            --bs-btn-hover-bg: #fffbeb;
+            --bs-btn-hover-color: #78350f;
+            --bs-btn-hover-border-color: #b45309;
+            --bs-btn-active-bg: #fef3c7;
+            --bs-btn-active-color: #78350f;
+            --bs-btn-active-border-color: #b45309;
+        }
+
+        .btn-outline-success {
+            --bs-btn-color: #0f766e;
+            --bs-btn-border-color: #0f766e;
+            --bs-btn-hover-bg: #e6f6f3;
+            --bs-btn-hover-color: #0b5f58;
+            --bs-btn-hover-border-color: #0b5f58;
+            --bs-btn-active-bg: #0f766e;
+            --bs-btn-active-color: #ffffff;
+            --bs-btn-active-border-color: #0f766e;
         }
 
     </style>
 
 </head>
 
-<body>
+<body class="santos-pagina-lista">
 
-<div class="container-fluid py-4 px-4">
+<a class="skip-link" href="#contenido">Saltar al contenido</a>
+
+<!-- ============================================= -->
+<!-- BARRA SUPERIOR -->
+<!-- ============================================= -->
+
+<nav class="navbar santos-navbar sticky-top">
+
+    <div class="container-fluid px-4">
+
+        <span class="navbar-brand santos-marca">
+
+            <span class="santos-simbolo" aria-hidden="true">
+                <i class="bi bi-plus-lg"></i>
+            </span>
+
+            <span>SANTOS</span>
+
+        </span>
+
+    </div>
+
+</nav>
+
+
+<main id="contenido" class="container-fluid px-4 py-3 santos-vista-lista">
 
     <!-- ============================================= -->
     <!-- ENCABEZADO -->
     <!-- ============================================= -->
 
-    <div class="encabezado mb-4">
+    <section class="santos-encabezado-pagina">
 
-        <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+        <div>
 
-            <div>
+            <h1 class="h3 fw-bold mb-1">
 
-                <h3 class="mb-1">
+                <i class="bi bi-journal-text me-2 text-primary" aria-hidden="true"></i>
 
-                    <i class="bi bi-journal-text"></i>
+                Bitácora de Movimientos de Inventario
 
-                    Bitácora de Movimientos de Inventario
+            </h1>
 
-                </h3>
-
-                <p class="mb-0">
-                    SANTOS — Clínica Médica
-                </p>
-
-            </div>
-
-            <a th:href="@{/interno/dashboard}"
-               class="btn btn-light">
-
-                <i class="bi bi-arrow-left"></i>
-
-                Volver al Dashboard
-
-            </a>
+            <p class="text-secondary mb-0">
+                SANTOS — Clínica Médica
+            </p>
 
         </div>
 
-    </div>
+        <a th:href="@{/interno/dashboard}"
+           class="btn btn-outline-secondary rounded-pill px-3">
+
+            <i class="bi bi-arrow-left me-1" aria-hidden="true"></i>
+
+            Volver al Dashboard
+
+        </a>
+
+    </section>
 
     <!-- ============================================= -->
     <!-- MENSAJES -->
@@ -157,7 +181,7 @@
          class="alert alert-success"
          role="status">
 
-        <i class="bi bi-check-circle-fill"></i>
+        <i class="bi bi-check-circle-fill me-1" aria-hidden="true"></i>
 
         <span th:text="${mensajeExito}"></span>
 
@@ -171,7 +195,7 @@
          class="alert alert-warning"
          role="alert">
 
-        <i class="bi bi-exclamation-triangle-fill"></i>
+        <i class="bi bi-exclamation-triangle-fill me-1" aria-hidden="true"></i>
 
         <span th:text="${alertaStockMinimo}"></span>
 
@@ -181,278 +205,290 @@
     <!-- FILTROS DE BÚSQUEDA -->
     <!-- ============================================= -->
 
-    <div class="tarjeta mb-4">
+    <section class="card santos-panel" aria-label="Filtros de búsqueda">
 
-        <h5 class="mb-3">
+        <div class="card-body p-3">
 
-            <i class="bi bi-funnel"></i>
+            <h2 class="h6 fw-bold mb-3">
 
-            Filtros de búsqueda
+                <i class="bi bi-funnel me-1" aria-hidden="true"></i>
 
-        </h5>
+                Filtros de búsqueda
 
-        <form th:action="@{/interno/bitacora-inventario}"
-              method="get">
+            </h2>
 
-            <div class="row g-3">
+            <form th:action="@{/interno/bitacora-inventario}"
+                  method="get">
 
-                <!-- TIPO -->
+                <div class="row g-3 align-items-end">
 
-                <div class="col-md-3">
+                    <!-- TIPO -->
 
-                    <label for="codigoTipo"
-                           class="form-label">
+                    <div class="col-md-6 col-lg-3">
 
-                        Tipo de Movimiento
+                        <label for="codigoTipo"
+                               class="form-label">
 
-                    </label>
+                            Tipo de Movimiento
 
-                    <select id="codigoTipo"
-                            name="codigoTipo"
-                            class="form-select">
+                        </label>
 
-                        <option value="">
-                            Todos los tipos
-                        </option>
+                        <select id="codigoTipo"
+                                name="codigoTipo"
+                                class="form-select">
 
-                        <option th:each="tipo : ${tiposMovimiento}"
-                                th:value="${tipo.codigo}"
-                                th:text="${tipo.nombre}"
-                                th:selected="${codigoTipo != null and codigoTipo == tipo.codigo}">
-                        </option>
+                            <option value="">
+                                Todos los tipos
+                            </option>
 
-                    </select>
+                            <option th:each="tipo : ${tiposMovimiento}"
+                                    th:value="${tipo.codigo}"
+                                    th:text="${tipo.nombre}"
+                                    th:selected="${codigoTipo != null and codigoTipo == tipo.codigo}">
+                            </option>
+
+                        </select>
+
+                    </div>
+
+                    <!-- MEDICAMENTO -->
+
+                    <div class="col-md-6 col-lg-3">
+
+                        <label for="idMedicamento"
+                               class="form-label">
+
+                            Medicamento
+
+                        </label>
+
+
+                        <select id="idMedicamento"
+                                name="idMedicamento"
+                                class="form-select">
+
+                            <option value="">
+                                Todos los medicamentos
+                            </option>
+
+                            <option th:each="medicamento : ${medicamentosFiltro}"
+                                    th:value="${medicamento.id}"
+                                    th:text="${medicamento.nombre}"
+                                    th:selected="${idMedicamento != null
+                    and idMedicamento == medicamento.id}">
+                            </option>
+
+                        </select>
+
+
+                    </div>
+
+                    <!-- SUCURSAL -->
+
+                    <div class="col-md-6 col-lg-3">
+
+                        <label for="idSucursal"
+                               class="form-label">
+
+                            Sucursal
+
+                        </label>
+
+
+                        <select id="idSucursal"
+                                name="idSucursal"
+                                class="form-select">
+
+                            <option value="">
+                                Todas las sucursales
+                            </option>
+
+                            <option th:each="sucursal : ${sucursalesFiltro}"
+                                    th:value="${sucursal.id}"
+                                    th:text="${sucursal.nombre}"
+                                    th:selected="${idSucursal != null
+                    and idSucursal == sucursal.id}">
+                            </option>
+
+                        </select>
+
+
+                    </div>
+
+                    <!-- REFERENCIA -->
+
+                    <div class="col-md-6 col-lg-3">
+
+                        <label for="referencia"
+                               class="form-label">
+
+                            Número de Referencia
+
+                        </label>
+
+                        <input id="referencia"
+                               type="text"
+                               name="referencia"
+                               maxlength="50"
+                               class="form-control"
+                               placeholder="Factura, venta, reclamo..."
+                               th:value="${referencia}">
+
+                    </div>
+
+                    <!-- USUARIO -->
+
+                    <div class="col-md-6 col-lg-3">
+
+                        <label for="idUsuario"
+                               class="form-label">
+
+                            Usuario Responsable
+
+                        </label>
+
+
+                        <select id="idUsuario"
+                                name="idUsuario"
+                                class="form-select">
+
+                            <option value="">
+                                Todos los usuarios
+                            </option>
+
+                            <option th:each="usuario : ${usuariosFiltro}"
+                                    th:value="${usuario.id}"
+                                    th:text="${usuario.nombreUsuario}"
+                                    th:selected="${idUsuario != null
+                    and idUsuario == usuario.id}">
+                            </option>
+
+                        </select>
+
+
+                    </div>
+
+                    <!-- FECHA INICIAL -->
+
+                    <div class="col-md-6 col-lg-3">
+
+                        <label for="fechaInicio"
+                               class="form-label">
+
+                            Fecha Inicial
+
+                        </label>
+
+                        <input id="fechaInicio"
+                               type="date"
+                               name="fechaInicio"
+                               class="form-control"
+                               th:value="${fechaInicio}">
+
+                    </div>
+
+                    <!-- FECHA FINAL -->
+
+                    <div class="col-md-6 col-lg-3">
+
+                        <label for="fechaFin"
+                               class="form-label">
+
+                            Fecha Final
+
+                        </label>
+
+                        <input id="fechaFin"
+                               type="date"
+                               name="fechaFin"
+                               class="form-control"
+                               th:value="${fechaFin}">
+
+                    </div>
+
+                    <!-- ========================================= -->
+                    <!-- BOTONES DE BÚSQUEDA -->
+                    <!-- ========================================= -->
+
+                    <div class="col-md-12 col-lg-3">
+
+                        <div class="d-flex gap-2">
+
+                            <button type="submit"
+                                    class="btn btn-primary flex-fill">
+
+                                <i class="bi bi-search me-1" aria-hidden="true"></i>
+
+                                Buscar
+
+                            </button>
+
+                            <a th:href="@{/interno/bitacora-inventario}"
+                               class="btn btn-outline-secondary flex-fill">
+
+                                <i class="bi bi-arrow-clockwise me-1" aria-hidden="true"></i>
+
+                                Limpiar filtros
+
+                            </a>
+
+                        </div>
+
+                    </div>
 
                 </div>
 
-                <!-- MEDICAMENTO -->
+            </form>
 
-                <div class="col-md-3">
+        </div>
 
-                    <label for="idMedicamento"
-                           class="form-label">
-
-                        Medicamento
-
-                    </label>
-
-
-                    <select id="idMedicamento"
-                            name="idMedicamento"
-                            class="form-select">
-
-                        <option value="">
-                            Todos los medicamentos
-                        </option>
-
-                        <option th:each="medicamento : ${medicamentosFiltro}"
-                                th:value="${medicamento.id}"
-                                th:text="${medicamento.nombre}"
-                                th:selected="${idMedicamento != null
-                and idMedicamento == medicamento.id}">
-                        </option>
-
-                    </select>
-
-
-                </div>
-
-                <!-- SUCURSAL -->
-
-                <div class="col-md-3">
-
-                    <label for="idSucursal"
-                           class="form-label">
-
-                        Sucursal
-
-                    </label>
-
-
-                    <select id="idSucursal"
-                            name="idSucursal"
-                            class="form-select">
-
-                        <option value="">
-                            Todas las sucursales
-                        </option>
-
-                        <option th:each="sucursal : ${sucursalesFiltro}"
-                                th:value="${sucursal.id}"
-                                th:text="${sucursal.nombre}"
-                                th:selected="${idSucursal != null
-                and idSucursal == sucursal.id}">
-                        </option>
-
-                    </select>
-
-
-                </div>
-
-                <!-- REFERENCIA -->
-
-                <div class="col-md-3">
-
-                    <label for="referencia"
-                           class="form-label">
-
-                        Número de Referencia
-
-                    </label>
-
-                    <input id="referencia"
-                           type="text"
-                           name="referencia"
-                           maxlength="50"
-                           class="form-control"
-                           placeholder="Factura, venta, reclamo..."
-                           th:value="${referencia}">
-
-                </div>
-
-                <!-- USUARIO -->
-
-                <div class="col-md-4">
-
-                    <label for="idUsuario"
-                           class="form-label">
-
-                        Usuario Responsable
-
-                    </label>
-
-
-                    <select id="idUsuario"
-                            name="idUsuario"
-                            class="form-select">
-
-                        <option value="">
-                            Todos los usuarios
-                        </option>
-
-                        <option th:each="usuario : ${usuariosFiltro}"
-                                th:value="${usuario.id}"
-                                th:text="${usuario.nombreUsuario}"
-                                th:selected="${idUsuario != null
-                and idUsuario == usuario.id}">
-                        </option>
-
-                    </select>
-
-
-                </div>
-
-                <!-- FECHA INICIAL -->
-
-                <div class="col-md-4">
-
-                    <label for="fechaInicio"
-                           class="form-label">
-
-                        Fecha Inicial
-
-                    </label>
-
-                    <input id="fechaInicio"
-                           type="date"
-                           name="fechaInicio"
-                           class="form-control"
-                           th:value="${fechaInicio}">
-
-                </div>
-
-                <!-- FECHA FINAL -->
-
-                <div class="col-md-4">
-
-                    <label for="fechaFin"
-                           class="form-label">
-
-                        Fecha Final
-
-                    </label>
-
-                    <input id="fechaFin"
-                           type="date"
-                           name="fechaFin"
-                           class="form-control"
-                           th:value="${fechaFin}">
-
-                </div>
-
-            </div>
-
-            <!-- ========================================= -->
-            <!-- BOTONES DE BÚSQUEDA -->
-            <!-- ========================================= -->
-
-            <div class="d-flex gap-2 mt-4 flex-wrap">
-
-                <button type="submit"
-                        class="btn btn-primary">
-
-                    <i class="bi bi-search"></i>
-
-                    Buscar
-
-                </button>
-
-                <a th:href="@{/interno/bitacora-inventario}"
-                   class="btn btn-outline-secondary">
-
-                    <i class="bi bi-arrow-clockwise"></i>
-
-                    Limpiar filtros
-
-                </a>
-
-            </div>
-
-        </form>
-
-    </div>
+    </section>
 
     <!-- ============================================= -->
     <!-- LISTADO DE MOVIMIENTOS -->
     <!-- ============================================= -->
 
-    <div class="tarjeta">
+    <section class="card santos-panel santos-tabla-panel" aria-label="Historial de movimientos">
 
         <!-- ========================================= -->
         <!-- TÍTULO Y NUEVO MOVIMIENTO -->
         <!-- ========================================= -->
 
-        <div class="d-flex justify-content-between align-items-center flex-wrap gap-3 mb-3">
+        <div class="card-header bg-white santos-panel-cab">
 
-            <div>
+            <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
 
-                <h5 class="mb-1">
+                <div class="d-flex align-items-center flex-wrap gap-3">
 
-                    <i class="bi bi-list-check"></i>
+                    <h2 class="h5 fw-bold mb-0">
 
-                    Historial de Movimientos
+                        <i class="bi bi-list-check me-1" aria-hidden="true"></i>
 
-                </h5>
+                        Historial de Movimientos
 
-                <span class="badge bg-primary"
-                      th:text="|Total: ${totalRegistros}|">
+                    </h2>
 
-                    Total: 0
+                    <span class="badge santos-rol"
+                          th:text="|Total: ${totalRegistros}|">
 
-                </span>
+                        Total: 0
+
+                    </span>
+
+                </div>
+
+                <!-- NUEVO MOVIMIENTO -->
+
+                <a th:href="@{/interno/bitacora-inventario/nuevo}"
+                   class="btn btn-success">
+
+                    <i class="bi bi-plus-circle me-2" aria-hidden="true"></i>
+
+                    Nuevo Movimiento
+
+                </a>
 
             </div>
-
-            <!-- NUEVO MOVIMIENTO -->
-
-            <a th:href="@{/interno/bitacora-inventario/nuevo}"
-               class="btn btn-success">
-
-                <i class="bi bi-plus-circle"></i>
-
-                Nuevo Movimiento
-
-            </a>
 
         </div>
 
@@ -462,13 +498,13 @@
 
         <div class="table-responsive">
 
-            <table class="table table-bordered table-hover">
+            <table class="table santos-tabla table-hover align-middle mb-0">
 
                 <thead>
 
                 <tr>
 
-                    <th>Tipo</th>
+                    <th class="ps-4">Tipo</th>
 
                     <th>Medicamento</th>
 
@@ -509,9 +545,9 @@
 
                     <!-- TIPO -->
 
-                    <td>
+                    <td class="ps-4">
 
-                        <span class="badge bg-primary"
+                        <span class="badge santos-rol"
                               th:text="${movimiento.tipo}">
                         </span>
 
@@ -581,18 +617,14 @@
                     <td>
 
                         <span th:if="${movimiento.activo == true}"
-                              class="badge bg-success">
-
-                            <i class="bi bi-check-circle"></i>
+                              class="santos-estado santos-estado-activo">
 
                             Activo
 
                         </span>
 
                         <span th:if="${movimiento.activo == false}"
-                              class="badge bg-secondary">
-
-                            <i class="bi bi-x-circle"></i>
+                              class="santos-estado santos-estado-inactivo">
 
                             Inactivo
 
@@ -616,7 +648,7 @@
                                 (id=${movimiento.idMovimiento})}"
                                class="btn btn-sm btn-outline-primary">
 
-                                <i class="bi bi-eye"></i>
+                                <i class="bi bi-eye me-1" aria-hidden="true"></i>
 
                                 Ver
 
@@ -657,7 +689,7 @@
                                 <button type="submit"
                                         class="btn btn-sm btn-outline-warning">
 
-                                    <i class="bi bi-x-circle"></i>
+                                    <i class="bi bi-x-circle me-1" aria-hidden="true"></i>
 
                                     Desactivar
 
@@ -698,7 +730,7 @@
                                 <button type="submit"
                                         class="btn btn-sm btn-outline-success">
 
-                                    <i class="bi bi-check-circle"></i>
+                                    <i class="bi bi-check-circle me-1" aria-hidden="true"></i>
 
                                     Activar
 
@@ -719,11 +751,11 @@
                 <tr th:if="${movimientos.isEmpty()}">
 
                     <td colspan="12"
-                        class="text-center py-5">
+                        class="text-center py-4">
 
-                        <div class="text-danger">
+                        <div class="text-secondary">
 
-                            <i class="bi bi-search fs-1 d-block mb-3"></i>
+                            <i class="bi bi-search fs-1 d-block mb-3" aria-hidden="true"></i>
 
                             <p class="fw-semibold mb-0">
 
@@ -747,75 +779,79 @@
         <!-- PAGINACIÓN -->
         <!-- ========================================= -->
 
-        <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mt-3">
+        <div class="card-footer bg-white santos-panel-pie">
 
-            <span class="text-secondary">
+            <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
 
-                Página
+                <span class="text-secondary">
 
-                <strong th:text="${totalPaginas > 0 ? paginaActual + 1 : 0}">
-                    0
-                </strong>
+                    Página
 
-                de
+                    <strong th:text="${totalPaginas > 0 ? paginaActual + 1 : 0}">
+                        0
+                    </strong>
 
-                <strong th:text="${totalPaginas}">
-                    0
-                </strong>
+                    de
 
-            </span>
+                    <strong th:text="${totalPaginas}">
+                        0
+                    </strong>
 
-            <div class="d-flex gap-2">
+                </span>
 
-                <!-- ANTERIOR -->
+                <div class="d-flex gap-2">
 
-                <a th:if="${paginaActual > 0}"
-                   th:href="@{/interno/bitacora-inventario(
-                       pagina=${paginaActual - 1},
-                       idMedicamento=${idMedicamento},
-                       idSucursal=${idSucursal},
-                       codigoTipo=${codigoTipo},
-                       referencia=${referencia},
-                       idUsuario=${idUsuario},
-                       fechaInicio=${fechaInicio},
-                       fechaFin=${fechaFin}
-                   )}"
-                   class="btn btn-outline-primary btn-sm">
+                    <!-- ANTERIOR -->
 
-                    <i class="bi bi-chevron-left"></i>
+                    <a th:if="${paginaActual > 0}"
+                       th:href="@{/interno/bitacora-inventario(
+                           pagina=${paginaActual - 1},
+                           idMedicamento=${idMedicamento},
+                           idSucursal=${idSucursal},
+                           codigoTipo=${codigoTipo},
+                           referencia=${referencia},
+                           idUsuario=${idUsuario},
+                           fechaInicio=${fechaInicio},
+                           fechaFin=${fechaFin}
+                       )}"
+                       class="btn btn-outline-primary btn-sm">
 
-                    Anterior
+                        <i class="bi bi-chevron-left" aria-hidden="true"></i>
 
-                </a>
+                        Anterior
 
-                <!-- SIGUIENTE -->
+                    </a>
 
-                <a th:if="${paginaActual + 1 < totalPaginas}"
-                   th:href="@{/interno/bitacora-inventario(
-                       pagina=${paginaActual + 1},
-                       idMedicamento=${idMedicamento},
-                       idSucursal=${idSucursal},
-                       codigoTipo=${codigoTipo},
-                       referencia=${referencia},
-                       idUsuario=${idUsuario},
-                       fechaInicio=${fechaInicio},
-                       fechaFin=${fechaFin}
-                   )}"
-                   class="btn btn-outline-primary btn-sm">
+                    <!-- SIGUIENTE -->
 
-                    Siguiente
+                    <a th:if="${paginaActual + 1 < totalPaginas}"
+                       th:href="@{/interno/bitacora-inventario(
+                           pagina=${paginaActual + 1},
+                           idMedicamento=${idMedicamento},
+                           idSucursal=${idSucursal},
+                           codigoTipo=${codigoTipo},
+                           referencia=${referencia},
+                           idUsuario=${idUsuario},
+                           fechaInicio=${fechaInicio},
+                           fechaFin=${fechaFin}
+                       )}"
+                       class="btn btn-outline-primary btn-sm">
 
-                    <i class="bi bi-chevron-right"></i>
+                        Siguiente
 
-                </a>
+                        <i class="bi bi-chevron-right" aria-hidden="true"></i>
+
+                    </a>
+
+                </div>
 
             </div>
 
         </div>
 
-    </div>
+    </section>
 
-</div>
+</main>
 
 </body>
 </html>

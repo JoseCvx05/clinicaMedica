@@ -38,6 +38,21 @@
         <div class="acciones-cabecera">
             <span class="rol">Médico</span>
 
+
+            <!-- CU-16 - REGRESAR AL DASHBOARD PRINCIPAL -->
+
+            <a th:href="@{/interno/dashboard}"
+               href="/interno/dashboard"
+               class="boton-salir"
+               style="text-decoration: none; display: inline-flex;
+          align-items: center; justify-content: center;
+          gap: 6px;">
+
+                ← Volver al Dashboard
+
+            </a>
+
+
             <!-- SecurityConfig solo permite logout mediante POST -->
             <form th:action="@{/logout-interno}" method="post">
                 <input th:if="${_csrf != null}" type="hidden"

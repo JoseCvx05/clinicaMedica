@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="es" xmlns:th="http://www.thymeleaf.org">
 
@@ -7,7 +6,11 @@
     <meta name="viewport"
           content="width=device-width, initial-scale=1.0">
 
+    <meta name="theme-color" content="#1B5FA6">
+
     <title>Nuevo Movimiento | SANTOS</title>
+
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Crect width='24' height='24' rx='6' fill='%231B5FA6'/%3E%3Cpath d='M9 4h6v5h5v6h-5v5H9v-5H4V9h5z' fill='white'/%3E%3C/svg%3E">
 
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
           rel="stylesheet">
@@ -15,101 +18,124 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"
           rel="stylesheet">
 
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
+          rel="stylesheet">
+
+    <!-- Tema SANTOS interno (después de Bootstrap) -->
+    <link rel="stylesheet"
+          th:href="@{/css/santos-interno.css}"
+          href="/css/santos-interno.css">
+
     <style>
-        body {
-            background: #f1f5f9;
-            font-family: Arial, sans-serif;
-            color: #1e293b;
-        }
-
-        .encabezado {
-            background: #123659;
-            color: white;
-            padding: 25px;
-            border-radius: 12px;
-        }
-
-        .tarjeta {
-            background: white;
-            border-radius: 12px;
-            padding: 25px;
-            box-shadow: 0 3px 12px rgba(0, 0, 0, 0.06);
-            margin-bottom: 20px;
-        }
+        /* Estilos propios de esta vista */
 
         .titulo-seccion {
-            color: #123659;
-            font-weight: bold;
-            border-bottom: 1px solid #e2e8f0;
-            padding-bottom: 12px;
-            margin-bottom: 20px;
+            margin: 0 0 14px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid var(--sa-line);
+            font-size: 1rem;
+            font-weight: 800;
+            letter-spacing: -0.01em;
         }
 
-        .form-label {
-            font-size: 14px;
-            font-weight: 600;
+        .titulo-seccion .bi {
+            margin-right: 6px;
+            color: var(--sa-blue);
         }
 
         .obligatorio,
         .campo-error {
-            color: #dc3545;
+            color: #b91c1c;
         }
 
         .campo-error {
-            font-size: 13px;
-            margin-top: 5px;
+            font-size: 0.82rem;
+            font-weight: 600;
+            margin-top: 4px;
+        }
+
+        .campo-error:empty {
+            display: none;
         }
 
         .ayuda {
-            font-size: 12px;
-            color: #64748b;
-            margin-top: 5px;
+            font-size: 0.78rem;
+            color: var(--sa-muted);
+            margin-top: 4px;
         }
 
         .tarjeta-info {
+            padding: 12px 14px;
+            border: 1px solid var(--sa-line);
+            border-radius: 14px;
             background: #f8fafc;
-            border: 1px solid #e2e8f0;
-            border-radius: 8px;
-            padding: 16px;
         }
 
         .dato-stock {
-            background: #f8fafc;
-            border: 1px solid #e2e8f0;
-            border-radius: 10px;
-            padding: 20px;
-            text-align: center;
             height: 100%;
+            padding: 12px 8px;
+            border: 1px solid var(--sa-line);
+            border-radius: 14px;
+            background: #f8fafc;
+            text-align: center;
         }
 
         .titulo-stock {
-            color: #64748b;
-            font-size: 13px;
-            font-weight: 600;
+            color: var(--sa-muted);
+            font-size: 0.7rem;
+            font-weight: 700;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
         }
 
         .valor-stock {
-            color: #123659;
-            font-size: 30px;
-            font-weight: bold;
-            margin-top: 8px;
+            margin-top: 4px;
+            color: var(--sa-blue);
+            font-size: 1.7rem;
+            font-weight: 800;
+            line-height: 1.2;
+            font-variant-numeric: tabular-nums;
             overflow-wrap: anywhere;
         }
 
-        .btn-guardar {
-            background: #123659;
-            color: white;
-            border: none;
+        /* Colores que el script añade a "Stock Proyectado" */
+        .valor-stock.text-warning {
+            color: #92400e !important;
         }
 
-        .btn-guardar:hover {
-            background: #0b2540;
-            color: white;
+        /* Etiqueta de operación: el script cambia sus clases bg-* */
+        .badge {
+            padding: 6px 12px;
+            border-radius: 999px;
+            font-size: 0.8rem;
+            font-weight: 700;
         }
 
-        .btn-guardar:disabled {
-            background: #94a3b8;
-            color: white;
+        .badge.bg-secondary {
+            border: 1px solid var(--sa-line-strong);
+            background-color: #f1f5f9 !important;
+            color: #334155 !important;
+        }
+
+        .badge.bg-success {
+            border: 1px solid #a7f3d0;
+            background-color: #ecfdf5 !important;
+            color: #065f46 !important;
+        }
+
+        .badge.bg-warning {
+            border: 1px solid #fde68a;
+            background-color: #fef3c7 !important;
+            color: #78350f !important;
+        }
+
+        #botonGuardar:disabled {
+            --bs-btn-disabled-bg: #e2e8f0;
+            --bs-btn-disabled-color: #334155;
+            --bs-btn-disabled-border-color: #cbd5e1;
+            --bs-btn-disabled-opacity: 1;
         }
 
         .oculto {
@@ -120,42 +146,63 @@
 
 <body>
 
-<div class="container py-4">
+<a class="skip-link" href="#contenido">Saltar al contenido</a>
+
+<!-- ============================================= -->
+<!-- BARRA SUPERIOR -->
+<!-- ============================================= -->
+
+<nav class="navbar santos-navbar sticky-top">
+
+    <div class="container-xl px-4">
+
+        <span class="navbar-brand santos-marca">
+
+            <span class="santos-simbolo" aria-hidden="true">
+                <i class="bi bi-plus-lg"></i>
+            </span>
+
+            <span>SANTOS</span>
+
+        </span>
+
+    </div>
+
+</nav>
+
+
+<main id="contenido" class="container-xl px-4 py-3 santos-vista-form">
 
     <!-- ============================================= -->
     <!-- ENCABEZADO -->
     <!-- ============================================= -->
 
-    <div class="encabezado mb-4">
+    <section class="santos-encabezado-pagina">
 
-        <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+        <div>
 
-            <div>
+            <h1 class="h3 fw-bold mb-1">
 
-                <h3 class="mb-1">
+                <i class="bi bi-plus-circle me-2 text-primary" aria-hidden="true"></i>
+                Nuevo Movimiento de Inventario
 
-                    <i class="bi bi-plus-circle"></i>
-                    Nuevo Movimiento de Inventario
+            </h1>
 
-                </h3>
-
-                <p class="mb-0">
-                    SANTOS — Clínica Médica
-                </p>
-
-            </div>
-
-            <a th:href="@{/interno/bitacora-inventario}"
-               class="btn btn-light">
-
-                <i class="bi bi-arrow-left"></i>
-                Volver a la Bitácora
-
-            </a>
+            <p class="text-secondary mb-0">
+                SANTOS — Clínica Médica
+            </p>
 
         </div>
 
-    </div>
+        <a th:href="@{/interno/bitacora-inventario}"
+           class="btn btn-outline-secondary rounded-pill px-3">
+
+            <i class="bi bi-arrow-left me-1" aria-hidden="true"></i>
+            Volver a la Bitácora
+
+        </a>
+
+    </section>
 
     <!-- ============================================= -->
     <!-- ERRORES DEL BACKEND -->
@@ -165,7 +212,7 @@
          class="alert alert-danger"
          role="alert">
 
-        <i class="bi bi-exclamation-triangle-fill"></i>
+        <i class="bi bi-exclamation-triangle-fill me-1" aria-hidden="true"></i>
 
         <span th:text="${errorFormulario}"></span>
 
@@ -189,475 +236,515 @@
                th:name="${_csrf.parameterName}"
                th:value="${_csrf.token}">
 
-        <!-- ========================================= -->
-        <!-- DATOS DEL MOVIMIENTO -->
-        <!-- ========================================= -->
+        <div class="row g-3">
 
-        <div class="tarjeta">
+            <!-- ========================================= -->
+            <!-- COLUMNA IZQUIERDA: DATOS Y COMPLEMENTARIA -->
+            <!-- ========================================= -->
 
-            <h5 class="titulo-seccion">
+            <div class="col-lg-7 d-flex flex-column gap-3">
 
-                <i class="bi bi-clipboard-data"></i>
-                Datos del Movimiento
+                <!-- ========================================= -->
+                <!-- DATOS DEL MOVIMIENTO -->
+                <!-- ========================================= -->
 
-            </h5>
+                <section class="card santos-panel">
 
-            <div class="row g-3">
+                    <div class="card-body p-3 p-lg-4">
 
-                <!-- MEDICAMENTO -->
+                        <h2 class="titulo-seccion">
 
-                <div class="col-md-6">
+                            <i class="bi bi-clipboard-data" aria-hidden="true"></i>
+                            Datos del Movimiento
 
-                    <label for="idMedicamento"
-                           class="form-label">
+                        </h2>
 
-                        Medicamento
-                        <span class="obligatorio">*</span>
+                        <div class="row g-3">
 
-                    </label>
+                            <!-- MEDICAMENTO -->
 
-                    <select id="idMedicamento"
-                            th:field="*{idMedicamento}"
-                            class="form-select">
+                            <div class="col-md-6">
 
-                        <option value="">
-                            Seleccione un medicamento
-                        </option>
+                                <label for="idMedicamento"
+                                       class="form-label">
 
-                        <option th:each="medicamento : ${medicamentos}"
-                                th:value="${medicamento.id}"
-                                th:text="${medicamento.nombre}">
-                        </option>
+                                    Medicamento
+                                    <span class="obligatorio">*</span>
 
-                    </select>
+                                </label>
 
-                    <div id="errorMedicamento"
-                         class="campo-error"></div>
+                                <select id="idMedicamento"
+                                        th:field="*{idMedicamento}"
+                                        class="form-select">
 
-                </div>
+                                    <option value="">
+                                        Seleccione un medicamento
+                                    </option>
 
-                <!-- SUCURSAL -->
+                                    <option th:each="medicamento : ${medicamentos}"
+                                            th:value="${medicamento.id}"
+                                            th:text="${medicamento.nombre}">
+                                    </option>
 
-                <div class="col-md-6">
+                                </select>
 
-                    <label for="idSucursal"
-                           class="form-label">
+                                <div id="errorMedicamento"
+                                     class="campo-error"></div>
 
-                        Sucursal
-                        <span class="obligatorio">*</span>
+                            </div>
 
-                    </label>
+                            <!-- SUCURSAL -->
 
-                    <select id="idSucursal"
-                            th:field="*{idSucursal}"
-                            class="form-select">
+                            <div class="col-md-6">
 
-                        <option value="">
-                            Seleccione una sucursal
-                        </option>
+                                <label for="idSucursal"
+                                       class="form-label">
 
-                        <option th:each="sucursal : ${sucursales}"
-                                th:value="${sucursal.id}"
-                                th:text="${sucursal.nombre}">
-                        </option>
+                                    Sucursal
+                                    <span class="obligatorio">*</span>
 
-                    </select>
+                                </label>
 
-                    <div id="errorSucursal"
-                         class="campo-error"></div>
+                                <select id="idSucursal"
+                                        th:field="*{idSucursal}"
+                                        class="form-select">
 
-                    <div th:if="${sucursalRestringida != null}"
-                         class="ayuda">
+                                    <option value="">
+                                        Seleccione una sucursal
+                                    </option>
 
-                        <i class="bi bi-shield-lock"></i>
-                        Solo puede registrar movimientos
-                        en su sucursal asignada.
+                                    <option th:each="sucursal : ${sucursales}"
+                                            th:value="${sucursal.id}"
+                                            th:text="${sucursal.nombre}">
+                                    </option>
+
+                                </select>
+
+                                <div id="errorSucursal"
+                                     class="campo-error"></div>
+
+                                <div th:if="${sucursalRestringida != null}"
+                                     class="ayuda">
+
+                                    <i class="bi bi-shield-lock" aria-hidden="true"></i>
+                                    Solo puede registrar movimientos
+                                    en su sucursal asignada.
+
+                                </div>
+
+                            </div>
+
+                            <!-- TIPO DE MOVIMIENTO -->
+
+                            <div class="col-md-6">
+
+                                <label for="tipoMovimiento"
+                                       class="form-label">
+
+                                    Tipo de Movimiento
+                                    <span class="obligatorio">*</span>
+
+                                </label>
+
+                                <select id="tipoMovimiento"
+                                        th:field="*{tipoMovimiento}"
+                                        class="form-select">
+
+                                    <option value="">
+                                        Seleccione un tipo
+                                    </option>
+
+                                    <option th:each="tipo : ${tiposPermitidos}"
+                                            th:value="${tipo.codigo}"
+                                            th:text="${tipo.nombre}">
+                                    </option>
+
+                                </select>
+
+                                <div id="errorTipo"
+                                     class="campo-error"></div>
+
+                                <div class="ayuda">
+                                    El despacho de farmacia
+                                    se registra automáticamente.
+                                </div>
+
+                            </div>
+
+                            <!-- CANTIDAD -->
+
+                            <div class="col-md-6">
+
+                                <label for="cantidad"
+                                       class="form-label">
+
+                                    Cantidad
+                                    <span class="obligatorio">*</span>
+
+                                </label>
+
+                                <input id="cantidad"
+                                       type="number"
+                                       th:field="*{cantidad}"
+                                       class="form-control"
+                                       min="1"
+                                       max="2147483647"
+                                       step="1"
+                                       placeholder="Ingrese la cantidad">
+
+                                <div id="errorCantidad"
+                                     class="campo-error"></div>
+
+                                <div class="ayuda">
+                                    Solo se permiten números enteros positivos.
+                                </div>
+
+                            </div>
+
+                        </div>
 
                     </div>
 
-                </div>
+                </section>
 
-                <!-- TIPO DE MOVIMIENTO -->
+                <!-- ========================================= -->
+                <!-- INFORMACIÓN COMPLEMENTARIA -->
+                <!-- ========================================= -->
 
-                <div class="col-md-6">
+                <section class="card santos-panel">
 
-                    <label for="tipoMovimiento"
-                           class="form-label">
+                    <div class="card-body p-3 p-lg-4">
 
-                        Tipo de Movimiento
-                        <span class="obligatorio">*</span>
+                        <h2 class="titulo-seccion">
 
-                    </label>
+                            <i class="bi bi-receipt" aria-hidden="true"></i>
+                            Información Complementaria
 
-                    <select id="tipoMovimiento"
-                            th:field="*{tipoMovimiento}"
-                            class="form-select">
+                        </h2>
 
-                        <option value="">
-                            Seleccione un tipo
-                        </option>
+                        <div class="row g-3">
 
-                        <option th:each="tipo : ${tiposPermitidos}"
-                                th:value="${tipo.codigo}"
-                                th:text="${tipo.nombre}">
-                        </option>
+                            <!-- COSTO UNITARIO -->
 
-                    </select>
+                            <div id="contenedorCosto"
+                                 class="col-md-6 oculto">
 
-                    <div id="errorTipo"
-                         class="campo-error"></div>
+                                <label for="costoUnitario"
+                                       class="form-label">
 
-                    <div class="ayuda">
-                        El despacho de farmacia
-                        se registra automáticamente.
+                                    Costo Unitario (Q)
+                                    <span class="obligatorio">*</span>
+
+                                </label>
+
+                                <div class="input-group">
+
+                                    <span class="input-group-text">Q</span>
+
+                                    <input id="costoUnitario"
+                                           type="number"
+                                           th:field="*{costoUnitario}"
+                                           class="form-control"
+                                           min="0.01"
+                                           step="0.01"
+                                           placeholder="0.00">
+
+                                </div>
+
+                                <div id="errorCosto"
+                                     class="campo-error"></div>
+
+                                <div class="ayuda">
+                                    Obligatorio para compras.
+                                    Máximo dos decimales.
+                                </div>
+
+                            </div>
+
+                            <!-- NÚMERO DE REFERENCIA -->
+
+                            <div class="col-md-6">
+
+                                <label for="numeroReferencia"
+                                       id="etiquetaReferencia"
+                                       class="form-label">
+
+                                    Número de Referencia
+
+                                </label>
+
+                                <input id="numeroReferencia"
+                                       type="text"
+                                       th:field="*{numeroReferencia}"
+                                       class="form-control"
+                                       maxlength="50"
+                                       placeholder="Ingrese la referencia, si aplica">
+
+                                <div id="errorReferencia"
+                                     class="campo-error"></div>
+
+                                <div class="ayuda">
+                                    Campo opcional. Máximo 50 caracteres.
+                                </div>
+
+                            </div>
+
+                            <!-- MOTIVO / NOTAS -->
+
+                            <div id="contenedorMotivo"
+                                 class="col-12">
+
+                                <label for="motivoNotas"
+                                       class="form-label">
+
+                                    Motivo / Notas
+
+                                    <span id="asteriscoMotivo"
+                                          class="obligatorio oculto">*</span>
+
+                                </label>
+
+                                <textarea id="motivoNotas"
+                                          th:field="*{motivoNotas}"
+                                          class="form-control"
+                                          rows="3"
+                                          maxlength="500"
+                                          placeholder="Describa el motivo del movimiento"></textarea>
+
+                                <div id="errorMotivo"
+                                     class="campo-error"></div>
+
+                                <div class="d-flex justify-content-between gap-3">
+
+                                    <div id="ayudaMotivo"
+                                         class="ayuda">
+                                        Ingrese observaciones si corresponde.
+                                    </div>
+
+                                    <div class="text-end ayuda">
+
+                                        <span id="contadorMotivo">0</span>
+                                        / 500 caracteres
+
+                                    </div>
+
+                                </div>
+
+                            </div>
+
+                        </div>
+
                     </div>
 
-                </div>
-
-                <!-- CANTIDAD -->
-
-                <div class="col-md-6">
-
-                    <label for="cantidad"
-                           class="form-label">
-
-                        Cantidad
-                        <span class="obligatorio">*</span>
-
-                    </label>
-
-                    <input id="cantidad"
-                           type="number"
-                           th:field="*{cantidad}"
-                           class="form-control"
-                           min="1"
-                           max="2147483647"
-                           step="1"
-                           placeholder="Ingrese la cantidad">
-
-                    <div id="errorCantidad"
-                         class="campo-error"></div>
-
-                    <div class="ayuda">
-                        Solo se permiten números enteros positivos.
-                    </div>
-
-                </div>
+                </section>
 
             </div>
 
-        </div>
+            <!-- ========================================= -->
+            <!-- COLUMNA DERECHA: EXISTENCIAS Y RESUMEN -->
+            <!-- ========================================= -->
 
-        <!-- ========================================= -->
-        <!-- INFORMACIÓN COMPLEMENTARIA -->
-        <!-- ========================================= -->
+            <div class="col-lg-5 d-flex flex-column gap-3">
 
-        <div class="tarjeta">
+                <!-- ========================================= -->
+                <!-- FA05 - CONSULTA DE EXISTENCIAS -->
+                <!-- ========================================= -->
 
-            <h5 class="titulo-seccion">
+                <section class="card santos-panel">
 
-                <i class="bi bi-receipt"></i>
-                Información Complementaria
+                    <div class="card-body p-3 p-lg-4">
 
-            </h5>
+                        <h2 class="titulo-seccion">
 
-            <div class="row g-3">
+                            <i class="bi bi-box-seam" aria-hidden="true"></i>
+                            Existencias del Medicamento
 
-                <!-- COSTO UNITARIO -->
+                        </h2>
 
-                <div id="contenedorCosto"
-                     class="col-md-6 oculto">
+                        <div class="row g-2">
 
-                    <label for="costoUnitario"
-                           class="form-label">
+                            <!-- STOCK ACTUAL -->
 
-                        Costo Unitario (Q)
-                        <span class="obligatorio">*</span>
+                            <div class="col-4">
 
-                    </label>
+                                <div class="dato-stock">
 
-                    <div class="input-group">
+                                    <div class="titulo-stock">
+                                        Stock Actual
+                                    </div>
 
-                        <span class="input-group-text">Q</span>
+                                    <div id="stockActual"
+                                         class="valor-stock">
+                                        —
+                                    </div>
 
-                        <input id="costoUnitario"
-                               type="number"
-                               th:field="*{costoUnitario}"
-                               class="form-control"
-                               min="0.01"
-                               step="0.01"
-                               placeholder="0.00">
+                                </div>
 
-                    </div>
+                            </div>
 
-                    <div id="errorCosto"
-                         class="campo-error"></div>
+                            <!-- STOCK MÍNIMO -->
 
-                    <div class="ayuda">
-                        Obligatorio para compras.
-                        Máximo dos decimales.
-                    </div>
+                            <div class="col-4">
 
-                </div>
+                                <div class="dato-stock">
 
-                <!-- NÚMERO DE REFERENCIA -->
+                                    <div class="titulo-stock">
+                                        Stock Mínimo
+                                    </div>
 
-                <div class="col-md-6">
+                                    <div id="stockMinimo"
+                                         class="valor-stock">
+                                        —
+                                    </div>
 
-                    <label for="numeroReferencia"
-                           id="etiquetaReferencia"
-                           class="form-label">
+                                </div>
 
-                        Número de Referencia
+                            </div>
 
-                    </label>
+                            <!-- STOCK PROYECTADO -->
 
-                    <input id="numeroReferencia"
-                           type="text"
-                           th:field="*{numeroReferencia}"
-                           class="form-control"
-                           maxlength="50"
-                           placeholder="Ingrese la referencia, si aplica">
+                            <div class="col-4">
 
-                    <div id="errorReferencia"
-                         class="campo-error"></div>
+                                <div class="dato-stock">
 
-                    <div class="ayuda">
-                        Campo opcional. Máximo 50 caracteres.
-                    </div>
+                                    <div class="titulo-stock">
+                                        Stock Proyectado
+                                    </div>
 
-                </div>
+                                    <div id="stockProyectado"
+                                         class="valor-stock">
+                                        —
+                                    </div>
 
-                <!-- MOTIVO / NOTAS -->
+                                </div>
 
-                <div id="contenedorMotivo"
-                     class="col-12">
+                            </div>
 
-                    <label for="motivoNotas"
-                           class="form-label">
-
-                        Motivo / Notas
-
-                        <span id="asteriscoMotivo"
-                              class="obligatorio oculto">*</span>
-
-                    </label>
-
-                    <textarea id="motivoNotas"
-                              th:field="*{motivoNotas}"
-                              class="form-control"
-                              rows="4"
-                              maxlength="500"
-                              placeholder="Describa el motivo del movimiento"></textarea>
-
-                    <div id="errorMotivo"
-                         class="campo-error"></div>
-
-                    <div id="ayudaMotivo"
-                         class="ayuda">
-                        Ingrese observaciones si corresponde.
-                    </div>
-
-                    <div class="text-end ayuda">
-
-                        <span id="contadorMotivo">0</span>
-                        / 500 caracteres
-
-                    </div>
-
-                </div>
-
-            </div>
-
-        </div>
-
-        <!-- ========================================= -->
-        <!-- FA05 - CONSULTA DE EXISTENCIAS -->
-        <!-- ========================================= -->
-
-        <div class="tarjeta">
-
-            <h5 class="titulo-seccion">
-
-                <i class="bi bi-box-seam"></i>
-                Existencias del Medicamento
-
-            </h5>
-
-            <div class="row g-3">
-
-                <!-- STOCK ACTUAL -->
-
-                <div class="col-md-4">
-
-                    <div class="dato-stock">
-
-                        <div class="titulo-stock">
-                            Stock Actual
                         </div>
 
-                        <div id="stockActual"
-                             class="valor-stock">
-                            —
+                        <!-- ESTADO DE CONSULTA -->
+
+                        <div id="estadoConsultaStock"
+                             class="alert alert-info mt-3 mb-0"
+                             role="status"
+                             aria-live="polite">
+
+                            <i class="bi bi-info-circle" aria-hidden="true"></i>
+
+                            Seleccione el medicamento y la sucursal
+                            para consultar las existencias.
+
+                        </div>
+
+                        <!-- FA02 - STOCK INSUFICIENTE -->
+
+                        <div id="alertaStockInsuficiente"
+                             class="alert alert-danger mt-3 mb-0 oculto"
+                             role="alert">
+
+                            <i class="bi bi-exclamation-triangle-fill" aria-hidden="true"></i>
+
+                            <span id="mensajeStockInsuficiente"></span>
+
+                        </div>
+
+                        <!-- FA05 - STOCK BAJO -->
+
+                        <div id="alertaStockBajo"
+                             class="alert alert-warning mt-3 mb-0 oculto"
+                             role="alert">
+
+                            <i class="bi bi-exclamation-triangle-fill" aria-hidden="true"></i>
+
+                            <span id="mensajeStockBajo"></span>
+
+                        </div>
+
+                        <!-- ERROR AL CONSULTAR -->
+
+                        <div id="alertaErrorConsulta"
+                             class="alert alert-danger mt-3 mb-0 oculto"
+                             role="alert">
+
+                            <i class="bi bi-exclamation-circle" aria-hidden="true"></i>
+
+                            <span id="mensajeErrorConsulta"></span>
+
                         </div>
 
                     </div>
 
-                </div>
+                </section>
 
-                <!-- STOCK MÍNIMO -->
+                <!-- ========================================= -->
+                <!-- RESUMEN DEL MOVIMIENTO -->
+                <!-- ========================================= -->
 
-                <div class="col-md-4">
+                <section class="card santos-panel">
 
-                    <div class="dato-stock">
+                    <div class="card-body p-3 p-lg-4">
 
-                        <div class="titulo-stock">
-                            Stock Mínimo
+                        <h2 class="titulo-seccion">
+
+                            <i class="bi bi-info-circle" aria-hidden="true"></i>
+                            Resumen del Movimiento
+
+                        </h2>
+
+                        <div class="tarjeta-info">
+
+                            <div class="row g-3">
+
+                                <div class="col-4">
+
+                                    <div class="form-label">
+                                        Operación
+                                    </div>
+
+                                    <span id="resumenOperacion"
+                                          class="badge bg-secondary">
+                                        Sin seleccionar
+                                    </span>
+
+                                </div>
+
+                                <div class="col-4">
+
+                                    <div class="form-label">
+                                        Tipo
+                                    </div>
+
+                                    <div id="resumenTipo">—</div>
+
+                                </div>
+
+                                <div class="col-4">
+
+                                    <div class="form-label">
+                                        Cantidad solicitada
+                                    </div>
+
+                                    <div id="resumenCantidad">—</div>
+
+                                </div>
+
+                            </div>
+
                         </div>
 
-                        <div id="stockMinimo"
-                             class="valor-stock">
-                            —
+                        <div class="alert alert-info mt-3 mb-0">
+
+                            <i class="bi bi-shield-check" aria-hidden="true"></i>
+
+                            La información del stock es preventiva.
+                            Al guardar, el sistema volverá a validar
+                            las existencias y los permisos.
+
                         </div>
 
                     </div>
 
-                </div>
-
-                <!-- STOCK PROYECTADO -->
-
-                <div class="col-md-4">
-
-                    <div class="dato-stock">
-
-                        <div class="titulo-stock">
-                            Stock Proyectado
-                        </div>
-
-                        <div id="stockProyectado"
-                             class="valor-stock">
-                            —
-                        </div>
-
-                    </div>
-
-                </div>
-
-            </div>
-
-            <!-- ESTADO DE CONSULTA -->
-
-            <div id="estadoConsultaStock"
-                 class="alert alert-info mt-3 mb-0"
-                 role="status"
-                 aria-live="polite">
-
-                <i class="bi bi-info-circle"></i>
-
-                Seleccione el medicamento y la sucursal
-                para consultar las existencias.
-
-            </div>
-
-            <!-- FA02 - STOCK INSUFICIENTE -->
-
-            <div id="alertaStockInsuficiente"
-                 class="alert alert-danger mt-3 mb-0 oculto"
-                 role="alert">
-
-                <i class="bi bi-exclamation-triangle-fill"></i>
-
-                <span id="mensajeStockInsuficiente"></span>
-
-            </div>
-
-            <!-- FA05 - STOCK BAJO -->
-
-            <div id="alertaStockBajo"
-                 class="alert alert-warning mt-3 mb-0 oculto"
-                 role="alert">
-
-                <i class="bi bi-exclamation-triangle-fill"></i>
-
-                <span id="mensajeStockBajo"></span>
-
-            </div>
-
-            <!-- ERROR AL CONSULTAR -->
-
-            <div id="alertaErrorConsulta"
-                 class="alert alert-danger mt-3 mb-0 oculto"
-                 role="alert">
-
-                <i class="bi bi-exclamation-circle"></i>
-
-                <span id="mensajeErrorConsulta"></span>
-
-            </div>
-
-        </div>
-
-        <!-- ========================================= -->
-        <!-- RESUMEN DEL MOVIMIENTO -->
-        <!-- ========================================= -->
-
-        <div class="tarjeta">
-
-            <h5 class="titulo-seccion">
-
-                <i class="bi bi-info-circle"></i>
-                Resumen del Movimiento
-
-            </h5>
-
-            <div class="tarjeta-info">
-
-                <div class="row g-3">
-
-                    <div class="col-md-4">
-
-                        <div class="form-label">
-                            Operación
-                        </div>
-
-                        <span id="resumenOperacion"
-                              class="badge bg-secondary">
-                            Sin seleccionar
-                        </span>
-
-                    </div>
-
-                    <div class="col-md-4">
-
-                        <div class="form-label">
-                            Tipo
-                        </div>
-
-                        <div id="resumenTipo">—</div>
-
-                    </div>
-
-                    <div class="col-md-4">
-
-                        <div class="form-label">
-                            Cantidad solicitada
-                        </div>
-
-                        <div id="resumenCantidad">—</div>
-
-                    </div>
-
-                </div>
-
-            </div>
-
-            <div class="alert alert-info mt-3 mb-0">
-
-                <i class="bi bi-shield-check"></i>
-
-                La información del stock es preventiva.
-                Al guardar, el sistema volverá a validar
-                las existencias y los permisos.
+                </section>
 
             </div>
 
@@ -667,21 +754,21 @@
         <!-- BOTONES -->
         <!-- ========================================= -->
 
-        <div class="d-flex justify-content-end gap-2 mb-4">
+        <div class="d-flex justify-content-end gap-2 santos-form-acciones">
 
             <a th:href="@{/interno/bitacora-inventario}"
                class="btn btn-outline-secondary">
 
-                <i class="bi bi-x-circle"></i>
+                <i class="bi bi-x-circle me-1" aria-hidden="true"></i>
                 Cancelar
 
             </a>
 
             <button id="botonGuardar"
                     type="submit"
-                    class="btn btn-guardar">
+                    class="btn btn-primary px-4">
 
-                <i class="bi bi-check-circle"></i>
+                <i class="bi bi-check-circle me-1" aria-hidden="true"></i>
                 Guardar Movimiento
 
             </button>
@@ -690,7 +777,7 @@
 
     </form>
 
-</div>
+</main>
 
 <!-- ============================================= -->
 <!-- VALIDACIONES Y PREVISUALIZACIÓN -->
